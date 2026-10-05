@@ -64,3 +64,10 @@ lo comparará `update_livoltek_api.py --check`).
   42758/42759 = nivel 3; 45005/45006 rechazados (tabla desalineada); `user/userToken` = nivel 3; lo no documentado = no escribible.
 - **Añadido** `test_livoltek_adapter.py` (34 pruebas, sin credenciales reales ni internet): política con `urlopen` bloqueado, coherencia
   de la lista blanca con `endpoints.json`, ventanas, normalización con los ejemplos de la doc, y 429/428/401/presupuesto contra un servidor local falso.
+
+## 2026-10-05 — `update_livoltek_api.py`: pruebas del modo de red
+
+- Probado `--check` contra un servidor local que sirve un `index.html` crudo (atributos sin comillas) y el bundle: sin cambios → exit 0;
+  una frase alterada en «Usage Limitations» → exit 1 con la sección señalada (`section_sha256`); otra versión y otro hash del bundle → exit 1;
+  servidor caído → exit 2 con un mensaje que propone `--from-files`.
+- La línea «Fuente» muestra la URL realmente usada (`--base-url`). `index_html_sha256` queda `null` hasta la primera descarga real.

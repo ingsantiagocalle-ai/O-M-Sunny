@@ -1181,12 +1181,23 @@ def load_inputs(args, sources: dict) -> tuple[bytes, str | None, str | None, str
         return bundle, index_text, index_sha, name, "archivos guardados desde el navegador por el usuario (sin descarga por script)"
     base = args.base_url or sources.get("docs_url", "").rsplit("index.html", 1)[0]
     index_url = urljoin(base, "index.html")
-    raw = http_get(index_url)
+
+    def fetch(url: str) -> bytes:
+        try:
+            return http_get(url)
+        except OSError as exc:      # URLError, reset, timeout…
+            raise RuntimeError(
+                f"no se pudo descargar {url}: {getattr(exc, 'reason', exc)}. Si el servidor no responde desde este equipo "
+                "(el 2026-10-05 cerró la conexión desde el contenedor de la sesión), guarda index.html y js/app.<hash>.js "
+                "desde un navegador y usa --from-files APP.js [--index INDEX.html]."
+            ) from None
+
+    raw = fetch(index_url)
     index_text = raw.decode("utf-8", "replace")
     ref = bundle_name_from_index(index_text)
     if not ref:
         raise RuntimeError("index.html no referencia js/app.<hash>.js (¿cambió la estructura de la doc?)")
-    bundle = http_get(urljoin(index_url, ref))
+    bundle = fetch(urljoin(index_url, ref))
     return bundle, index_text, sha256(raw), "js/" + ref.rsplit("/", 1)[-1], f"descarga directa de {index_url}"
 
 
@@ -1205,7 +1216,8 @@ def main() -> int:
     class_file = ref_dir / "clasificacion.json"
     classes = json.loads(class_file.read_text(encoding="utf-8")).get("endpoints", {}) if class_file.exists() else {}
 
-    print(f"Fuente: {sources.get('docs_url')}" + (f"  [local: {args.from_files}]" if args.from_files else ""))
+    source = args.base_url or sources.get("docs_url")
+    print(f"Fuente: {source}" + (f"  [local: {args.from_files}]" if args.from_files else ""))
     bundle, index_text, index_sha, bundle_name, origin = load_inputs(args, sources)
     parsed = parse_bundle(bundle.decode("utf-8"))
     doc = build_endpoints_doc(parsed, classes)
