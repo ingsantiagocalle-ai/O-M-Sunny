@@ -38,3 +38,12 @@ lo comparará `update_livoltek_api.py --check`).
   página «Device Details»; la doc se contradice en rutas (alarm, oneDayFaultAlarm, siteOwner, chargeRecord) y en unidades (W frente a kW).
 - **Modificado:** `sources.json` (versión y revisión declaradas ahora verificadas; servidores; `network_sync` conserva el aviso anterior).
 - No se tocó SKILL.md, Deye ni sus scripts.
+
+## 2026-10-05 — Diccionario Metrum → API → Modbus
+
+- **Añadido** `diccionario-metrum-livoltek.md`: cada clave de Metrum con su campo de la API y su registro Modbus (escala, tipo, signo).
+  **Todo marcado «sin verificar»**: no hay inversor Livoltek validado en vivo.
+- **Hallazgos:** el PDF no trae SOC, tensión, corriente ni temperatura de batería ni energías de carga/descarga (solo la API);
+  el ejemplo de `HisPowerflow` no cuadra físicamente (PV 2.953 kW, carga 0.061 kW y «Importing» 2.743 kW), así que `powerGridStatus` no sirve para
+  fijar el signo de la red; los ejemplos de Sunspec usan los registros 45093 y 45018, que **no están** entre los 32 escribibles del PDF V1.01
+  (por la lista blanca serían no escribibles).
