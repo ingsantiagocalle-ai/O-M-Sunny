@@ -1,0 +1,2310 @@
+[
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      }
+    ],
+    "path": "/v1.0/account/info",
+    "summary": "Query relationship between account and the organization it belongs to",
+    "tags": [
+      "Account Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "allowEmptyValue": false,
+        "description": "appId,Example:201911067156002",
+        "in": "query",
+        "name": "appId",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "host",
+        "in": "header",
+        "name": "host",
+        "required": false,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/tokenRequest",
+          "properties": {
+            "appSecret": {
+              "example": "1q3e2ee5w5w20ww",
+              "type": "string"
+            },
+            "companyId": {
+              "example": 12,
+              "format": "int64",
+              "type": "integer"
+            },
+            "countryCode": {
+              "example": 86,
+              "type": "string"
+            },
+            "email": {
+              "example": "13255@gmail.com",
+              "type": "string"
+            },
+            "mobile": {
+              "example": 13255200000,
+              "type": "string"
+            },
+            "password": {
+              "description": "must be sha256 encrypted",
+              "example": "5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5",
+              "type": "string"
+            },
+            "username": {
+              "example": "deye",
+              "type": "string"
+            }
+          },
+          "required": [
+            "appSecret",
+            "password"
+          ],
+          "title": "tokenRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/tokenRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/account/token",
+    "summary": "Obtain token",
+    "tags": [
+      "Account Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/DeviceConfigPointRequest",
+          "properties": {
+            "deviceSn": {
+              "example": "12583SS",
+              "type": "string"
+            }
+          },
+          "required": [
+            "deviceSn"
+          ],
+          "title": "DeviceConfigPointRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/DeviceConfigPointRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/config/battery",
+    "summary": "Obtain battery-ralated parameter value",
+    "tags": [
+      "Configuration Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/DeviceConfigPointRequest",
+          "properties": {
+            "deviceSn": {
+              "example": "12583SS",
+              "type": "string"
+            }
+          },
+          "required": [
+            "deviceSn"
+          ],
+          "title": "DeviceConfigPointRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/DeviceConfigPointRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/config/system",
+    "summary": "Obtain system work mode ralated parameter value",
+    "tags": [
+      "Configuration Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/DeviceConfigPointRequest",
+          "properties": {
+            "deviceSn": {
+              "example": "12583SS",
+              "type": "string"
+            }
+          },
+          "required": [
+            "deviceSn"
+          ],
+          "title": "DeviceConfigPointRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/DeviceConfigPointRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/config/tou",
+    "summary": "Obtain time of use configuration",
+    "tags": [
+      "Configuration Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "accessToken,e.g.Bearer {token}",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/LoggerRequest",
+          "properties": {
+            "deviceSns": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "title": "LoggerRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/LoggerRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/device/addLogger",
+    "summary": "Add loggers to business account. Up to 10 devices per batch",
+    "tags": [
+      "Device Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "accessToken,e.g.Bearer {token}",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "allowEmptyValue": false,
+        "default": "en",
+        "description": "language",
+        "in": "query",
+        "name": "language",
+        "required": false,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/DeviceAlertListRequest",
+          "properties": {
+            "deviceSn": {
+              "type": "string"
+            },
+            "endTimestamp": {
+              "example": 1574132094,
+              "format": "int64",
+              "type": "integer"
+            },
+            "page": {
+              "description": "which page to display. default is 1 if not provided",
+              "example": 1,
+              "format": "int32",
+              "type": "integer"
+            },
+            "size": {
+              "description": "size of one page，default is 20, max is 100",
+              "example": 20,
+              "format": "int32",
+              "type": "integer"
+            },
+            "startTimestamp": {
+              "example": 1574132075,
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "endTimestamp",
+            "startTimestamp"
+          ],
+          "title": "DeviceAlertListRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/DeviceAlertListRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/device/alertList",
+    "summary": "Retrieve device alert list using 10-digit Unix timestamp(in seconds)",
+    "tags": [
+      "Device Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "accessToken,e.g.Bearer {token}",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/LoggerRequest",
+          "properties": {
+            "deviceSns": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "title": "LoggerRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/LoggerRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/device/deleteLogger",
+    "summary": "Remove loggers from business account. Up to 10 devices per batch",
+    "tags": [
+      "Device Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/DeviceHistoryDataRequest",
+          "properties": {
+            "deviceSn": {
+              "example": "12583SS",
+              "type": "string"
+            },
+            "endAt": {
+              "description": "Coule be null if granularity=1, Others is same with startAt",
+              "example": "2024-01-01",
+              "type": "string"
+            },
+            "granularity": {
+              "example": 4,
+              "format": "int32",
+              "type": "integer"
+            },
+            "measurePoints": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "startAt": {
+              "example": "2019-11-18",
+              "type": "string"
+            }
+          },
+          "required": [
+            "deviceSn",
+            "granularity",
+            "startAt"
+          ],
+          "title": "DeviceHistoryDataRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/DeviceHistoryDataRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/device/history",
+    "summary": "Retrieve device history data",
+    "tags": [
+      "Device Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/DeviceHistoryPowerRequest",
+          "properties": {
+            "deviceSn": {
+              "example": "12583SS",
+              "type": "string"
+            },
+            "endTimestamp": {
+              "example": 173316200,
+              "format": "int64",
+              "type": "integer"
+            },
+            "measurePoints": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "startTimestamp": {
+              "example": 1733155200,
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "deviceSn",
+            "endTimestamp",
+            "measurePoints",
+            "startTimestamp"
+          ],
+          "title": "DeviceHistoryPowerRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/DeviceHistoryPowerRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/device/historyRaw",
+    "summary": "Retrieve device history data by timestamp",
+    "tags": [
+      "Device Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/latestDataRequest",
+          "properties": {
+            "deviceList": {
+              "example": [
+                "12583SS"
+              ],
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "deviceList"
+          ],
+          "title": "latestDataRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/latestDataRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/device/latest",
+    "summary": "Fetch latest data of devices, supporting querying in batch, up to 10 devices per batch",
+    "tags": [
+      "Device Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/DeviceListRequest",
+          "properties": {
+            "page": {
+              "description": "page number,default=1",
+              "example": 1,
+              "format": "int32",
+              "type": "integer"
+            },
+            "size": {
+              "description": "page size，max:200, default=20",
+              "example": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "title": "DeviceListRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/DeviceListRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/device/list",
+    "summary": "Fetch device list for business members",
+    "tags": [
+      "Device Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/DeviceMeasurePointsRequest",
+          "properties": {
+            "deviceSn": {
+              "example": "12583SS",
+              "type": "string"
+            },
+            "deviceType": {
+              "description": "default is INVERTER\nOptions: INVERTER;MICRO_INVERTER;MICRO_STORAGE_IN_ONE;MECD",
+              "enum": [
+                "INVERTER",
+                "COMBINER_BOX",
+                "BATTERY",
+                "WEATHER_STATION",
+                "METER",
+                "AIR_CONDITIONING",
+                "OTHER_TYPE",
+                "HARMONIC_METER",
+                "QUALITY_MONITOR",
+                "SMART_HOME",
+                "SOLAR_TRACKING_CONTROLLER",
+                "SOLAR_RADIATION_SPECTROMETER",
+                "DTU",
+                "REPEATER",
+                "MICRO_INVERTER",
+                "PV_MODULE",
+                "ELECTRIC_SOURCE",
+                "COLLECTOR",
+                "FAN",
+                "WATER_PUMP",
+                "HYBRID_POWER_SYSTEM_CABINET",
+                "STEAM_ENGINE",
+                "EPM",
+                "GAS_METER",
+                "WATER_METER",
+                "SMART_METER",
+                "TYPE_RF_SUB_DEVICE",
+                "TYPE_OFF_GRID_INVERTER",
+                "MECD",
+                "BOX_TRANSFORMER",
+                "SWITCHGEAR",
+                "OPTIMIZER",
+                "DC_CONVERTER",
+                "SURGE_PROTECTION",
+                "FLOW_METER_THERMOMETER",
+                "RELAY_BOX",
+                "FEED_IN_LIMIT",
+                "MICRO_STORAGE_IN_ONE",
+                "OPTIMIZER_CONCENTRATOR"
+              ],
+              "example": "INVERTER",
+              "type": "string"
+            }
+          },
+          "required": [
+            "deviceSn"
+          ],
+          "title": "DeviceMeasurePointsRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/DeviceMeasurePointsRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/device/measurePoints",
+    "summary": "Fetch measure points according to deviceSn",
+    "tags": [
+      "Device Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "accessToken,Example:Bearer {token}",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "default": "en",
+        "description": "language",
+        "in": "query",
+        "name": "language",
+        "required": false,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/DeviceRegisterRequest",
+          "properties": {
+            "deviceSn": {
+              "description": "deviceSn cannot be empty",
+              "type": "string"
+            },
+            "gatewaySn": {
+              "type": "string"
+            },
+            "stationId": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "deviceSn",
+            "gatewaySn",
+            "stationId"
+          ],
+          "title": "DeviceRegisterRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/DeviceRegisterRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/device/register",
+    "summary": "Add datalogger into station",
+    "tags": [
+      "Device Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseDeviceOrderBatteryModeActionRequest",
+          "properties": {
+            "action": {
+              "description": "action=on:enable, action=off:disable",
+              "example": "on",
+              "type": "string"
+            },
+            "batteryModeType": {
+              "enum": [
+                "GEN_CHARGE",
+                "GRID_CHARGE"
+              ],
+              "type": "string"
+            },
+            "deviceSn": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "batteryModeType",
+            "deviceSn"
+          ],
+          "title": "BaseDeviceOrderBatteryModeActionRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseDeviceOrderBatteryModeActionRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/order/battery/modeControl",
+    "summary": "Enable or disable the chargeMode",
+    "tags": [
+      "Control Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseDeviceOrderBatterySetPointRequest",
+          "properties": {
+            "deviceSn": {
+              "type": "string"
+            },
+            "paramterType": {
+              "enum": [
+                "MAX_CHARGE_CURRENT",
+                "MAX_DISCHARGE_CURRENT",
+                "GRID_CHARGE_AMPERE",
+                "BATT_LOW"
+              ],
+              "type": "string"
+            },
+            "value": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "deviceSn",
+            "paramterType",
+            "value"
+          ],
+          "title": "BaseDeviceOrderBatterySetPointRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseDeviceOrderBatterySetPointRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/order/battery/parameter/update",
+    "summary": "Set the value of battery-related parameter",
+    "tags": [
+      "Control Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseDeviceOrderBatteryTypeSetRequest",
+          "properties": {
+            "batteryType": {
+              "example": "BATT_V",
+              "type": "string"
+            },
+            "deviceSn": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "batteryType",
+            "deviceSn"
+          ],
+          "title": "BaseDeviceOrderBatteryTypeSetRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseDeviceOrderBatteryTypeSetRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/order/battery/type/update",
+    "summary": "Set battery type",
+    "tags": [
+      "Control Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "accessToken，example：Bearer {token}",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/DeviceCustomControlRequest",
+          "properties": {
+            "content": {
+              "description": "modus protocol command",
+              "example": "0103000102ABCD",
+              "type": "string"
+            },
+            "deviceSn": {
+              "type": "string"
+            },
+            "timeoutSeconds": {
+              "description": "range,10~600",
+              "example": 600,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "content",
+            "deviceSn"
+          ],
+          "title": "DeviceCustomControlRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/DeviceCustomControlRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/order/customControl",
+    "summary": "send command in modbus protcol",
+    "tags": [
+      "Control Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseDeviceGridPeakShavingControlRequest",
+          "properties": {
+            "action": {
+              "example": "on",
+              "type": "string"
+            },
+            "deviceSn": {
+              "type": "string"
+            },
+            "power": {
+              "description": "If this value is not set, it keep it was",
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "action",
+            "deviceSn",
+            "power"
+          ],
+          "title": "BaseDeviceGridPeakShavingControlRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseDeviceGridPeakShavingControlRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/order/gridPeakShaving/control",
+    "summary": "Enable/disable grid peak shaving",
+    "tags": [
+      "Control Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseDeviceSmartLoadRequest",
+          "properties": {
+            "deviceSn": {
+              "type": "string"
+            },
+            "deviceType": {
+              "description": "default is INVERTER\nOptions: INVERTER;MICRO_INVERTER;MICRO_STORAGE_IN_ONE;MECD",
+              "enum": [
+                "INVERTER",
+                "COMBINER_BOX",
+                "BATTERY",
+                "WEATHER_STATION",
+                "METER",
+                "AIR_CONDITIONING",
+                "OTHER_TYPE",
+                "HARMONIC_METER",
+                "QUALITY_MONITOR",
+                "SMART_HOME",
+                "SOLAR_TRACKING_CONTROLLER",
+                "SOLAR_RADIATION_SPECTROMETER",
+                "DTU",
+                "REPEATER",
+                "MICRO_INVERTER",
+                "PV_MODULE",
+                "ELECTRIC_SOURCE",
+                "COLLECTOR",
+                "FAN",
+                "WATER_PUMP",
+                "HYBRID_POWER_SYSTEM_CABINET",
+                "STEAM_ENGINE",
+                "EPM",
+                "GAS_METER",
+                "WATER_METER",
+                "SMART_METER",
+                "TYPE_RF_SUB_DEVICE",
+                "TYPE_OFF_GRID_INVERTER",
+                "MECD",
+                "BOX_TRANSFORMER",
+                "SWITCHGEAR",
+                "OPTIMIZER",
+                "DC_CONVERTER",
+                "SURGE_PROTECTION",
+                "FLOW_METER_THERMOMETER",
+                "RELAY_BOX",
+                "FEED_IN_LIMIT",
+                "MICRO_STORAGE_IN_ONE",
+                "OPTIMIZER_CONCENTRATOR"
+              ],
+              "example": "INVERTER",
+              "type": "string"
+            },
+            "offSOC": {
+              "description": "smartload off battery SOC",
+              "format": "int32",
+              "type": "integer"
+            },
+            "offVoltage": {
+              "description": "smartload off battery voltage",
+              "format": "int32",
+              "type": "integer"
+            },
+            "onGridAlwaysOn": {
+              "description": "true-enable 'on grid alwasys on'; false-disable 'on grid alwasys on'",
+              "type": "boolean"
+            },
+            "onSOC": {
+              "description": "smartload on battery SOC",
+              "format": "int32",
+              "type": "integer"
+            },
+            "onVoltage": {
+              "description": "smartload on battery voltage",
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "deviceSn"
+          ],
+          "title": "BaseDeviceSmartLoadRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseDeviceSmartLoadRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/order/smartload/update",
+    "summary": "Set parameter of smartload\n",
+    "tags": [
+      "Control Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseDeviceOrderSysEnergyPatternRequest",
+          "properties": {
+            "deviceSn": {
+              "type": "string"
+            },
+            "energyPattern": {
+              "description": "options:BATTERY_FIRST;LOAD_FIRST",
+              "enum": [
+                "BATTERY_FIRST",
+                "LOAD_FIRST"
+              ],
+              "example": "BATTERY_FIRST",
+              "type": "string"
+            }
+          },
+          "required": [
+            "deviceSn",
+            "energyPattern"
+          ],
+          "title": "BaseDeviceOrderSysEnergyPatternRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseDeviceOrderSysEnergyPatternRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/order/sys/energyPattern/update",
+    "summary": "Set energy pattern as BATTERY_FIRST or LOAD_FIRST",
+    "tags": [
+      "Control Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/DeviceLimitControlFunctionRequest",
+          "properties": {
+            "deviceSn": {
+              "type": "string"
+            },
+            "limitControlFunctionType": {
+              "description": "options:SELL_FIRST;ZERO_EXPORT_TO_UPS_LOAD;ZERO_EXPORT_TO_CT;ZERO_EXPORT_TO_WIRELESS_CT",
+              "enum": [
+                "SELL_FIRST",
+                "ZERO_EXPORT_TO_UPS_LOAD",
+                "ZERO_EXPORT_TO_CT",
+                "ZERO_EXPORT_TO_WIRELESS_CT"
+              ],
+              "example": "SELL_FIRST",
+              "type": "string"
+            }
+          },
+          "required": [
+            "deviceSn",
+            "limitControlFunctionType"
+          ],
+          "title": "DeviceLimitControlFunctionRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/DeviceLimitControlFunctionRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/order/sys/limitControl",
+    "summary": "Set limit control function as SELL_FIRST,ZERO_EXPORT_TO_UPS_LOAD,ZERO_EXPORT_TO_CT or ZERO_EXPORT_TO_WIRELESS_CT",
+    "tags": [
+      "Control Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseDeviceOrderSysSetPointRequest",
+          "properties": {
+            "deviceSn": {
+              "type": "string"
+            },
+            "powerType": {
+              "enum": [
+                "MAX_SELL_POWER",
+                "MAX_SOLAR_POWER",
+                "ZERO_EXPORT_POWER"
+              ],
+              "type": "string"
+            },
+            "value": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "deviceSn",
+            "powerType",
+            "value"
+          ],
+          "title": "BaseDeviceOrderSysSetPointRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseDeviceOrderSysSetPointRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/order/sys/power/update",
+    "summary": "Set the value for MAX_SELL_POWER or MAX_SOLAR_POWER",
+    "tags": [
+      "Control Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseDeviceOrderSolarSellControlRequest",
+          "properties": {
+            "action": {
+              "description": "action=on:enable solar sell, action=off:disable soalr sell",
+              "example": "on",
+              "type": "string"
+            },
+            "deviceSn": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "deviceSn"
+          ],
+          "title": "BaseDeviceOrderSolarSellControlRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseDeviceOrderSolarSellControlRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/order/sys/solarSell/control",
+    "summary": "Enable or disable solarsell",
+    "tags": [
+      "Control Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseDeviceOrderTOUSwitchRequest",
+          "properties": {
+            "action": {
+              "example": "on",
+              "type": "string"
+            },
+            "days": {
+              "description": "If action is on, fill this field with the days of the week you want to switch on",
+              "items": {
+                "enum": [
+                  "MONDAY",
+                  "TUESDAY",
+                  "WEDNESDAY",
+                  "THURSDAY",
+                  "FRIDAY",
+                  "SATURDAY",
+                  "SUNDAY"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "deviceSn": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "action",
+            "deviceSn"
+          ],
+          "title": "BaseDeviceOrderTOUSwitchRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseDeviceOrderTOUSwitchRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/order/sys/tou/switch",
+    "summary": "Switch of TOU",
+    "tags": [
+      "Control Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseDeviceOrderTOUSetRequest",
+          "properties": {
+            "deviceSn": {
+              "type": "string"
+            },
+            "timeUseSettingItems": {
+              "description": "set the strategy for 6 time intervals.Have to be passed in sequence",
+              "items": {
+                "$ref": "#/definitions/TimeUseSettingItem",
+                "properties": {
+                  "enableGeneration": {
+                    "description": "Want to enableGeneration set true otherwise set false",
+                    "type": "boolean"
+                  },
+                  "enableGridCharge": {
+                    "description": "Want to enableGridCharge set true otherwise set false",
+                    "type": "boolean"
+                  },
+                  "enableSell": {
+                    "description": "Want to enableSell set true otherwise set false",
+                    "type": "boolean"
+                  },
+                  "power": {
+                    "format": "int32",
+                    "type": "integer"
+                  },
+                  "soc": {
+                    "format": "int32",
+                    "type": "integer"
+                  },
+                  "time": {
+                    "type": "string"
+                  },
+                  "voltage": {
+                    "description": "If enabled battery voltage mode, this field should be set.",
+                    "format": "int32",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "enableGeneration",
+                  "enableGridCharge",
+                  "power",
+                  "time"
+                ],
+                "title": "TimeUseSettingItem",
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "deviceSn",
+            "timeUseSettingItems"
+          ],
+          "title": "BaseDeviceOrderTOUSetRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseDeviceOrderTOUSetRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/order/sys/tou/update",
+    "summary": "Set time of use for the device",
+    "tags": [
+      "Control Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseDeviceOrderSysWorkModeRequest",
+          "properties": {
+            "deviceSn": {
+              "type": "string"
+            },
+            "workMode": {
+              "description": "options:SELLING_FIRST;ZERO_EXPORT_TO_LOAD;ZERO_EXPORT_TO_CT;For micro storage:GREEN_POWER_MODE;FULL_CHARGE_MODE;CUSTOMIZED_MODE",
+              "enum": [
+                "SELLING_FIRST",
+                "ZERO_EXPORT_TO_LOAD",
+                "ZERO_EXPORT_TO_CT",
+                "GREEN_POWER_MODE",
+                "FULL_CHARGE_MODE",
+                "CUSTOMIZED_MODE"
+              ],
+              "example": "SELLING_FIRST",
+              "type": "string"
+            }
+          },
+          "required": [
+            "deviceSn",
+            "workMode"
+          ],
+          "title": "BaseDeviceOrderSysWorkModeRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseDeviceOrderSysWorkModeRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/order/sys/workMode/update",
+    "summary": "set system work mode as SELLING_FIRST,ZERO_EXPORT_TO_LOAD or ZERO_EXPORT_TO_CT",
+    "tags": [
+      "Control Operation"
+    ]
+  },
+  {
+    "method": "GET",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "language",
+        "in": "query",
+        "name": "language",
+        "required": false,
+        "type": "string"
+      },
+      {
+        "description": "orderId",
+        "format": "int64",
+        "in": "path",
+        "name": "orderId",
+        "required": true,
+        "type": "integer"
+      }
+    ],
+    "path": "/v1.0/order/{orderId}",
+    "summary": "Get the result of command execution",
+    "tags": [
+      "Control Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "accessToken,example: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseStationAlertListRequest",
+          "properties": {
+            "endTimestamp": {
+              "example": 1733796958,
+              "format": "int64",
+              "type": "integer"
+            },
+            "page": {
+              "description": "page number,default=1",
+              "example": 1,
+              "format": "int32",
+              "type": "integer"
+            },
+            "size": {
+              "description": "size for one page，max=200, default=20",
+              "example": 20,
+              "format": "int32",
+              "type": "integer"
+            },
+            "startTimestamp": {
+              "example": 1728526558,
+              "format": "int64",
+              "type": "integer"
+            },
+            "stationId": {
+              "example": 322,
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "endTimestamp",
+            "startTimestamp",
+            "stationId"
+          ],
+          "title": "BaseStationAlertListRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseStationAlertListRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/station/alertList",
+    "summary": "Retrieve Alert List for stations",
+    "tags": [
+      "Station Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "accessToken, Example:Bearer {token}",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseStationCreateRequest",
+          "properties": {
+            "constructionCost": {
+              "example": 2300.0,
+              "format": "double",
+              "type": "number"
+            },
+            "contactPhone": {
+              "example": 13101969190,
+              "type": "string"
+            },
+            "currency": {
+              "example": "USD",
+              "type": "string"
+            },
+            "gridInterconnectionType": {
+              "enum": [
+                "DISTRIBUTED_FULLY",
+                "EXCESS",
+                "OFF_GRID",
+                "BATTERY_BACKUP",
+                "GROUND_FULLY",
+                "CENTRALIZED_FULLY",
+                "GEN_USE_BTR",
+                "GEN_USE",
+                "GRID_USE_BTR",
+                "USE_BTR"
+              ],
+              "example": "DISTRIBUTED_FULLY",
+              "type": "string"
+            },
+            "installationAzimuthAngle": {
+              "format": "double",
+              "type": "number"
+            },
+            "installationTiltAngle": {
+              "format": "double",
+              "type": "number"
+            },
+            "installedCapacity": {
+              "format": "double",
+              "type": "number"
+            },
+            "locationAddress": {
+              "type": "string"
+            },
+            "locationLat": {
+              "description": "station latitude",
+              "format": "double",
+              "type": "number"
+            },
+            "locationLng": {
+              "description": "station Longitude",
+              "format": "double",
+              "type": "number"
+            },
+            "mergeElectricPrice": {
+              "description": "unitPrice（currency/kWh）",
+              "format": "double",
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            },
+            "ownerCompany": {
+              "type": "string"
+            },
+            "ownerName": {
+              "type": "string"
+            },
+            "region": {
+              "$ref": "#/definitions/Region",
+              "properties": {
+                "countryCode": {
+                  "example": "AU",
+                  "type": "string"
+                },
+                "level1": {
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "level2": {
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "level3": {
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "level4": {
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "level5": {
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "nationId": {
+                  "format": "int64",
+                  "type": "integer"
+                },
+                "timezone": {
+                  "description": "station timezone",
+                  "example": "Europe/Istanbul",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "countryCode",
+                "timezone"
+              ],
+              "title": "Region",
+              "type": "object"
+            },
+            "startOperatingTime": {
+              "format": "date-time",
+              "type": "string"
+            },
+            "stationImage": {
+              "type": "string"
+            },
+            "type": {
+              "enum": [
+                "HOUSE_ROOF",
+                "COMMERCIAL_ROOF",
+                "INDUSTRIAL_ROOF",
+                "GROUND"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "currency",
+            "gridInterconnectionType",
+            "installedCapacity",
+            "locationAddress",
+            "locationLat",
+            "locationLng",
+            "name",
+            "region"
+          ],
+          "title": "BaseStationCreateRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseStationCreateRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/station/create",
+    "summary": "Create a station",
+    "tags": [
+      "Station Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/deviceListRequest",
+          "properties": {
+            "page": {
+              "description": "page,default:1",
+              "example": 1,
+              "format": "int32",
+              "type": "integer"
+            },
+            "size": {
+              "description": "size for one page,max:200,default:20",
+              "example": 20,
+              "format": "int32",
+              "type": "integer"
+            },
+            "stationIds": {
+              "description": "stationIds",
+              "example": [
+                322
+              ],
+              "items": {
+                "format": "int64",
+                "type": "integer"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "stationIds"
+          ],
+          "title": "deviceListRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/deviceListRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/station/device",
+    "summary": "Fetch device list of the station in batch",
+    "tags": [
+      "Station Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "accessToken,Example:Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseStationHistoryDataRequest",
+          "properties": {
+            "endAt": {
+              "description": "End date",
+              "example": 2024,
+              "type": "string"
+            },
+            "granularity": {
+              "description": "The granularity of the telemetry data.",
+              "example": 4,
+              "format": "int32",
+              "type": "integer"
+            },
+            "startAt": {
+              "description": "Start date",
+              "example": 2024,
+              "type": "string"
+            },
+            "stationId": {
+              "description": "station ID",
+              "example": 322,
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "granularity",
+            "startAt",
+            "stationId"
+          ],
+          "title": "BaseStationHistoryDataRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseStationHistoryDataRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/station/history",
+    "summary": "Retrieve history data of the station",
+    "tags": [
+      "Station Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "accessToken,Example:Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseStationHistoryPowerRequest",
+          "properties": {
+            "endTimestamp": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "startTimestamp": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "stationId": {
+              "description": "station ID",
+              "example": 322,
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "endTimestamp",
+            "startTimestamp",
+            "stationId"
+          ],
+          "title": "BaseStationHistoryPowerRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseStationHistoryPowerRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/station/history/power",
+    "summary": "Retrieve history data of the station by timestamps in seconds(10-digit)",
+    "tags": [
+      "Station Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseStationRealTimeDataRequest",
+          "properties": {
+            "stationId": {
+              "description": "stationId",
+              "example": 322,
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "stationId"
+          ],
+          "title": "BaseStationRealTimeDataRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseStationRealTimeDataRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/station/latest",
+    "summary": "Fetch latest data of the station",
+    "tags": [
+      "Station Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseStationListRequest",
+          "properties": {
+            "page": {
+              "description": "page,default value is 1",
+              "example": 3,
+              "format": "int32",
+              "type": "integer"
+            },
+            "size": {
+              "description": "size for one page，default value is 20, max value is:200",
+              "example": 50,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "title": "BaseStationListRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseStationListRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/station/list",
+    "summary": "Fetch station list under the account",
+    "tags": [
+      "Station Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseStationWithDeviceListRequest",
+          "properties": {
+            "deviceType": {
+              "enum": [
+                "INVERTER",
+                "COMBINER_BOX",
+                "BATTERY",
+                "WEATHER_STATION",
+                "METER",
+                "AIR_CONDITIONING",
+                "OTHER_TYPE",
+                "HARMONIC_METER",
+                "QUALITY_MONITOR",
+                "SMART_HOME",
+                "SOLAR_TRACKING_CONTROLLER",
+                "SOLAR_RADIATION_SPECTROMETER",
+                "DTU",
+                "REPEATER",
+                "MICRO_INVERTER",
+                "PV_MODULE",
+                "ELECTRIC_SOURCE",
+                "COLLECTOR",
+                "FAN",
+                "WATER_PUMP",
+                "HYBRID_POWER_SYSTEM_CABINET",
+                "STEAM_ENGINE",
+                "EPM",
+                "GAS_METER",
+                "WATER_METER",
+                "SMART_METER",
+                "TYPE_RF_SUB_DEVICE",
+                "TYPE_OFF_GRID_INVERTER",
+                "MECD",
+                "BOX_TRANSFORMER",
+                "SWITCHGEAR",
+                "OPTIMIZER",
+                "DC_CONVERTER",
+                "SURGE_PROTECTION",
+                "FLOW_METER_THERMOMETER",
+                "RELAY_BOX",
+                "FEED_IN_LIMIT",
+                "MICRO_STORAGE_IN_ONE",
+                "OPTIMIZER_CONCENTRATOR"
+              ],
+              "example": "INVERTER",
+              "type": "string"
+            },
+            "page": {
+              "description": "page,default value:1",
+              "example": 3,
+              "format": "int32",
+              "type": "integer"
+            },
+            "size": {
+              "description": "size for one page,default value is 20, max value is:50",
+              "example": 20,
+              "format": "int32",
+              "type": "integer"
+            }
+          },
+          "title": "BaseStationWithDeviceListRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseStationWithDeviceListRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/station/listWithDevice",
+    "summary": "Fetch station list under the account along with its devices",
+    "tags": [
+      "Station Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/BaseDynamicControlRequest",
+          "properties": {
+            "deviceSn": {
+              "type": "string"
+            },
+            "gridChargeAction": {
+              "description": "gridChargeAction has to be one of on;off",
+              "example": "on",
+              "type": "string"
+            },
+            "gridChargeAmpere": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "maxSellPower": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "maxSolarPower": {
+              "format": "int64",
+              "type": "integer"
+            },
+            "solarSellAction": {
+              "description": "solarSellAction has to be one of on;off",
+              "example": "on",
+              "type": "string"
+            },
+            "timeUseSettingItems": {
+              "description": "set the strategy for 6 time intervals.Have to be passed in sequence",
+              "items": {
+                "$ref": "#/definitions/TimeUseSettingItem",
+                "properties": {
+                  "enableGeneration": {
+                    "description": "Want to enableGeneration set true otherwise set false",
+                    "type": "boolean"
+                  },
+                  "enableGridCharge": {
+                    "description": "Want to enableGridCharge set true otherwise set false",
+                    "type": "boolean"
+                  },
+                  "enableSell": {
+                    "description": "Want to enableSell set true otherwise set false",
+                    "type": "boolean"
+                  },
+                  "power": {
+                    "format": "int32",
+                    "type": "integer"
+                  },
+                  "soc": {
+                    "format": "int32",
+                    "type": "integer"
+                  },
+                  "time": {
+                    "type": "string"
+                  },
+                  "voltage": {
+                    "description": "If enabled battery voltage mode, this field should be set.",
+                    "format": "int32",
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "enableGeneration",
+                  "enableGridCharge",
+                  "power",
+                  "time"
+                ],
+                "title": "TimeUseSettingItem",
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "touAction": {
+              "description": "touAction has to be one of on;off",
+              "example": "on",
+              "type": "string"
+            },
+            "touDays": {
+              "description": "If action is on, fill this field with the days of the week you want to switch on",
+              "items": {
+                "enum": [
+                  "MONDAY",
+                  "TUESDAY",
+                  "WEDNESDAY",
+                  "THURSDAY",
+                  "FRIDAY",
+                  "SATURDAY",
+                  "SUNDAY"
+                ],
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "workMode": {
+              "description": "options:SELLING_FIRST;ZERO_EXPORT_TO_LOAD;ZERO_EXPORT_TO_CT",
+              "enum": [
+                "SELLING_FIRST",
+                "ZERO_EXPORT_TO_LOAD",
+                "ZERO_EXPORT_TO_CT",
+                "GREEN_POWER_MODE",
+                "FULL_CHARGE_MODE",
+                "CUSTOMIZED_MODE"
+              ],
+              "example": "SELLING_FIRST",
+              "type": "string"
+            },
+            "zeroExportPower": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "deviceSn"
+          ],
+          "title": "BaseDynamicControlRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/BaseDynamicControlRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/strategy/dynamicControl",
+    "summary": "Dynamic Control",
+    "tags": [
+      "Strategy Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/DynamicReadRequest",
+          "properties": {
+            "deviceSn": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "deviceSn"
+          ],
+          "title": "DynamicReadRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/DynamicReadRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/strategy/dynamicControl/read",
+    "summary": "Read Control",
+    "tags": [
+      "Strategy Operation"
+    ]
+  },
+  {
+    "method": "POST",
+    "parameters": [
+      {
+        "description": "Bearer {token} you get from endpoint /token.e.g.Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9",
+        "in": "header",
+        "name": "authorization",
+        "required": true,
+        "type": "string"
+      },
+      {
+        "description": "request",
+        "in": "body",
+        "name": "request",
+        "required": true,
+        "resolvedSchema": {
+          "$ref": "#/definitions/DynamicReadResultRequest",
+          "properties": {
+            "orderId": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          "title": "DynamicReadResultRequest",
+          "type": "object"
+        },
+        "schema": {
+          "$ref": "#/definitions/DynamicReadResultRequest"
+        }
+      }
+    ],
+    "path": "/v1.0/strategy/dynamicControl/readResult",
+    "summary": "Query the result of current Dynamic Control",
+    "tags": [
+      "Strategy Operation"
+    ]
+  }
+]

@@ -1,6 +1,6 @@
 ---
 name: om-agency
-description: "Úsala para trabajo de O&M en activos de energía distribuida (solar+BESS, EV, monitoreo): diagnóstico de fallas, monitoreo diario de salud de flota con datos reales de Metrum/ThingsBoard, mantenimiento preventivo, reportes de disponibilidad, generación del reporte operativo periódico completo (estilo PPTX, recalculado desde telemetría cruda de Metrum), escalamiento de garantías, mapear un repo/carpeta de documentos como grafo de conocimiento, generar dashboards HTML o diagramas interactivos de arquitectura/flujo, o enseñarle procedimientos nuevos al equipo de especialistas — y para generar los reportes, órdenes de trabajo o checklists correspondientes."
+description: "Úsala para trabajo de O&M en activos de energía distribuida (solar+BESS, EV, monitoreo): diagnóstico de fallas, monitoreo diario de salud de flota con datos reales de Metrum/ThingsBoard, mantenimiento preventivo, reportes de disponibilidad, generación del reporte operativo periódico completo (estilo PPTX, recalculado desde telemetría cruda de Metrum), escalamiento de garantías, consultar o controlar inversores DEYE vía la API de DeyeCloud (estaciones, telemetría, alarmas del fabricante, órdenes de control), mapear un repo/carpeta de documentos como grafo de conocimiento, generar dashboards HTML o diagramas interactivos de arquitectura/flujo, o enseñarle procedimientos nuevos al equipo de especialistas — y para generar los reportes, órdenes de trabajo o checklists correspondientes."
 ---
 
 # Agencia O&M — Operación de Activos de Energía Distribuida (Solar+BESS)
@@ -34,6 +34,11 @@ punto de entrada que alimenta a los otros cuatro operativos.
 
 Si el usuario nombra un especialista directamente ("como líder de diagnóstico de
 fallas..."), adopta ese persona sin enrutar más.
+
+**Equipos DEYE:** cuando haga falta telemetría o alarmas propias del inversor/BMS, o
+**escribir** un parámetro (modo de trabajo, límite de exportación, TOU), cualquier
+especialista usa el **Apéndice B** (API de DeyeCloud) — Metrum es solo lectura para
+inversores. Fuente oficial: https://developer.deyecloud.com/api
 
 ## Paso 2 — Memoria de mapa (Graphify)
 
@@ -670,7 +675,9 @@ Si la plataforma del fabricante requiere permisos de "Device Control"/"Order"
 separados de los de solo-lectura, confirmarlo antes de asumir que la cuenta actual
 puede escribir. Los comandos hacia la nube del fabricante suelen ser asíncronos —
 hay que consultar el estado del comando hasta que confirme éxito antes de reportarlo
-como aplicado.
+como aplicado. **Para inversores DEYE la nube del fabricante es DeyeCloud: ver el
+Apéndice B** (autenticación, endpoints de lectura y de control, y cómo se actualiza
+esa referencia).
 
 ### A.4 — Eventos codificados y estado avanzado
 
@@ -979,6 +986,133 @@ sale en 60%, y una marca distinta sale en un reparto casi aleatorio ~50%) y esa
 diferencia es la señal más fuerte disponible de si el origen es del lado de un
 fabricante específico o no.
 
+## Apéndice B — API de DeyeCloud (inversores DEYE: lectura, alarmas del fabricante y control)
+
+Referencia verificada contra la documentación pública de Deye. Detalle completo y
+siempre al día en `references/deye-cloud/` (`endpoints.md` = catálogo con parámetros,
+`mcp-tools.md`, `changelog.md`, `official-skill/` = skill oficial de Deye).
+
+### B.1 — Fuente oficial y cómo actualizar este apéndice
+
+- Documentación: **https://developer.deyecloud.com/api** · Registrar una app
+  (AppId/AppSecret): https://developer.deyecloud.com/app · Ejemplos de código:
+  https://github.com/DeyeCloudDevelopers/deye-openapi-client-sample-code
+- Esa página es una SPA (un fetch simple devuelve HTML vacío), por eso no se lee
+  directo. Para actualizar: `python3 scripts/update_deye_api.py` (solo informa, sin
+  escribir: `--check`; sale con código 1 si Deye cambió algo). Lee el catálogo OpenAPI
+  y el historial del servidor MCP público de Deye y regenera `references/deye-cloud/`.
+  La fuente única es `references/deye-cloud/sources.json` (campo `docs_url`); ahí
+  también queda `synced` (versiones y fecha de la última sincronización). No requiere
+  credenciales.
+- Corre `--check` cuando un endpoint falle de forma inesperada, antes de implementar
+  escritura real, o si `synced.synced_at` es antiguo. Tras actualizar, revisa si cambió
+  algo de lo descrito en B.2–B.5 y corrígelo aquí.
+
+### B.2 — Regiones y autenticación
+
+| `data_center` | Base URL |
+|---|---|
+| `eu` | `https://eu1-developer.deyecloud.com` |
+| `am` | `https://us1-developer.deyecloud.com` |
+| `india` | `https://india-developer.deyecloud.com` |
+
+La cuenta pertenece a una región. La documentación no indica cuál corresponde a
+Colombia: **no asumirlo** — confirmar con el usuario o probar `am` y luego `eu` hasta
+que el token se obtenga sin error.
+
+```
+POST {base}/v1.0/account/token?appId=<APP_ID>
+Body: {"appSecret": "...", "email": "...", "password": "<SHA-256 hex del password>"}
+→ {"accessToken": "Bearer eyJ…", "expiresIn": <segundos>, "refreshToken": "…",
+   "code": 1000000, "success": true}
+```
+
+- El password va **hasheado con SHA-256** (la doc lo exige: "must be sha256 encrypted").
+- Los demás endpoints llevan `Authorization: Bearer <token>`; el ejemplo de la doc
+  devuelve `accessToken` ya con el prefijo `Bearer ` — no duplicarlo.
+- Éxito = `success: true` y `code: 1000000`. Reutilizar el token mientras no expire.
+- Credenciales solo por variables de entorno (`DEYE_APP_ID`, `DEYE_APP_SECRET`,
+  `DEYE_EMAIL`, `DEYE_PASSWORD`, `DEYE_DATA_CENTER`) o el gestor de secretos del
+  usuario — nunca en archivos de esta skill, chats ni dashboards (ver Notas).
+
+### B.3 — Lectura (todos `POST` con body JSON; paginar siempre)
+
+| Necesidad | Endpoint | Body clave / límites |
+|---|---|---|
+| Estaciones de la cuenta | `/v1.0/station/list` | `page`, `size` (máx 200) |
+| Estaciones con sus equipos | `/v1.0/station/listWithDevice` | `deviceType`, `page`, `size` (máx **50**) |
+| Equipos de una o varias estaciones | `/v1.0/station/device` | `stationIds[]`*, `page`, `size` (máx 200) |
+| Todos los equipos de la cuenta | `/v1.0/device/list` | `page`, `size` (máx 200) |
+| Último dato de equipos | `/v1.0/device/latest` | `deviceList[]`* (**hasta 10 SN** por llamada) |
+| Último dato de una estación | `/v1.0/station/latest` | `stationId`* |
+| Puntos de medida disponibles | `/v1.0/device/measurePoints` | `deviceSn`*, `deviceType` (default INVERTER) |
+| Histórico de equipo | `/v1.0/device/history` | `deviceSn`*, `granularity`*, `startAt`*, `endAt`, `measurePoints[]` |
+| Histórico crudo de equipo | `/v1.0/device/historyRaw` | `deviceSn`*, `startTimestamp`*, `endTimestamp`*, `measurePoints[]`* |
+| Histórico de estación | `/v1.0/station/history` · `/v1.0/station/history/power` | `stationId`*, `granularity`*, `startAt`*, `endAt` · timestamps |
+| Alarmas de equipo | `/v1.0/device/alertList` | `startTimestamp`*, `endTimestamp`*, `deviceSn`, `page`, `size` (máx 100), query `language` |
+| Alarmas de estación | `/v1.0/station/alertList` | `stationId`*, `startTimestamp`*, `endTimestamp`*, `page`, `size` (máx 200) |
+| Configuración actual | `/v1.0/config/battery` · `/system` · `/tou` | `deviceSn`* |
+| Cuenta / organización | `/v1.0/account/info` | — |
+
+`*` = obligatorio. Los timestamps son **Unix en segundos (10 dígitos)**, no milisegundos.
+
+**Gotcha:** el significado de `granularity` (la doc solo muestra el ejemplo `4`) y los
+nombres exactos de `measurePoints` **no están documentados en el catálogo** — no
+asumirlos: obtener los puntos con `/device/measurePoints` y validar `granularity`
+contra la doc oficial o una respuesta real antes de usarlos en un reporte.
+
+**Cómo lo usan los especialistas:** el Monitor de Flota puede contrastar el estado de
+conexión/SOC/potencia por estación con lo que ve en Metrum; el Líder de Diagnóstico
+cruza las alarmas del fabricante (`alertList`) y `device/latest` con los códigos
+F/E/W del inversor; Garantías usa `alertList` con rango de fechas como evidencia para
+un RMA. El `deviceSn` de Deye debe cruzarse con el serial/nombre en Metrum **solo tras
+verificarlo con un equipo conocido** (ver A.8: no asumir convenciones de nombre).
+
+### B.4 — Control (escritura): solo con confirmación explícita
+
+Los endpoints `order/*` **cambian el comportamiento de equipos reales**. Aplican la
+política de A.3, más estas reglas:
+
+1. Antes de escribir, el usuario confirma explícitamente **equipo (SN) + acción +
+   valor**. Sin confirmación → solo lectura.
+2. Leer primero la configuración vigente (`config/battery|system|tou`) y registrar el
+   valor previo para poder revertir.
+3. Un equipo piloto y un solo cambio de bajo riesgo; verificar con `device/latest` y
+   `alertList` en el siguiente ciclo antes de extender a más equipos.
+4. Los comandos son asíncronos: tras enviarlos, consultar `GET /v1.0/order/{orderId}`
+   hasta que el resultado sea concluyente; no reportar "aplicado" antes.
+5. Registrar cada intento en una auditoría propia (Deye no sustituye ese log).
+
+| Acción | Endpoint `/v1.0/order/…` | Valores / campos |
+|---|---|---|
+| Modo de trabajo | `sys/workMode/update` | `workMode`: SELLING_FIRST, ZERO_EXPORT_TO_LOAD, ZERO_EXPORT_TO_CT (micro-almacenamiento: GREEN_POWER_MODE, FULL_CHARGE_MODE, CUSTOMIZED_MODE) |
+| Patrón de energía | `sys/energyPattern/update` | BATTERY_FIRST, LOAD_FIRST |
+| Límite de exportación | `sys/limitControl` | `limitControlFunctionType`: SELL_FIRST, ZERO_EXPORT_TO_UPS_LOAD, ZERO_EXPORT_TO_CT, ZERO_EXPORT_TO_WIRELESS_CT |
+| Potencias máx. | `sys/power/update` | `powerType`: MAX_SELL_POWER, MAX_SOLAR_POWER, ZERO_EXPORT_POWER + `value` (entero; la doc no indica la unidad — confirmarla antes de escribir) |
+| Venta solar | `sys/solarSell/control` | `action`: `on` / `off` |
+| TOU | `sys/tou/switch` · `sys/tou/update` | `action`: `on`/`off` + `days[]` (MONDAY…SUNDAY) · `timeUseSettingItems` |
+| Batería | `battery/modeControl` · `battery/parameter/update` · `battery/type/update` | `action` `on`/`off` + `batteryModeType`: GEN_CHARGE, GRID_CHARGE · `paramterType` (sic): MAX_CHARGE_CURRENT, MAX_DISCHARGE_CURRENT, GRID_CHARGE_AMPERE, BATT_LOW + `value` (entero) · `batteryType` |
+| Recorte de picos de red | `gridPeakShaving/control` | `action`: `on`/`off`, `power` |
+| Smartload | `smartload/update` | `onSOC`, `offSOC`, `onVoltage`, `offVoltage`, `onGridAlwaysOn` |
+| Estrategia dinámica | `/v1.0/strategy/dynamicControl` (+ `/read`, `/readResult`) | varios en un solo comando |
+| **Modbus crudo** | `customControl` | `content`, `timeoutSeconds` — **riesgo máximo: nunca sin instrucción explícita y específica del usuario** |
+
+Valores tomados del catálogo vigente; ante cualquier duda (o campos no listados, p. ej.
+`timeUseSettingItems`, `batteryType`) consulta `references/deye-cloud/endpoints.md` /
+`endpoints.json` en vez de adivinar.
+
+### B.5 — Dos vías de acceso (elige según el entorno)
+
+- **REST directo** (scripts propios o `curl`): lo descrito arriba contra la base URL
+  de la región.
+- **Servidor MCP de Deye** (Streamable HTTP): `https://developer.deyecloud.com/openmcp/mcp`
+  — 51 herramientas (`get_access_token`, `list_stations`, `get_device_latest`,
+  `device_alert_list`, `order_*`, y el genérico `call_deye_api`). Las credenciales se
+  pasan como **argumentos de la herramienta**, nunca en la configuración del servidor
+  (el MCP aplica el SHA-256 del password por ti). Si el cliente ya tiene un servidor
+  `deye_open` configurado, úsalo; los nombres pueden llevar un prefijo del cliente.
+  Guía de uso y seguridad: `references/deye-cloud/official-skill/`.
+
 ## Notas
 
 - Responde al usuario en su propio idioma; mantén la estructura y el rigor de cada
@@ -997,6 +1131,10 @@ fabricante específico o no.
   equipo ya definió a través del Encargado de Entrenamiento y Conocimiento — esas
   reglas del equipo siempre tienen prioridad sobre los valores genéricos de esta guía
   y sobre el Apéndice A.
+- El Apéndice B (DeyeCloud) se mantiene con `scripts/update_deye_api.py` a partir de
+  https://developer.deyecloud.com/api — si el usuario pide "actualiza el skill" o
+  dudas de la vigencia de un endpoint de Deye, ejecútalo (`--check` primero) y
+  reporta qué cambió.
 - Estos siete especialistas son una estructura de partida, no un techo — si una tarea
   necesita otra disciplina (ej. planificación de inventario de repuestos), improvisa
   un especialista nuevo en el mismo estilo en vez de forzarlo dentro de uno de los
