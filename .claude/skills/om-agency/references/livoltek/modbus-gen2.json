@@ -1,0 +1,5290 @@
+{
+ "source": {
+  "title": "Livoltek Gen 2 Energy Storage Inverter External Communication Protocol",
+  "version": "V1.01",
+  "date": "2025-12-23",
+  "pages": 61,
+  "sha256": "59cc138112aa6a5c9f76cfad2a4b33828835702c00bdeb027f4ebbdbe187fecb",
+  "file": "Modbus_LIVOLTEK_Gen_2_Energy_Storage_Inverter_External_Communication_Protocol_V1.01.pdf"
+ },
+ "wire": {
+  "transport": "Modbus RTU (RS485 9600 8N1 por defecto) o Ethernet (192.168.1.100, puerto 8080)",
+  "function_codes": {
+   "0x03": "leer holding",
+   "0x06": "escribir 1 registro",
+   "0x10": "escribir varios registros"
+  },
+  "addressing": "La dirección de la tabla se usa tal cual en la PDU (0xA415 = 42005; 0xA700 = 42752)",
+  "uint32_word_order": "palabra baja primero, luego la alta; bytes alto-bajo dentro de cada palabra",
+  "unsupported": "0xFFFF / 0xFFFFFFFF = el equipo no soporta el registro"
+ },
+ "oper_status": {
+  "0x1000": "on grid",
+  "0x1001": "off grid",
+  "0x1002": "open loop",
+  "0x1003": "scheduling",
+  "0x1004": "charging",
+  "0x1005": "shutdown",
+  "0x1006": "switch off",
+  "0x1007": "emergency stop",
+  "0x1008": "standby",
+  "0x100A": "starting",
+  "0x100B": "alarm",
+  "0x100C": "derating",
+  "0x100D": "fault",
+  "0x100E": "AFCI self-test",
+  "0x100F": "not initial",
+  "0x1010": "initial standby",
+  "0x1012": "forced charging and discharging",
+  "0x1013": "external ems dispatch",
+  "0x1014": "on grid emergency charging",
+  "0x1015": "off grid emergency charging",
+  "0x1017": "diesel generator",
+  "0x1018": "Battery activation charging",
+  "0x1019": "In arrear"
+ },
+ "input_registers": [
+  {
+   "name": "Product Model",
+   "address": 42002,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "Código de modelo: Apéndice 1"
+  },
+  {
+   "name": "device type",
+   "address": 42004,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "1 PV monofásico; 2 PV trifásico; 3 almacenamiento monofásico; 4 almacenamiento trifásico; 5 off-grid monofásico; 6 off-grid trifásico; 7 AC-couple monofásico; 8 AC-couple trifásico; 9 PCS"
+  },
+  {
+   "name": "Rated Reactive Power",
+   "address": 42005,
+   "address_end": null,
+   "type": "uint32",
+   "scale": 0.01,
+   "unit": "kvar",
+   "notes": ""
+  },
+  {
+   "name": "Rated Active Power",
+   "address": 42007,
+   "address_end": null,
+   "type": "uint32",
+   "scale": 0.01,
+   "unit": "kW",
+   "notes": ""
+  },
+  {
+   "name": "Grid standard code",
+   "address": 42014,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "Código de país/norma: Apéndice 2"
+  },
+  {
+   "name": "Device SN",
+   "address": 42021,
+   "address_end": null,
+   "type": "string",
+   "scale": null,
+   "unit": null,
+   "notes": "Longitud no indicada en el PDF"
+  },
+  {
+   "name": "Protocol Ver.",
+   "address": 42102,
+   "address_end": 42103,
+   "type": "uint32",
+   "scale": null,
+   "unit": null,
+   "notes": ""
+  },
+  {
+   "name": "ARM Ver.",
+   "address": 42106,
+   "address_end": 42120,
+   "type": "string",
+   "scale": null,
+   "unit": null,
+   "notes": ""
+  },
+  {
+   "name": "MasterDSP Ver.",
+   "address": 42121,
+   "address_end": 42135,
+   "type": "string",
+   "scale": null,
+   "unit": null,
+   "notes": ""
+  },
+  {
+   "name": "SlaverDSP Ver.",
+   "address": 42136,
+   "address_end": 42136,
+   "type": "string",
+   "scale": null,
+   "unit": null,
+   "notes": "El PDF imprime 42136-42136 (1 registro); probable errata (las otras versiones ocupan 15)"
+  },
+  {
+   "name": "BMS Version",
+   "address": 42151,
+   "address_end": 42165,
+   "type": "string",
+   "scale": null,
+   "unit": null,
+   "notes": ""
+  },
+  {
+   "name": "Load active power",
+   "address": 42504,
+   "address_end": null,
+   "type": "int32",
+   "scale": 1,
+   "unit": "W",
+   "notes": ""
+  },
+  {
+   "name": "Oper. status",
+   "address": 42506,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "Enumeración 0x10xx (ver tabla de estados)"
+  },
+  {
+   "name": "BUS Voltage",
+   "address": 42507,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "PV array Insulation Resistance",
+   "address": 42509,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 1,
+   "unit": "kΩ",
+   "notes": ""
+  },
+  {
+   "name": "SM_Activepowe",
+   "address": 42512,
+   "address_end": null,
+   "type": "int32",
+   "scale": 1,
+   "unit": "W",
+   "notes": "Smart meter, total (el PDF imprime el nombre truncado)"
+  },
+  {
+   "name": "SM_Activepower_L1",
+   "address": 42514,
+   "address_end": null,
+   "type": "int32",
+   "scale": 1,
+   "unit": "W",
+   "notes": "Smart meter, fase 1"
+  },
+  {
+   "name": "SM_Activepower_L2",
+   "address": 42516,
+   "address_end": null,
+   "type": "int32",
+   "scale": 1,
+   "unit": "W",
+   "notes": "Smart meter, fase 2"
+  },
+  {
+   "name": "SM_Activepower_L3",
+   "address": 42518,
+   "address_end": null,
+   "type": "int32",
+   "scale": 1,
+   "unit": "W",
+   "notes": "Smart meter, fase 3"
+  },
+  {
+   "name": "Device Temperature",
+   "address": 42520,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.1,
+   "unit": "°C",
+   "notes": ""
+  },
+  {
+   "name": "Total active power",
+   "address": 42521,
+   "address_end": null,
+   "type": "int32",
+   "scale": 1,
+   "unit": "W",
+   "notes": ""
+  },
+  {
+   "name": "Total Reactive Power",
+   "address": 42523,
+   "address_end": null,
+   "type": "int32",
+   "scale": 1,
+   "unit": "var",
+   "notes": ""
+  },
+  {
+   "name": "Total apparent power",
+   "address": 42525,
+   "address_end": null,
+   "type": "uint32",
+   "scale": 1,
+   "unit": "VA",
+   "notes": ""
+  },
+  {
+   "name": "Total DC Power",
+   "address": 42527,
+   "address_end": null,
+   "type": "int32",
+   "scale": 1,
+   "unit": "W",
+   "notes": ""
+  },
+  {
+   "name": "Total Power Factor",
+   "address": 42529,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.001,
+   "unit": "",
+   "notes": ""
+  },
+  {
+   "name": "grid frequency",
+   "address": 42530,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.01,
+   "unit": "Hz",
+   "notes": ""
+  },
+  {
+   "name": "phase L1 voltage",
+   "address": 42531,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "phase L2 voltage",
+   "address": 42532,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "phase L3 voltage",
+   "address": 42533,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "phase L1 current",
+   "address": 42534,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": ""
+  },
+  {
+   "name": "phase L2 current",
+   "address": 42535,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": ""
+  },
+  {
+   "name": "phase L3 current",
+   "address": 42536,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": ""
+  },
+  {
+   "name": "Solar Energy Daily",
+   "address": 42537,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "kWh",
+   "notes": ""
+  },
+  {
+   "name": "month_pvenergy",
+   "address": 42538,
+   "address_end": null,
+   "type": "uint32",
+   "scale": 0.1,
+   "unit": "kWh",
+   "notes": ""
+  },
+  {
+   "name": "ETotal-Solar",
+   "address": 42542,
+   "address_end": null,
+   "type": "uint32",
+   "scale": 0.1,
+   "unit": "kWh",
+   "notes": ""
+  },
+  {
+   "name": "EToday-ExporttoGrid",
+   "address": 42544,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "kWh",
+   "notes": ""
+  },
+  {
+   "name": "total_export_energy",
+   "address": 42545,
+   "address_end": null,
+   "type": "uint32",
+   "scale": 0.1,
+   "unit": "kWh",
+   "notes": ""
+  },
+  {
+   "name": "EToday-ImportfromGrid",
+   "address": 42547,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "kWh",
+   "notes": ""
+  },
+  {
+   "name": "total_import_energy",
+   "address": 42548,
+   "address_end": null,
+   "type": "uint32",
+   "scale": 0.1,
+   "unit": "kWh",
+   "notes": ""
+  },
+  {
+   "name": "EToday-Load",
+   "address": 42550,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.1,
+   "unit": "kWh",
+   "notes": ""
+  },
+  {
+   "name": "ETotal-Load",
+   "address": 42551,
+   "address_end": null,
+   "type": "int32",
+   "scale": 0.1,
+   "unit": "kWh",
+   "notes": ""
+  },
+  {
+   "name": "PID status",
+   "address": 42568,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "0 inactivo; 2 recuperación PID; 4 protección PID; 8 anomalía PID (el changelog V1.01 dice que se eliminó PID, pero la fila sigue)"
+  },
+  {
+   "name": "PID fault code",
+   "address": 42569,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "0 sin falla; 432; 433; 434"
+  },
+  {
+   "name": "fault number",
+   "address": 42573,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": ""
+  },
+  {
+   "name": "fault 1",
+   "address": 42574,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "Código de falla: Apéndice 3"
+  },
+  {
+   "name": "fault 2",
+   "address": 42575,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "Código de falla: Apéndice 3"
+  },
+  {
+   "name": "fault 3",
+   "address": 42576,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "Código de falla: Apéndice 3"
+  },
+  {
+   "name": "fault 4",
+   "address": 42577,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "Código de falla: Apéndice 3"
+  },
+  {
+   "name": "fault 5",
+   "address": 42578,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "Código de falla: Apéndice 3"
+  },
+  {
+   "name": "fault 6",
+   "address": 42579,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "Código de falla: Apéndice 3"
+  },
+  {
+   "name": "fault 7",
+   "address": 42580,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "Código de falla: Apéndice 3"
+  },
+  {
+   "name": "fault 8",
+   "address": 42581,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "Código de falla: Apéndice 3"
+  },
+  {
+   "name": "fault 9",
+   "address": 42582,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "Código de falla: Apéndice 3"
+  },
+  {
+   "name": "fault 10",
+   "address": 42583,
+   "address_end": null,
+   "type": "uint16",
+   "scale": null,
+   "unit": null,
+   "notes": "Código de falla: Apéndice 3"
+  },
+  {
+   "name": "Total_togrid_time",
+   "address": 42587,
+   "address_end": null,
+   "type": "uint32",
+   "scale": 1,
+   "unit": "h",
+   "notes": ""
+  },
+  {
+   "name": "string voltage 1",
+   "address": 42652,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 1",
+   "address": 42653,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 2",
+   "address": 42654,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 2",
+   "address": 42655,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 3",
+   "address": 42656,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 3",
+   "address": 42657,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 4",
+   "address": 42658,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 4",
+   "address": 42659,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 5",
+   "address": 42660,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 5",
+   "address": 42661,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 6",
+   "address": 42662,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 6",
+   "address": 42663,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 7",
+   "address": 42664,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 7",
+   "address": 42665,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 8",
+   "address": 42666,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 8",
+   "address": 42667,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 9",
+   "address": 42668,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 9",
+   "address": 42669,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 10",
+   "address": 42670,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 10",
+   "address": 42671,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 11",
+   "address": 42672,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 11",
+   "address": 42673,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 12",
+   "address": 42674,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 12",
+   "address": 42675,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 13",
+   "address": 42676,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 13",
+   "address": 42677,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 14",
+   "address": 42678,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 14",
+   "address": 42679,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 15",
+   "address": 42680,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 15",
+   "address": 42681,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 16",
+   "address": 42682,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 16",
+   "address": 42683,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 17",
+   "address": 42684,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 17",
+   "address": 42685,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 18",
+   "address": 42686,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 18",
+   "address": 42687,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 19",
+   "address": 42688,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 19",
+   "address": 42689,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 20",
+   "address": 42690,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 20",
+   "address": 42691,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 21",
+   "address": 42692,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 21",
+   "address": 42693,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 22",
+   "address": 42694,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 22",
+   "address": 42695,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 23",
+   "address": 42696,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 23",
+   "address": 42697,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string voltage 24",
+   "address": 42698,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "string current 24",
+   "address": 42699,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.01,
+   "unit": "A",
+   "notes": "Confirmar soporte de hardware antes de consultar (Apéndice 1)"
+  },
+  {
+   "name": "MPPT1 voltage",
+   "address": 42700,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "MPPT1 current",
+   "address": 42701,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.1,
+   "unit": "A",
+   "notes": ""
+  },
+  {
+   "name": "MPPT2 voltage",
+   "address": 42702,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "MPPT2 current",
+   "address": 42703,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.1,
+   "unit": "A",
+   "notes": ""
+  },
+  {
+   "name": "MPPT3 voltage",
+   "address": 42704,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "MPPT3 current",
+   "address": 42705,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.1,
+   "unit": "A",
+   "notes": ""
+  },
+  {
+   "name": "MPPT4 voltage",
+   "address": 42706,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "MPPT4 current",
+   "address": 42707,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.1,
+   "unit": "A",
+   "notes": ""
+  },
+  {
+   "name": "MPPT5 voltage",
+   "address": 42708,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "MPPT5 current",
+   "address": 42709,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.1,
+   "unit": "A",
+   "notes": ""
+  },
+  {
+   "name": "MPPT6 voltage",
+   "address": 42710,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "MPPT6 current",
+   "address": 42711,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.1,
+   "unit": "A",
+   "notes": ""
+  },
+  {
+   "name": "MPPT7 voltage",
+   "address": 42712,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "MPPT7 current",
+   "address": 42713,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.1,
+   "unit": "A",
+   "notes": ""
+  },
+  {
+   "name": "MPPT8 voltage",
+   "address": 42714,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "MPPT8 current",
+   "address": 42715,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.1,
+   "unit": "A",
+   "notes": ""
+  },
+  {
+   "name": "MPPT9 voltage",
+   "address": 42716,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "MPPT9 current",
+   "address": 42717,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.1,
+   "unit": "A",
+   "notes": ""
+  },
+  {
+   "name": "MPPT10 voltage",
+   "address": 42718,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "MPPT10 current",
+   "address": 42719,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.1,
+   "unit": "A",
+   "notes": ""
+  },
+  {
+   "name": "MPPT11 voltage",
+   "address": 42720,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "MPPT11 current",
+   "address": 42721,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.1,
+   "unit": "A",
+   "notes": ""
+  },
+  {
+   "name": "MPPT12 voltage",
+   "address": 42722,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 0.1,
+   "unit": "V",
+   "notes": ""
+  },
+  {
+   "name": "MPPT12 current",
+   "address": 42723,
+   "address_end": null,
+   "type": "int16",
+   "scale": 0.1,
+   "unit": "A",
+   "notes": ""
+  },
+  {
+   "name": "battery Voltage platform",
+   "address": 44605,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 1,
+   "unit": "V",
+   "notes": "Solo inversores de almacenamiento"
+  },
+  {
+   "name": "battery Total Capacity",
+   "address": 44606,
+   "address_end": null,
+   "type": "uint16",
+   "scale": 1,
+   "unit": "Ah",
+   "notes": "Solo inversores de almacenamiento"
+  },
+  {
+   "name": "Battery Active Power",
+   "address": 42590,
+   "address_end": null,
+   "type": "int32",
+   "scale": 1,
+   "unit": "W",
+   "notes": "Signo no documentado"
+  }
+ ],
+ "holding_registers": [
+  {
+   "name": "system time: year",
+   "address": 42752,
+   "type": "uint16",
+   "range": "2000..2099",
+   "unit": "año",
+   "scale": null,
+   "level": 1,
+   "reason": "Reloj del sistema (reversible; afecta el sello horario de eventos)",
+   "access": "RW"
+  },
+  {
+   "name": "system time: month",
+   "address": 42753,
+   "type": "uint16",
+   "range": "1..12",
+   "unit": "mes",
+   "scale": null,
+   "level": 1,
+   "reason": "Reloj del sistema (reversible; afecta el sello horario de eventos)",
+   "access": "RW"
+  },
+  {
+   "name": "system time: day",
+   "address": 42754,
+   "type": "uint16",
+   "range": "1..31",
+   "unit": "día",
+   "scale": null,
+   "level": 1,
+   "reason": "Reloj del sistema (reversible; afecta el sello horario de eventos)",
+   "access": "RW"
+  },
+  {
+   "name": "system time: hour",
+   "address": 42755,
+   "type": "uint16",
+   "range": "0..23",
+   "unit": "h",
+   "scale": null,
+   "level": 1,
+   "reason": "Reloj del sistema (reversible; afecta el sello horario de eventos)",
+   "access": "RW"
+  },
+  {
+   "name": "system time: minute",
+   "address": 42756,
+   "type": "uint16",
+   "range": "0..59",
+   "unit": "min",
+   "scale": null,
+   "level": 1,
+   "reason": "Reloj del sistema (reversible; afecta el sello horario de eventos)",
+   "access": "RW"
+  },
+  {
+   "name": "system time: second",
+   "address": 42757,
+   "type": "uint16",
+   "range": "0..59",
+   "unit": "s",
+   "scale": null,
+   "level": 1,
+   "reason": "Reloj del sistema (reversible; afecta el sello horario de eventos)",
+   "access": "RW"
+  },
+  {
+   "name": "turn on /shutdown",
+   "address": 42758,
+   "type": "uint16",
+   "range": "0xCE apagar; 0xCF encender",
+   "unit": null,
+   "scale": null,
+   "level": 3,
+   "reason": "Apagado/encendido remoto: mismo criterio que Deye reg 80 (B.5, nivel 3)",
+   "access": "RW"
+  },
+  {
+   "name": "enable emergency shutdown control",
+   "address": 42759,
+   "type": "uint16",
+   "range": "0xAA habilitar; 0x55 deshabilitar",
+   "unit": null,
+   "scale": null,
+   "level": 3,
+   "reason": "Función de seguridad (parada de emergencia): nivel 3",
+   "access": "RW"
+  },
+  {
+   "name": "reboot",
+   "address": 42762,
+   "type": "uint16",
+   "range": "0xAA",
+   "unit": null,
+   "scale": null,
+   "level": 2,
+   "reason": "Reinicio del inversor: nivel 2 (política)",
+   "access": "RW"
+  },
+  {
+   "name": "reboot BMS",
+   "address": 42763,
+   "type": "uint16",
+   "range": "0xAA",
+   "unit": null,
+   "scale": null,
+   "level": 2,
+   "reason": "Reinicio del BMS: nivel 2 (política)",
+   "access": "RW"
+  },
+  {
+   "name": "enable power limit",
+   "address": 43714,
+   "type": "uint16",
+   "range": "0xAA habilitar; 0x55 deshabilitar",
+   "unit": null,
+   "scale": null,
+   "level": 2,
+   "reason": "Límite de potencia (red)",
+   "access": "RW"
+  },
+  {
+   "name": "limit power percent",
+   "address": 43715,
+   "type": "uint16",
+   "range": "0..(registro 42011)",
+   "unit": "%",
+   "scale": 0.1,
+   "level": 2,
+   "reason": "Límite de potencia (red)",
+   "access": "RW"
+  },
+  {
+   "name": "Export to grid (Feed-in) limit mode",
+   "address": 43718,
+   "type": "uint16",
+   "range": "0xA0 sistema; 0xA1 potencia individual",
+   "unit": null,
+   "scale": null,
+   "level": 2,
+   "reason": "Límite de exportación (equivalente a Deye 143/340)",
+   "access": "RW"
+  },
+  {
+   "name": "Export to grid (Feed-in) limit",
+   "address": 43719,
+   "type": "uint16",
+   "range": "0xAA habilitar; 0x55 deshabilitar",
+   "unit": null,
+   "scale": null,
+   "level": 2,
+   "reason": "Límite de exportación",
+   "access": "RW"
+  },
+  {
+   "name": "Max.export power limit",
+   "address": 43720,
+   "type": "uint16",
+   "range": "0..1000",
+   "unit": "%",
+   "scale": 0.1,
+   "level": 2,
+   "reason": "Límite de exportación",
+   "access": "RW"
+  },
+  {
+   "name": "Limit by % or Value",
+   "address": 43736,
+   "type": "uint16",
+   "range": "0xA1 % de potencia nominal; 0xA2 valor de venta",
+   "unit": null,
+   "scale": 1,
+   "level": 2,
+   "reason": "Límite de exportación",
+   "access": "RW"
+  },
+  {
+   "name": "Max.export power limi",
+   "address": 43737,
+   "type": "int32",
+   "range": "0..(registro 42007)",
+   "unit": "kW",
+   "scale": 0.01,
+   "level": 2,
+   "reason": "Límite de exportación (nombre truncado en el PDF)",
+   "access": "RW"
+  },
+  {
+   "name": "PV Active Power Setpoint Feedback",
+   "address": 43742,
+   "type": "uint16",
+   "range": "0..(registro 42007)",
+   "unit": "kW",
+   "scale": 0.01,
+   "level": 2,
+   "reason": "Consigna de potencia activa FV; listada como RW pese a llamarse 'Feedback'",
+   "access": "RW"
+  },
+  {
+   "name": "PF",
+   "address": 43607,
+   "type": "int16",
+   "range": "-1000..-800 y 800..1000",
+   "unit": "",
+   "scale": 0.001,
+   "level": 2,
+   "reason": "Factor de potencia (red)",
+   "access": "RW"
+  },
+  {
+   "name": "SVG",
+   "address": 43602,
+   "type": "uint16",
+   "range": "0xAA habilitar; 0x55 deshabilitar",
+   "unit": null,
+   "scale": null,
+   "level": 2,
+   "reason": "Compensación reactiva (red)",
+   "access": "RW"
+  },
+  {
+   "name": "Reactive control mode",
+   "address": 43605,
+   "type": "uint16",
+   "range": "0x55 cerrado; 0xA1 PF; 0xA2 Qt; 0xA3 Cos φ(P); 0xA4 Q(U)",
+   "unit": null,
+   "scale": null,
+   "level": 2,
+   "reason": "Control reactivo (red)",
+   "access": "RW"
+  },
+  {
+   "name": "QT",
+   "address": 43606,
+   "type": "int16",
+   "range": "-1000..1000",
+   "unit": "%",
+   "scale": 0.1,
+   "level": 2,
+   "reason": "Consigna reactiva (red)",
+   "access": "RW"
+  },
+  {
+   "name": "PID reqair enable",
+   "address": 44002,
+   "type": "enum16",
+   "range": "0xAA habilitar; 0x55 deshabilitar",
+   "unit": null,
+   "scale": null,
+   "level": 1,
+   "reason": "Recuperación PID (nombre 'reqair' como en el PDF). El PDF no imprime el tipo (muestra 'enum16' en la columna de límite inferior): se trata como uint16. El changelog V1.01 dice que PID se eliminó",
+   "access": "RW"
+  },
+  {
+   "name": "qu_curve",
+   "address": 43610,
+   "type": "uint16",
+   "range": "0 curva A; 1 curva B; 2 curva C",
+   "unit": null,
+   "scale": null,
+   "level": 2,
+   "reason": "Curva Q(U) (red)",
+   "access": "RW"
+  },
+  {
+   "name": "qp_curve",
+   "address": 43624,
+   "type": "uint16",
+   "range": "0 curva A; 1 curva B; 2 curva C (reserva)",
+   "unit": null,
+   "scale": null,
+   "level": 2,
+   "reason": "Curva Q(P) (red)",
+   "access": "RW"
+  },
+  {
+   "name": "Control method(meter)",
+   "address": 43721,
+   "type": "uint16",
+   "range": "0 sin medidor; 0xA0 medidor monofásico; 0xA1 trifásico; 0xA4 CT externo; 0xA5 trifásico doble CT",
+   "unit": null,
+   "scale": null,
+   "level": 2,
+   "reason": "Método de control por medidor/CT (determina el límite de exportación)",
+   "access": "RW"
+  },
+  {
+   "name": "Meter/CT flow self-test",
+   "address": 43727,
+   "type": "uint16",
+   "range": "0xAA habilitar; 0x55 deshabilitar",
+   "unit": null,
+   "scale": null,
+   "level": 1,
+   "reason": "Autodiagnóstico de sentido de flujo; efecto no documentado",
+   "access": "RW"
+  },
+  {
+   "name": "watchdog time",
+   "address": 43745,
+   "type": "uint16",
+   "range": "0xAA habilitar; 0x55 deshabilitar",
+   "unit": null,
+   "scale": null,
+   "level": 2,
+   "reason": "Solo inversores de almacenamiento. Nombre dice 'time' pero el rango es habilitar/deshabilitar (inconsistencia del PDF); control remoto con vigilancia",
+   "access": "RW"
+  },
+  {
+   "name": "charge /discharge commands",
+   "address": 43744,
+   "type": "uint16",
+   "range": "(sin enumeración)",
+   "unit": "s",
+   "scale": 1,
+   "level": 2,
+   "reason": "Solo almacenamiento. Despacho remoto de carga/descarga",
+   "access": "RW"
+  },
+  {
+   "name": "charge /discharge max.power",
+   "address": 45004,
+   "type": "uint16",
+   "range": "0xAA cargar; 0xBB descargar; 0xCC detener",
+   "unit": null,
+   "scale": null,
+   "level": 2,
+   "reason": "Solo almacenamiento. Despacho remoto",
+   "access": "RW"
+  },
+  {
+   "name": "target endup SOC",
+   "address": 45005,
+   "type": "uint16",
+   "range": "0..(registro 42031)",
+   "unit": "kW",
+   "scale": 0.01,
+   "level": 2,
+   "reason": "Solo almacenamiento. El PDF alinea el nombre 'target endup SOC' con 45005 pero la unidad 0,01 kW; 45006 no tiene nombre y su unidad es 1 %. Probable desalineación de la tabla: SIN VERIFICAR",
+   "access": "RW"
+  },
+  {
+   "name": "(sin nombre)",
+   "address": 45006,
+   "type": "uint16",
+   "range": "(registro 44904)..(registro 44903)",
+   "unit": "%",
+   "scale": 1,
+   "level": 2,
+   "reason": "Solo almacenamiento. Probable SOC objetivo final (ver nota en 45005): SIN VERIFICAR",
+   "access": "RW"
+  }
+ ],
+ "device_types": [
+  {
+   "model": "GT3-30KT1",
+   "code": "0x8001",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-33KT1",
+   "code": "0x8002",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-36KQ1",
+   "code": "0x8003",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-37K5Q1",
+   "code": "0x8004",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-40KQ1",
+   "code": "0x8005",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-50KQ1",
+   "code": "0x8006",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-15KTL1",
+   "code": "0x800D",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-20KTL1",
+   "code": "0x800E",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-30KT1C",
+   "code": "0x800F",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-25KQL1",
+   "code": "0x8010",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-30KQL1",
+   "code": "0x8011",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT1-3KD2",
+   "code": "0x8007",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT1-3K3D2",
+   "code": "0x8012",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT1-3K6D2",
+   "code": "0x8008",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT1-4KD2",
+   "code": "0x8009",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT1-5KD2",
+   "code": "0x800A",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT1-6KD2",
+   "code": "0x800B",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT1-2K5D2",
+   "code": "0x800C",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT1-7KT2",
+   "code": "0x8013",
+   "mppt": 3,
+   "strings_per_mppt": 3,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT1-8KT2",
+   "code": "0x8014",
+   "mppt": 3,
+   "strings_per_mppt": 3,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT1-9KT2",
+   "code": "0x8015",
+   "mppt": 3,
+   "strings_per_mppt": 3,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT1-10KT2",
+   "code": "0x8016",
+   "mppt": 3,
+   "strings_per_mppt": 3,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-60KQ1",
+   "code": "0x8017",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "HP3-5KD2",
+   "code": "0x8018",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-6KD2",
+   "code": "0x8019",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-8KD2",
+   "code": "0x8020",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-10KD2",
+   "code": "0x8021",
+   "mppt": 2,
+   "strings_per_mppt": 3,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-12KD2",
+   "code": "0x8022",
+   "mppt": 2,
+   "strings_per_mppt": 3,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-15KD2",
+   "code": "0x8023",
+   "mppt": 3,
+   "strings_per_mppt": 5,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-20KT2",
+   "code": "0x8024",
+   "mppt": 3,
+   "strings_per_mppt": 5,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-25KT2",
+   "code": "0x8025",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-30KT2",
+   "code": "0x8026",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "GT1-5KD2C",
+   "code": "0x8027",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "HP3-9.9KD2",
+   "code": "0x8028",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-14.9KT2",
+   "code": "0x8029",
+   "mppt": 3,
+   "strings_per_mppt": 5,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-29.9KT2",
+   "code": "0x802A",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "GT3-50KQM1",
+   "code": "0x802B",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-60KQM1",
+   "code": "0x802C",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-75K-1",
+   "code": "0x802D",
+   "mppt": 8,
+   "strings_per_mppt": 16,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-100K-1",
+   "code": "0x802E",
+   "mppt": 10,
+   "strings_per_mppt": 20,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-110K-1",
+   "code": "0x802F",
+   "mppt": 10,
+   "strings_per_mppt": 20,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-125K-1",
+   "code": "0x8030",
+   "mppt": 10,
+   "strings_per_mppt": 20,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "AES1-3KG1",
+   "code": "0x8031",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "AES1-3K6G1",
+   "code": "0x8032",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "AES1-4K6G1",
+   "code": "0x8033",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "AES1-5KG1",
+   "code": "0x8034",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "AES1-3KEG1",
+   "code": "0x8035",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "AES1-3K6EG1",
+   "code": "0x8036",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "AES1-4K6EG1",
+   "code": "0x8037",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "AES1-5KEG1",
+   "code": "0x8038",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "GT1-7K5T2",
+   "code": "0x8039",
+   "mppt": 3,
+   "strings_per_mppt": 3,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-10KTL1",
+   "code": "0x803A",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-30KTM1",
+   "code": "0x803B",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-36KQM1",
+   "code": "0x803C",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-40KQM1",
+   "code": "0x803D",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "HP1-3KS2",
+   "code": "0x803E",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-3K6S2",
+   "code": "0x803F",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-5KS2",
+   "code": "0x8040",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-6KS2",
+   "code": "0x8041",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-7K5S2",
+   "code": "0x8042",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-8KS2",
+   "code": "0x8043",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-10KS2",
+   "code": "0x8044",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-12KS2",
+   "code": "0x8045",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP3-5KL2",
+   "code": "0x804B",
+   "mppt": 2,
+   "strings_per_mppt": 3,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-6KL2",
+   "code": "0x804C",
+   "mppt": 2,
+   "strings_per_mppt": 3,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-8KL2",
+   "code": "0x804D",
+   "mppt": 3,
+   "strings_per_mppt": 5,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-9.9KL2",
+   "code": "0x804E",
+   "mppt": 3,
+   "strings_per_mppt": 5,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-10KL2",
+   "code": "0x804F",
+   "mppt": 3,
+   "strings_per_mppt": 5,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-12KL2",
+   "code": "0x8050",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-14.9KL2",
+   "code": "0x8051",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-15KL2",
+   "code": "0x8052",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "GT3-110K-11",
+   "code": "0x8053",
+   "mppt": 8,
+   "strings_per_mppt": 16,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-125K-11",
+   "code": "0x8054",
+   "mppt": 8,
+   "strings_per_mppt": 16,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-36KL1",
+   "code": "0x8055",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-40KL1",
+   "code": "0x8056",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-50KL1",
+   "code": "0x8057",
+   "mppt": 6,
+   "strings_per_mppt": 12,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-60KL1",
+   "code": "0x8058",
+   "mppt": 8,
+   "strings_per_mppt": 16,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-75KL1",
+   "code": "0x8059",
+   "mppt": 8,
+   "strings_per_mppt": 16,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-100KM1",
+   "code": "0x805A",
+   "mppt": 10,
+   "strings_per_mppt": 20,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-124KM1",
+   "code": "0x805B",
+   "mppt": 10,
+   "strings_per_mppt": 20,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-125KM1",
+   "code": "0x805C",
+   "mppt": 10,
+   "strings_per_mppt": 20,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-150KM1",
+   "code": "0x805D",
+   "mppt": 10,
+   "strings_per_mppt": 20,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "AES1-3KEL1",
+   "code": "0x805E",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "PCS-75KG1",
+   "code": "0x805F",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "PCS-100KG1",
+   "code": "0x8060",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "PCS-110KG1",
+   "code": "0x8061",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "PCS-125KG1",
+   "code": "0x8062",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "PCS-75KMG1",
+   "code": "0x8063",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "PCS-100KMG1",
+   "code": "0x8064",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "PCS-110KMG1",
+   "code": "0x8065",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "PCS-125KMG1",
+   "code": "0x8066",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "PCS-150KMG1",
+   "code": "0x8067",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "PCS-135KG1",
+   "code": "0x8068",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "PCS-135KMG1",
+   "code": "0x8069",
+   "mppt": 0,
+   "strings_per_mppt": 0,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP1-1K5L2",
+   "code": "0x806A",
+   "mppt": 1,
+   "strings_per_mppt": 1,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-3KL2",
+   "code": "0x806B",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-4KL2",
+   "code": "0x806C",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-5KL2",
+   "code": "0x806D",
+   "mppt": 2,
+   "strings_per_mppt": 4,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-6KL2",
+   "code": "0x806E",
+   "mppt": 2,
+   "strings_per_mppt": 4,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-7K5L2",
+   "code": "0x806F",
+   "mppt": 2,
+   "strings_per_mppt": 4,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-8KL2",
+   "code": "0x8070",
+   "mppt": 2,
+   "strings_per_mppt": 4,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-1K5S2",
+   "code": "0x8071",
+   "mppt": 1,
+   "strings_per_mppt": 1,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-5KS2C",
+   "code": "0x8072",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-7K5S2M",
+   "code": "0x8073",
+   "mppt": 2,
+   "strings_per_mppt": 4,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-8KS2M",
+   "code": "0x8074",
+   "mppt": 2,
+   "strings_per_mppt": 4,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-14KS2",
+   "code": "0x8075",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP1-16KS2",
+   "code": "0x8076",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "GT3-30KD1",
+   "code": "0x8077",
+   "mppt": 2,
+   "strings_per_mppt": 4,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-37K5T1",
+   "code": "0x8078",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-15KDL1",
+   "code": "0x8079",
+   "mppt": 2,
+   "strings_per_mppt": 4,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-20KDL1",
+   "code": "0x807A",
+   "mppt": 2,
+   "strings_per_mppt": 4,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-25KDL1",
+   "code": "0x807B",
+   "mppt": 2,
+   "strings_per_mppt": 4,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-30KTL1",
+   "code": "0x807C",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "GT3-75K-12",
+   "code": "0x807D",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "GT3-75K-11",
+   "code": "0x807E",
+   "mppt": 6,
+   "strings_per_mppt": 12,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "GT3-100K-12",
+   "code": "0x807F",
+   "mppt": 6,
+   "strings_per_mppt": 12,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "GT3-100K-11",
+   "code": "0x8080",
+   "mppt": 8,
+   "strings_per_mppt": 16,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "GT3-110K-12",
+   "code": "0x8081",
+   "mppt": 6,
+   "strings_per_mppt": 12,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "GT3-50KL11",
+   "code": "0x8082",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "GT3-60KL12",
+   "code": "0x8083",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "GT3-60KL11",
+   "code": "0x8084",
+   "mppt": 6,
+   "strings_per_mppt": 12,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "GT3-75KL11",
+   "code": "0x8085",
+   "mppt": 6,
+   "strings_per_mppt": 12,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "GT3-100KM11",
+   "code": "0x8086",
+   "mppt": 8,
+   "strings_per_mppt": 16,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "GT3-124KM11",
+   "code": "0x8087",
+   "mppt": 8,
+   "strings_per_mppt": 16,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "GT3-125KM11",
+   "code": "0x8088",
+   "mppt": 8,
+   "strings_per_mppt": 16,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "GT3-36KL11",
+   "code": "0x8089",
+   "mppt": 6,
+   "strings_per_mppt": 12,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "GT3-40KL11",
+   "code": "0x808A",
+   "mppt": 6,
+   "strings_per_mppt": 12,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "GF1-3K6S2",
+   "code": "0x808B",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "GF1-6KS2",
+   "code": "0x808C",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "GF1-8KS2",
+   "code": "0x808D",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "GF1-11KS2",
+   "code": "0x808E",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "GF1-12KS2",
+   "code": "0x808F",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "GF1-16KS2",
+   "code": "0x8090",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "AC3-8KD2",
+   "code": "0x8091",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "AC3-10KD2",
+   "code": "0x8092",
+   "mppt": 2,
+   "strings_per_mppt": 3,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "HP3-40KS1",
+   "code": "0x8093",
+   "mppt": 5,
+   "strings_per_mppt": 10,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "HP3-50KS1",
+   "code": "0x8094",
+   "mppt": 5,
+   "strings_per_mppt": 10,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "HP3-60KS1",
+   "code": "0x8095",
+   "mppt": 5,
+   "strings_per_mppt": 10,
+   "category": "sin categoría en la lista de la página 1"
+  },
+  {
+   "model": "HP3-8KS1LV",
+   "code": "0x8096",
+   "mppt": 1,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-10KS1LV",
+   "code": "0x8097",
+   "mppt": 1,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-12KS1LV",
+   "code": "0x8098",
+   "mppt": 2,
+   "strings_per_mppt": 3,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-15KS1LV",
+   "code": "0x8099",
+   "mppt": 2,
+   "strings_per_mppt": 3,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "GF1-7K5S2M",
+   "code": "0x809A",
+   "mppt": 2,
+   "strings_per_mppt": 4,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "GF1-8KS2M",
+   "code": "0x809B",
+   "mppt": 2,
+   "strings_per_mppt": 4,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "GT3-37K5QL1",
+   "code": "0x809C",
+   "mppt": 4,
+   "strings_per_mppt": 8,
+   "category": "red (PV conectado a red)"
+  },
+  {
+   "model": "HES1-3KS2",
+   "code": "0x809D",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HES1-3K6S2",
+   "code": "0x809E",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HES1-5KS2",
+   "code": "0x809F",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HES1-6KS2",
+   "code": "0x80A0",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  },
+  {
+   "model": "HP3-15KM2",
+   "code": "0x80A1",
+   "mppt": 3,
+   "strings_per_mppt": 5,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-20KM2158",
+   "code": "0x80A2",
+   "mppt": 3,
+   "strings_per_mppt": 5,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-25KM2159",
+   "code": "0x80A3",
+   "mppt": 3,
+   "strings_per_mppt": 5,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-30KM2160",
+   "code": "0x80A4",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HP3-36KM2",
+   "code": "0x80A5",
+   "mppt": 3,
+   "strings_per_mppt": 6,
+   "category": "almacenamiento trifásico"
+  },
+  {
+   "model": "HES1-5K5S2",
+   "code": "0x80A6",
+   "mppt": 2,
+   "strings_per_mppt": 2,
+   "category": "almacenamiento monofásico"
+  }
+ ],
+ "countries": [
+  {
+   "code": 0,
+   "country": "China (CQC)",
+   "regulation": "CQC",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 1,
+   "country": "Germany (VDE-AR-N 4105)",
+   "regulation": "VDE-AR-N 4105",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 2,
+   "country": "United Kingdom (G83/G59)",
+   "regulation": "G83/G59",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 3,
+   "country": "Australia_A (AS/NZS 4777)",
+   "regulation": "AS/NZS 4777",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 4,
+   "country": "NewZealand (AS/NZS 4777)",
+   "regulation": "AS/NZS 4777",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 5,
+   "country": "France_50Hz (UTE C 15-712)",
+   "regulation": "UTE C 15-712",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 6,
+   "country": "Spain (RD 1699/244 &UNE&NTS)",
+   "regulation": "RD 1699/244 &UNE&NTS",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 7,
+   "country": "Italy (CEI 0-21 & CEI 0-21-Bbis)",
+   "regulation": "CEI 0-21 & CEI 0-21-Bbis",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 8,
+   "country": "Netherlands (EN 50549)",
+   "regulation": "EN 50549",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 9,
+   "country": "Belgium (C10/11)",
+   "regulation": "C10/11",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 10,
+   "country": "Ireland (EN 50549-1)",
+   "regulation": "EN 50549-1",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 11,
+   "country": "France_60Hz (UTE C 15-712-1)",
+   "regulation": "UTE C 15-712- 1",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 60
+  },
+  {
+   "code": 12,
+   "country": "General (IEC 61727)",
+   "regulation": "IEC 61727",
+   "v_normal": "230",
+   "v_low": "127",
+   "freq_hz": 50
+  },
+  {
+   "code": 13,
+   "country": "Czech (EN 50549)",
+   "regulation": "EN 50549",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 14,
+   "country": "France_M50Hz (UTE C 15-712-1)",
+   "regulation": "UTE C 15-712- 1",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 15,
+   "country": "Unitied Kingdom (G99)",
+   "regulation": "G99",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 16,
+   "country": "South Africa (NRS 097-2-1)",
+   "regulation": "NRS 097-2-1",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 17,
+   "country": "PAIOnly (R&D)",
+   "regulation": "R&D",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 18,
+   "country": "EN50549 (EN 50549-1)",
+   "regulation": "EN 50549-1",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 19,
+   "country": "Unitied Kingdom (G100)",
+   "regulation": "G100",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 20,
+   "country": "Brazil (ABNT NBR 16149/16150)",
+   "regulation": "ABNT NBR 16149/16150",
+   "v_normal": "220",
+   "v_low": "127",
+   "freq_hz": 60
+  },
+  {
+   "code": 21,
+   "country": "Mexico (IEEE 1547)",
+   "regulation": "IEEE 1547",
+   "v_normal": "220",
+   "v_low": "",
+   "freq_hz": 60
+  },
+  {
+   "code": 22,
+   "country": "Poland (EN 50549)",
+   "regulation": "EN 50549",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 23,
+   "country": "Luxembourg (EN 50549)",
+   "regulation": "EN 50549",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 24,
+   "country": "Thailand (PEA)",
+   "regulation": "PEA",
+   "v_normal": "220",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 25,
+   "country": "Thailand (MEA)",
+   "regulation": "MEA",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 26,
+   "country": "Australia_B (AS/NZS 4777.2)",
+   "regulation": "AS/NZS 4777.2",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 27,
+   "country": "Australia_C (AS/NZS 4777.2)",
+   "regulation": "AS/NZS 4777.2",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 28,
+   "country": "Portugal (EN 50549)",
+   "regulation": "EN 50549",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 29,
+   "country": "Romania (EN 50549)",
+   "regulation": "EN 50549",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 30,
+   "country": "Austria (TOR Erzeuger OVE-Richtlinie R 25)",
+   "regulation": "OVE-Richtlinie",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 31,
+   "country": "General_60Hz (IEC61727)",
+   "regulation": "IEC61727",
+   "v_normal": "230",
+   "v_low": "127",
+   "freq_hz": 60
+  },
+  {
+   "code": 32,
+   "country": "Unitied Kingdom (G98)",
+   "regulation": "G98",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 33,
+   "country": "North Ireland (G98-NI)",
+   "regulation": "G98-NI",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 34,
+   "country": "North Ireland (G99-NI)",
+   "regulation": "G99-NI",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 35,
+   "country": "Colombia (IEC61727)",
+   "regulation": "IEC61727",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 60
+  },
+  {
+   "code": 36,
+   "country": "Brazil (Ordinance No. 140)",
+   "regulation": "Ordinance No. 140",
+   "v_normal": "220",
+   "v_low": "127",
+   "freq_hz": 60
+  },
+  {
+   "code": 37,
+   "country": "Chile(SEC 32427)",
+   "regulation": "SEC 32427",
+   "v_normal": "220",
+   "v_low": "127",
+   "freq_hz": 50
+  },
+  {
+   "code": 38,
+   "country": "EN50549 (EN 50549-10)",
+   "regulation": "EN 50549-10",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": 39,
+   "country": "Other_50Hz",
+   "regulation": "Other_50Hz",
+   "v_normal": "230",
+   "v_low": "127",
+   "freq_hz": 50
+  },
+  {
+   "code": 40,
+   "country": "Other_60Hz",
+   "regulation": "Other_60Hz",
+   "v_normal": "230",
+   "v_low": "127",
+   "freq_hz": 60
+  },
+  {
+   "code": 41,
+   "country": "Ukraine (EN50549-1)",
+   "regulation": "EN50549-1",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": null,
+   "country": "Hungary (EN50549-1)",
+   "regulation": "EN50549-1",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": null,
+   "country": "Sweden (EN50549-1)",
+   "regulation": "EN50549-1",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": null,
+   "country": "Genset_50Hz",
+   "regulation": "Genset_50Hz",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": null,
+   "country": "Genset_60Hz",
+   "regulation": "Genset_60Hz",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": null,
+   "country": "Poland (TypeB-sN)",
+   "regulation": "PTPiREE 2024-10-01 (bn_2024-10-01)",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": null,
+   "country": "Poland (TypeB-nN)",
+   "regulation": "PTPiREE 2024-10-01 (bn_2024-10-01)",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": null,
+   "country": "Poland (TypeA)",
+   "regulation": "PTPiREE 2024-10-01 (bn_2024-10-01)",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50
+  },
+  {
+   "code": null,
+   "country": "Sovakia (TypeA)",
+   "regulation": "Techinical codintions of the distribution system operator (texto tal cual del PDF)",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50,
+   "note": "El PDF escribe 'Sovakia' (Eslovaquia)"
+  },
+  {
+   "code": null,
+   "country": "Sovakia (TypeB)",
+   "regulation": "Techinical codintions of the distribution system operator (texto tal cual del PDF)",
+   "v_normal": "230",
+   "v_low": "",
+   "freq_hz": 50,
+   "note": "El PDF escribe 'Sovakia' (Eslovaquia)"
+  }
+ ],
+ "faults": [
+  {
+   "code": 1,
+   "name": "Grid Overvoltage",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 2,
+   "name": "Grid Overvoltage",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 3,
+   "name": "Grid Undervolt",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 4,
+   "name": "Grid Undervolt",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 5,
+   "name": "reverse connection fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 6,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 7,
+   "name": "Grid Overfrequency",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 8,
+   "name": "Grid Underfrequency",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 9,
+   "name": "Grid Power Loss",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 10,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 11,
+   "name": "Exceeds",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 12,
+   "name": "Grid Abnormal",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 13,
+   "name": "Grid Overvoltage",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 14,
+   "name": "Grid Overvoltage",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 15,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 16,
+   "name": "Grid Volt Imbalance",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 17,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 18,
+   "name": "System fault",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 21,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 22,
+   "name": "System fault",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 23,
+   "name": "PE Abnormal",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 24,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 25,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 26,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 27,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 28,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 29,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 30,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 33,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 34,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 35,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 36,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 37,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 38,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 39,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 40,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 41,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 42,
+   "name": "MPPT reverse connection fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 43,
+   "name": "MPPT reverse connection fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 44,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 45,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 46,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 47,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 48,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 49,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 50,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 51,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 52,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 53,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 54,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 55,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 56,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 57,
+   "name": "MPPT reverse connection fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 58,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 59,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 60,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 61,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 62,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 63,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 64,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 65,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 66,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 67,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 68,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 69,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 71,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 72,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 73,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 74,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 75,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 76,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 77,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 78,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 79,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 80,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 81,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 82,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 83,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 84,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 85,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 86,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 89,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 90,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 91,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 92,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 97,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 98,
+   "name": "Environmental Temp Too High",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 99,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 100,
+   "name": "Insulation",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 101,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 102,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 103,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 104,
+   "name": "Environmental Temp Too Low",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 105,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 106,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 107,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 108,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 109,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 110,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 111,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 112,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 113,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 114,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 115,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 116,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 117,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 118,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 119,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 120,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 121,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 122,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 123,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 124,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 125,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 126,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 127,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 128,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 129,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 130,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 131,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 132,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 133,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 134,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 135,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 136,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 137,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 138,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 139,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 140,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 141,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 142,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 143,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 147,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 161,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 162,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 163,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 165,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 167,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 168,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 169,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 170,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 171,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 172,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 173,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 174,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": true
+  },
+  {
+   "code": 175,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 176,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 177,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 178,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 179,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 180,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 181,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 182,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 183,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 184,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 185,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 186,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 187,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 188,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 189,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 190,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 192,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 194,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 195,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 197,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 198,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 199,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 200,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 201,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 202,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 203,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 204,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 205,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 206,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 207,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 208,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 209,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 210,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 211,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 212,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 213,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 214,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 215,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 226,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 227,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 228,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 229,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 230,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 231,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 232,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 233,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 234,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 235,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 236,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 257,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 258,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 261,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 262,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 263,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 265,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 269,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 273,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 277,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 281,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 321,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 324,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 332,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 333,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 335,
+   "name": "Communication",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 336,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 337,
+   "name": "Battery Reverse Polarity Fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 353,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 354,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 419,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 422,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 423,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 424,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 425,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 426,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 427,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 428,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 429,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 430,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 449,
+   "name": "MPPT reverse connection fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 450,
+   "name": "MPPT reverse connection fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 451,
+   "name": "MPPT reverse connection fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 452,
+   "name": "MPPT reverse connection fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 453,
+   "name": "MPPT reverse connection fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 454,
+   "name": "MPPT reverse connection fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 455,
+   "name": "MPPT reverse connection fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 513,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 514,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 515,
+   "name": "Sstem warm",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 516,
+   "name": "AFCI fault",
+   "type": "fault",
+   "single_phase_pv": true,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 517,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 518,
+   "name": "Communication",
+   "type": "warn",
+   "single_phase_pv": true,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 519,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 520,
+   "name": "Fan warn",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 521,
+   "name": "Fan warn",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": true,
+   "energy_storage": false
+  },
+  {
+   "code": 522,
+   "name": "Fan warn",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": false
+  },
+  {
+   "code": 523,
+   "name": "Electricity Meter Reversed",
+   "type": "warn",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 524,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 525,
+   "name": "System fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 526,
+   "name": "Fire alarm",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 527,
+   "name": "Fire alarm",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 528,
+   "name": "Fire alarm",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 529,
+   "name": "Fire alarm",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 530,
+   "name": "Fire alarm",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 531,
+   "name": "Fire alarm",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 532,
+   "name": "Fire alarm",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 533,
+   "name": "Fire alarm",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 545,
+   "name": "Battery warn",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 546,
+   "name": "Battery warn",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 547,
+   "name": "Battery warn",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 548,
+   "name": "Battery warn",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 549,
+   "name": "Battery warn",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 550,
+   "name": "Battery warn",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 551,
+   "name": "Battery warn",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 552,
+   "name": "Battery warn",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 553,
+   "name": "Battery warn",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 577,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 578,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 579,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 580,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 581,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 582,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 583,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 584,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 585,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 586,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 587,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 588,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 589,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 590,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 591,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 592,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  },
+  {
+   "code": 593,
+   "name": "Battery fault",
+   "type": "fault",
+   "single_phase_pv": false,
+   "three_phase_pv": false,
+   "energy_storage": true
+  }
+ ],
+ "verification_errors": []
+}
