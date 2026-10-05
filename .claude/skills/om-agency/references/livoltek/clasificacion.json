@@ -1,0 +1,252 @@
+{
+  "_comentario": "Datos CURADOS que no salen de la documentación de Livoltek. update_livoltek_api.py los combina con lo extraído del bundle y los conserva al regenerar. Clave = id del nodo del árbol lateral de la doc. kind: 'lectura' o 'control'. nivel_b5: nivel de la política de comandos de SKILL.md (0 = lectura). Todo lo de aquí es 'verificado_en_vivo: false' hasta que se pruebe con la cuenta real. Un endpoint nuevo que no esté aquí queda 'sin_clasificar' y el adaptador lo trata como NO escribible.",
+  "version_doc_clasificada": "v1.6.0",
+  "clasificado_el": "2026-10-05",
+  "endpoints": {
+    "userLoginAndToken": {
+      "kind": "lectura", "nivel_b5": 0,
+      "notas": ["Autenticación: no cambia nada en los equipos. Es el único endpoint sin cabecera Authorization ni userToken; el token devuelto (data.data) se usa en la cabecera Authorization del resto."],
+      "incoherencias_de_la_doc": ["La URL se escribe «hess/api /login» (espacio y sin barra inicial).", "La tabla de respuesta tiene erratas (mssage, messgae, tring) y repite data."]
+    },
+    "siteList": {
+      "kind": "lectura", "nivel_b5": 0,
+      "notas": ["size solo admite 5, 10 (por defecto) o 30; page empieza en 1.", "Con userType=1 (agente) se espera ver los sitios de los clientes de la cuenta de agente: sin verificar."],
+      "incoherencias_de_la_doc": ["active se pide con 0/1 pero la respuesta lo describe como 2/3.", "El ejemplo mezcla espacios en los parámetros (sortField= pvCapacity): codificar la URL."]
+    },
+    "deviceList": {
+      "kind": "lectura", "nivel_b5": 0,
+      "notas": ["Devuelve id (número de equipo), inverterSn (SN de cualquier equipo: inversor, cargador, colector), productType y deviceManufacturer. size solo 5, 10 o 30."]
+    },
+    "currentPowerFlow": {
+      "kind": "lectura", "nivel_b5": 0,
+      "notas": ["Fuente de bat_power_w, pv_power_w, load_power_w, grid_power_w y soc_pct del adaptador."],
+      "incoherencias_de_la_doc": [
+        "La descripción dice «parameter unit (W)» pero el ejemplo trae 0.006 y -0.156, que parecen kW. Unidad SIN VERIFICAR.",
+        "En el ejemplo energyPower = -0.156 con energyStatus = disCharging: sugiere + = carga y − = descarga. Signo SIN VERIFICAR.",
+        "pvStatus, powerGridStatus y loadStatus figuran como «Under developing» y llegan null en el ejemplo; sin medidor no hay datos de red."
+      ]
+    },
+    "deviceGenerationOrConsumption": {
+      "kind": "lectura", "nivel_b5": 0,
+      "notas": ["Se llama con deviceId (el id numérico de device/{siteId}/list), NO con el SN. Contadores acumulados (kWh)."]
+    },
+    "siteDetails": {
+      "kind": "lectura", "nivel_b5": 0,
+      "incoherencias_de_la_doc": ["powerStationType se documenta con códigos 1-4 pero el ejemplo devuelve texto localizado (chino).", "powerStationStatus es entero en la tabla y cadena en el ejemplo."]
+    },
+    "siteInstaller": {"kind": "lectura", "nivel_b5": 0},
+    "siteGenerationOverview": {
+      "kind": "lectura", "nivel_b5": 0,
+      "notas": ["Fuente de las energías diaria, mensual, anual y de vida del sitio (kWh según la tabla)."],
+      "incoherencias_de_la_doc": ["El ejemplo escribe etotalToGrid y la tabla eTotalToGrid."]
+    },
+    "siteHistoricalPowerFlow": {
+      "kind": "lectura", "nivel_b5": 0,
+      "ventanas": ["startTime debe estar dentro de los últimos 7 días (doc). Marcas de tiempo en milisegundos (13 dígitos)."],
+      "notas": ["pointInterval: 0 = cada 5 min, 1 = cada 10 min (por defecto), 2 = cada 15 min."],
+      "incoherencias_de_la_doc": [
+        "La prosa dice «unit (W)» pero la tabla de campos dice «Unit: kW». Unidad SIN VERIFICAR.",
+        "userToken es obligatorio en la tabla pero el ejemplo no lo incluye; el ejemplo también escribe «pointInterval =1» con espacio.",
+        "pointInterval 1 y 2 llevan una marca «(No)» sin explicar (¿no soportados?)."
+      ]
+    },
+    "siteHistoricalActivePower": {
+      "kind": "lectura", "nivel_b5": 0,
+      "ventanas": ["startTime debe estar dentro de los últimos 7 días (doc)."],
+      "incoherencias_de_la_doc": ["La prosa dice «unit (W)» y la tabla «Unit: kW».", "El ejemplo omite userToken, que la tabla da como obligatorio."]
+    },
+    "deviceHistoricalAlarm": {
+      "kind": "lectura", "nivel_b5": 0,
+      "ventanas": ["Alarmas de los últimos 7 días; startTime y endTime con formato yyyy-MM-dd."],
+      "incoherencias_de_la_doc": [
+        "La línea URL dice /hess/api/device/{siteId}/{serialNumber}/alarm pero el ejemplo usa /hess/api/site/123/SN10203/alarm. El adaptador usa la ruta de la línea URL; CONFIRMAR EN VIVO.",
+        "serialNumber figura como Integer en la tabla (es el SN, texto). page tiene valor por defecto 0 en la tabla y 1 en el ejemplo.",
+        "alarmType se documenta como Notice/fault pero el ejemplo devuelve «0»; alarmStatus llega null («Under developing»)."
+      ]
+    },
+    "siteSocialContribution": {
+      "kind": "lectura", "nivel_b5": 0,
+      "incoherencias_de_la_doc": ["siteId no está en la tabla de parámetros y el ejemplo deja {siteId} sin sustituir."]
+    },
+    "storageInformation": {
+      "kind": "lectura", "nivel_b5": 0,
+      "ventanas": ["historyMap trae potencia, tensión y SOC de los últimos 7 días y la carga/descarga diaria de esos 7 días (doc)."],
+      "notas": ["Ruta ESS en mayúsculas: /hess/api/site/{siteId}/ESS. Capacidad BMS en Ah."],
+      "incoherencias_de_la_doc": ["Erratas: energyVolage; el ejemplo muestra currentSoc que la tabla no lista; el JSON de ejemplo está mal formado.", "batterySn y cycleCount figuran como «underdeveloping»."]
+    },
+    "deviceDetails": {
+      "kind": "lectura", "nivel_b5": 0,
+      "notas": ["runningStatus: 0 Normal, 1 Standby, 2 Fault, 3 Offline, 4 Self-test, 5 Upgrading. Es el endpoint del ejemplo device/527/SN123456/details."],
+      "incoherencias_de_la_doc": ["device/basicData devuelve runningStatus como texto («Offline») y aquí se documenta como código numérico.", "El ejemplo anida runningStatusVoMap, que la tabla no describe."]
+    },
+    "deviceTechnical": {
+      "kind": "lectura", "nivel_b5": 0,
+      "ventanas": ["Últimos 7 días; muestras cada 5 minutos; startTime y endTime opcionales con formato yyyy-MM-dd HH:mm:ss (codificar el espacio)."],
+      "notas": ["La respuesta viene agrupada por día: data = {marca_de_tiempo_del_día: [muestras]}.", "Unidades de las magnitudes NO documentadas: SIN VERIFICAR."],
+      "incoherencias_de_la_doc": [
+        "Las descripciones de rCurrent, sVoltage, sCurrent, tVoltage y tCurrent están desplazadas (p. ej. rCurrent = «PhaseB voltage»). No fiarse de la descripción: confirmar fase por fase en vivo.",
+        "El ejemplo de respuesta usa claves en minúscula (rvoltage, rcurrent…) y la tabla en camelCase; leer sin distinguir mayúsculas.",
+        "Los ejemplos de URL contienen espacios sin codificar y la errata girdFrequency."
+      ]
+    },
+    "siteHistoricalSolar": {
+      "kind": "lectura", "nivel_b5": 0,
+      "ventanas": [
+        "timeType 0 (día) o 1 (semana): inicio y fin dentro de los últimos 2 años.",
+        "timeType 0: intervalo ≤ 31 días. timeType 1: intervalo ≤ 180 días.",
+        "timeType 2 (mes) y 3 (año): la doc no fija límite (SIN VERIFICAR)."
+      ],
+      "incoherencias_de_la_doc": ["El ejemplo de URL está mal formado (/site/527/SN123456？userToken…) y no coincide con /site/{siteId}/solarEnergy.", "La unidad de powerGeneration no está documentada."]
+    },
+    "siteHistoricalGrid": {
+      "kind": "lectura", "nivel_b5": 0,
+      "ventanas": [
+        "timeType 0 (día) o 1 (semana): inicio y fin dentro de los últimos 2 años.",
+        "timeType 0: intervalo ≤ 31 días. timeType 1: intervalo ≤ 180 días.",
+        "timeType 2 (mes) y 3 (año): la doc no fija límite (SIN VERIFICAR)."
+      ],
+      "notas": ["Ruta utilityEnergy: positive = importación de la red, negative = exportación; powerGeneration en etotalToGrid."],
+      "incoherencias_de_la_doc": [
+        "La descripción habla de Wh pero los ejemplos (47.2) parecen kWh. Unidad SIN VERIFICAR.",
+        "El ejemplo escribe «negetive» y la tabla «negative»; el ejemplo de URL termina en «&userType» sin valor.",
+        "endTime figura como obligatorio y a la vez «option, default (current day)»."
+      ]
+    },
+    "chargingStationCreation": {
+      "kind": "control", "nivel_b5": 2, "ejecutar_en_pruebas": false,
+      "notas": ["Familia de cargadores EV: nivel 2 por decisión del usuario. Exige account + pwd (MD5) en el cuerpo, que NO están en las variables de entorno."]
+    },
+    "chargingStationQuery": {
+      "kind": "control", "nivel_b5": 2, "ejecutar_en_pruebas": false,
+      "notas": ["Solo consulta, pero se clasifica con la familia EV (control, nivel 2) por decisión del usuario y porque exige account + pwd."]
+    },
+    "chargingStationUpdate": {
+      "kind": "control", "nivel_b5": 2, "ejecutar_en_pruebas": false,
+      "notas": ["Familia de cargadores EV: nivel 2. Exige account + pwd."]
+    },
+    "chargingStationDeletion": {
+      "kind": "control", "nivel_b5": 2, "ejecutar_en_pruebas": false,
+      "notas": ["Familia de cargadores EV: nivel 2; destructivo (disable). Exige account + pwd."]
+    },
+    "chargingDeviceCreation": {
+      "kind": "control", "nivel_b5": 2, "ejecutar_en_pruebas": false,
+      "notas": ["Familia de cargadores EV: nivel 2. Exige account + pwd."]
+    },
+    "chargingDeviceQuery": {
+      "kind": "control", "nivel_b5": 2, "ejecutar_en_pruebas": false,
+      "notas": ["Solo consulta, pero se clasifica con la familia EV (control, nivel 2) y exige account + pwd."],
+      "incoherencias_de_la_doc": ["La tabla usa pageSize/start y el ejemplo page/size; el ejemplo de cuerpo tiene una coma final (JSON inválido)."]
+    },
+    "chargingDeviceDelete": {
+      "kind": "control", "nivel_b5": 2, "ejecutar_en_pruebas": false,
+      "notas": ["Familia de cargadores EV: nivel 2; destructivo (disable). Exige account + pwd."]
+    },
+    "chargingRecordQuery": {
+      "kind": "control", "nivel_b5": 2, "ejecutar_en_pruebas": false,
+      "notas": ["Solo consulta de historial de cargas, pero se clasifica con la familia EV (nivel 2) y exige account + pwd."],
+      "incoherencias_de_la_doc": ["La línea URL dice /hess/api/chargeRecord y el ejemplo /hess/api/chargeDevice/chargeRecord."]
+    },
+    "chargingStationStartOrStop": {
+      "kind": "control", "nivel_b5": 2, "ejecutar_en_pruebas": false,
+      "notas": ["chargeCommandDown: inicia o detiene una carga. Acción física sobre el cargador. Exige account + pwd."]
+    },
+    "chargingScheduleSettings": {
+      "kind": "control", "nivel_b5": 2, "ejecutar_en_pruebas": false,
+      "notas": ["chargeSchedule: un solo horario por día; uno repetido sobrescribe el anterior (doc). Exige account + pwd."]
+    },
+    "mqttPushDeviceAlarm": {
+      "kind": "lectura", "nivel_b5": 0, "implementado": false,
+      "notas": ["Solo documentado. Suscripción MQTT: mqtt://api.livoltek-portal.com:1883 (International) o mqtt://api-eu.livoltek-portal.com:1883 (Europa). Usuario y clave se piden por correo a service@livoltek.com. Tema: ev_alarm_topic/{sn} (el ejemplo de la doc es de un cargador EV)."]
+    },
+    "mqttPushDeviceWorkingStatus": {
+      "kind": "lectura", "nivel_b5": 0, "implementado": false,
+      "notas": ["Solo documentado; mismas condiciones y servidores que la de alarmas."]
+    },
+    "queryPowerStationId": {
+      "kind": "lectura", "nivel_b5": 0,
+      "notas": ["GET /hess/api/site/{serialNumber}: devuelve el powerStationId a partir del SN de un equipo."],
+      "incoherencias_de_la_doc": ["La doc no indica el método ni la cabecera Authorization: el método se infiere GET (el enlace de la doc apunta a la operación querySiteIdUsingGET)."]
+    },
+    "siteOwner": {
+      "kind": "lectura", "nivel_b5": 0, "sensible": true,
+      "notas": ["Devuelve datos personales del cliente final (nombre, correo, cuenta de acceso). No incluirlo en reportes ni en el CLI por defecto."],
+      "incoherencias_de_la_doc": ["La línea URL dice /hess/api/site/{siteId}/siteOwner y los ejemplos /hess/api/site/991/customer."]
+    },
+    "deviceBasicData": {
+      "kind": "lectura", "nivel_b5": 0,
+      "notas": ["Trae las energías del día del equipo: powerGenerationDay, positiveDay (compra a la red), negativeDay (venta), chargeDay, dischargeDay, loadDay. Unidad NO documentada (SIN VERIFICAR).", "size solo 5, 10 o 30."],
+      "incoherencias_de_la_doc": ["La tabla escribe el parámetro «Sn» y el ejemplo «sn».", "Los ejemplos de fecha llevan espacios (codificar la URL).", "runningStatus llega como texto («Offline»), no como código."]
+    },
+    "deviceOneDayFaultAlarm": {
+      "kind": "lectura", "nivel_b5": 0,
+      "ventanas": ["Un solo día por consulta (dateTime = yyyy-MM-dd)."],
+      "incoherencias_de_la_doc": ["Igual que deviceHistoricalAlarm: la línea URL usa device/{siteId}/{sn}/oneDayFaultAlarm y el ejemplo site/123/SN10203/ oneDayFaultAlarm (con un espacio)."]
+    },
+    "generateUserToken": {
+      "kind": "control", "nivel_b5": 3, "solo_manual": true, "ejecutar_en_pruebas": false,
+      "reglas_de_frecuencia": ["5 llamadas cada 15 min por terminal con el mismo nombre; máx. 5 tokens válidos por usuario (doc)."],
+      "notas": ["user/userToken crea una credencial de la cuenta (exige account + pwd en MD5). Regla del usuario: NUNCA se ejecuta desde el skill. Se anota como nivel 3 por esa decisión."]
+    },
+    "userTokenQuery": {
+      "kind": "lectura", "nivel_b5": 0, "sensible": true, "solo_manual": true, "ejecutar_en_pruebas": false,
+      "reglas_de_frecuencia": ["5 llamadas cada 15 min por terminal con el mismo nombre (doc)."],
+      "notas": ["user/userTokenList es de solo lectura pero DEVUELVE TOKENS EN CLARO y exige account + pwd: el skill no lo ejecuta (precaución propia, no regla del usuario; confirmar)."]
+    },
+    "devicePowerReportQuery": {
+      "kind": "lectura", "nivel_b5": 0,
+      "ventanas": ["El intervalo de consulta no puede superar 24 horas (doc)."],
+      "reglas_de_frecuencia": ["Cada dispositivo solo puede consultar este endpoint una vez por hora (doc)."],
+      "notas": ["Es POST pero SOLO LEE: el método HTTP no basta para clasificar. userToken y userType van en la URL; id, startTime, endTime e interval (300/900/1800/3600 s) en el cuerpo JSON."],
+      "incoherencias_de_la_doc": ["El ejemplo de Europa usa /hess/api/user/sample/energy y el International /hess/api/sample/energy."]
+    },
+    "siteDayEnergyQuery": {
+      "kind": "lectura", "nivel_b5": 0,
+      "ventanas": ["Un mes por consulta (date = yyyy-MM); devuelve el detalle día a día."],
+      "reglas_de_frecuencia": ["Cada id solo puede consultar este endpoint una vez por hora (doc)."],
+      "notas": ["Es POST pero SOLO LEE. Incluye evConsumption (consumo de cargadores EV)."],
+      "incoherencias_de_la_doc": ["El ejemplo de cuerpo está mal formado («date2025-04» sin dos puntos).", "El ejemplo de Europa usa /hess/api/user/sample/energy/site/day."]
+    },
+    "sunspecRebootInverter": {
+      "kind": "control", "nivel_b5": 2, "ejecutar_en_pruebas": false,
+      "reglas_de_frecuencia": ["Cada id solo puede llamar este endpoint una vez por hora (doc)."],
+      "notas": ["Reinicia el inversor. Exige account + pwd. Regla del usuario: ningún sunspec/command/* se ejecuta."]
+    },
+    "sunspecRebootBMS": {
+      "kind": "control", "nivel_b5": 2, "ejecutar_en_pruebas": false,
+      "reglas_de_frecuencia": ["Cada id solo puede llamar este endpoint una vez por hora (doc)."],
+      "notas": ["Reinicia el BMS. Exige account + pwd. No se ejecuta."]
+    },
+    "sunspecSomeParamInfo": {
+      "kind": "control", "nivel_b5": 2, "ejecutar_en_pruebas": false,
+      "reglas_de_frecuencia": ["Cada id solo puede llamar este endpoint una vez por hora (doc)."],
+      "notas": [
+        "Lee parámetros (devuelve address, factor, functionCode y value de cada punto) pero exige account + pwd. Se agrupa con control por decisión del usuario y por la regla de no ejecutar sunspec/command/*. Conservador: nivel 2 aunque semánticamente sea lectura (CONFIRMAR con el usuario).",
+        "El campo address es un registro Modbus (p. ej. 45093 TOUEnable, 45018 Time2BatteryChargePower): cruza con modbus-gen2.json."
+      ],
+      "incoherencias_de_la_doc": ["El ejemplo de respuesta está truncado con «………»."]
+    },
+    "sunspecSomeParamSetting": {
+      "kind": "control", "nivel_b5": "2 o 3 según el registro", "ejecutar_en_pruebas": false,
+      "reglas_de_frecuencia": ["Cada id solo puede llamar este endpoint una vez por hora (doc)."],
+      "notas": [
+        "Escribe parámetros: la doc dice que hay que usar el resultado de info y modificar value. Cada punto lleva address (registro Modbus) y functionCode (6 = escribir un registro).",
+        "classify_register() decide por registro con modbus-gen2.json: fábrica, seguridad y firmware = nivel 3 (rechazado); lo no documentado = no escribible. Exige account + pwd. No se ejecuta."
+      ]
+    },
+    "siteHistoricalSolarGeneration": {
+      "kind": "lectura", "nivel_b5": 0,
+      "ventanas": ["Últimos 3 días (sin parámetros de fecha)."],
+      "notas": ["NO aparece en el árbol lateral de la doc (existe como módulo del bundle): ruta reissueSolarEnergy. No se usa por defecto; unidad (Wh según el texto) SIN VERIFICAR."]
+    },
+    "siteHistoricalGridImport": {
+      "kind": "lectura", "nivel_b5": 0,
+      "ventanas": ["Últimos 3 días (sin parámetros de fecha)."],
+      "notas": ["NO aparece en el árbol lateral de la doc: ruta reissueUtilityEnergy. No se usa por defecto; unidad SIN VERIFICAR."],
+      "incoherencias_de_la_doc": ["El ejemplo escribe «negetive»; las URL de ejemplo llevan espacios."]
+    },
+    "queryStationStatistics": {
+      "kind": "lectura", "nivel_b5": 0,
+      "notas": ["NO aparece en el árbol lateral de la doc: GET /hess/api/powerStationStatistics (número de sitios, capacidad instalada, generación actual y acumulada). La doc no lista parámetros. No se usa por defecto."]
+    }
+  }
+}

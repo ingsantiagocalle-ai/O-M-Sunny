@@ -15,3 +15,26 @@ lo comparará `update_livoltek_api.py --check`).
   por 443 y DeyeCloud sí responden). Por tanto **faltan** `api-doc.md`, `endpoints.json/md`, `limites.md`,
   `diccionario-metrum-livoltek.md`, `scripts/livoltek_adapter.py`, `scripts/update_livoltek_api.py` y la fusión en `SKILL.md`.
 - No se tocó ningún archivo existente (SKILL.md, Deye, scripts de Deye).
+
+## 2026-10-05 — Documentación de la API v1.6.0 (desde archivos del usuario)
+
+- **Contexto:** `api.livoltek-portal.com:8081` no respondía desde el contenedor (reset tras el ClientHello, también para la
+  herramienta de lectura web; el mismo enlace abre en el navegador del usuario). El usuario guardó `js/app.9f56d8e5.js` e
+  `index.html` desde su navegador y los subió a la sesión. `sources.json → network_sync` sigue **PENDIENTE**.
+- **Añadido** `scripts/update_livoltek_api.py`: reconstruye la doc leyendo el bundle con un mini intérprete de JavaScript
+  (solo biblioteca estándar). Comprobado contra Node: las **57 secciones** salen idénticas. Modos `--check` y `--from-files`.
+- **Añadido** `api-doc.md` (los 54 nodos del árbol lateral + 3 secciones del bundle que no están en el árbol), con los tokens y
+  contraseñas de ejemplo de la doc sustituidos por marcadores.
+- **Añadido** `endpoints.json` y `endpoints.md` (44 endpoints; método, ruta y parámetros salen de la doc) y
+  `clasificacion.json` (lectura/control, nivel B.5, ventanas, reglas de frecuencia e incoherencias de la doc; curado a mano).
+- **Añadido** `limites.md`: 300/h por IP o Security ID, 300/h por interfaz, 100/h por token de cuenta, 3 simultáneas (429),
+  token desde máximo 3 IP (428), ventanas de 7 días y de 2 años, y el límite por minuto de «usuarios especiales» que la
+  petición original no mencionaba.
+- **Verificado contra la doc** (y no asumido): login `POST /hess/api/login` con `{secuid,key}` y token en la cabecera
+  `Authorization`; `userToken` y `userType` en la URL (`userType` 0 = usuario final, 1 = agente); los 14 endpoints de lectura de la lista;
+  los de control (Sunspec y cargadores EV); MQTT en `mqtt://api.livoltek-portal.com:1883` (Europa: `api-eu`).
+- **Hallazgos:** `sample/energy` y `sample/energy/site/day` son POST pero solo leen; `sunspec/command/info` lee pero exige
+  `account`+`pwd`; `user/userTokenList` devuelve tokens en claro; el ejemplo `device/527/SN123456/details` del usuario es el de la
+  página «Device Details»; la doc se contradice en rutas (alarm, oneDayFaultAlarm, siteOwner, chargeRecord) y en unidades (W frente a kW).
+- **Modificado:** `sources.json` (versión y revisión declaradas ahora verificadas; servidores; `network_sync` conserva el aviso anterior).
+- No se tocó SKILL.md, Deye ni sus scripts.
