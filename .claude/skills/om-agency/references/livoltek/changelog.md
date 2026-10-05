@@ -47,3 +47,20 @@ lo comparará `update_livoltek_api.py --check`).
   el ejemplo de `HisPowerflow` no cuadra físicamente (PV 2.953 kW, carga 0.061 kW y «Importing» 2.743 kW), así que `powerGridStatus` no sirve para
   fijar el signo de la red; los ejemplos de Sunspec usan los registros 45093 y 45018, que **no están** entre los 32 escribibles del PDF V1.01
   (por la lista blanca serían no escribibles).
+
+## 2026-10-05 — Adaptador `scripts/livoltek_adapter.py` (solo lectura)
+
+- **Añadido** `livoltek_adapter.py` con el contrato B.0 (`login`, `list_devices`, `latest`, `normalized`, `history`, `alerts`, `config`,
+  `write_order`, `classify_register`) y el mismo esquema normalizado que Deye. Solo biblioteca estándar.
+  CLI de solo lectura: `sites`, `site-of`, `devices`, `latest`, `normalized`, `realtime`, `ess`, `alarms`, `powerflow`, `energy`, y `url`
+  (construye la consulta con las variables de entorno **sin red** y con los secretos enmascarados).
+- **Límites:** una llamada a la vez; presupuesto horario persistido entre ejecuciones (100/h por `userToken`, 300/h por IP);
+  tope de llamadas por ejecución (`--max-calls`); backoff 2-4-8-16 s en 429; 428 «token occupied» sin reintento y con mensaje claro;
+  re-login una vez ante 401; ventanas de 7 días y 2 años validadas **sin red**; tramos de ≤ 31 días (día) y ≤ 180 (semana).
+- **No se adivina lo que la doc no dice:** unidades (`power_unit`, `energy_unit`) y signos son parámetros explícitos;
+  `grid_power_w` y `bat_current_a` salen `None` hasta validar el signo (el ejemplo de `HisPowerflow` se contradice).
+- **Política B.5:** `write_order` ensaya (dry-run) y **nunca contacta la red**; `execute=True` se rechaza (los endpoints de control exigen
+  `account`+`pwd`, que no están en el entorno). Reboot y cargadores EV = nivel 2; `send` según el registro (lista blanca de los 32 RW del PDF);
+  42758/42759 = nivel 3; 45005/45006 rechazados (tabla desalineada); `user/userToken` = nivel 3; lo no documentado = no escribible.
+- **Añadido** `test_livoltek_adapter.py` (34 pruebas, sin credenciales reales ni internet): política con `urlopen` bloqueado, coherencia
+  de la lista blanca con `endpoints.json`, ventanas, normalización con los ejemplos de la doc, y 429/428/401/presupuesto contra un servidor local falso.
