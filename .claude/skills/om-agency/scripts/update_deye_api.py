@@ -220,6 +220,55 @@ def render_tools_md(tools: list[dict], meta: dict) -> str:
 
 
 # --------------------------------------------------------------------------- #
+# Swagger (/v2/api-docs): trae los límites y la semántica (granularity, ventanas)
+# que NO están en el catálogo MCP. Deye lo publica con un typo que rompe el JSON
+# (p. ej. "example":[12583SS] sin comillas), así que se reintenta con reparación.
+# --------------------------------------------------------------------------- #
+def parse_swagger(raw: str) -> tuple[dict, bool]:
+    try:
+        return json.loads(raw), False
+    except json.JSONDecodeError:
+        def quote_bare(m: re.Match) -> str:
+            tok = m.group(1)
+            if tok in ("true", "false", "null") or re.fullmatch(r"-?\d+(\.\d+)?([eE][+-]?\d+)?", tok):
+                return m.group(0)  # literal JSON válido: no tocar
+            return f'["{tok}"]'
+
+        fixed = re.sub(r'\[\s*([^\[\]"{},:\s]+)\s*\]', quote_bare, raw)
+        return json.loads(fixed), True
+
+
+def swagger_endpoints(spec: dict) -> list[str]:
+    return sorted(
+        f"{m.upper()} {p}"
+        for p, ops in spec.get("paths", {}).items()
+        for m in ops
+        if m in ("get", "post", "put", "delete", "patch")
+    )
+
+
+def render_swagger_md(spec: dict, meta: dict, repaired: bool) -> str:
+    out = [
+        "# Notas por endpoint (Swagger /v2/api-docs)",
+        "",
+        f"> Generado por `scripts/update_deye_api.py` desde {meta['swagger_url']} "
+        f"(sync {meta['synced_at']}{'; JSON reparado por typo de Deye' if repaired else ''}). "
+        "**No editar a mano.** Aquí viven los límites y la semántica que el catálogo MCP no trae "
+        "(significado de `granularity`, ventanas máximas, etc.).",
+        "",
+    ]
+    for path in sorted(spec.get("paths", {})):
+        for method, op in spec["paths"][path].items():
+            if method not in ("get", "post", "put", "delete", "patch"):
+                continue
+            out += [f"### `{method.upper()} {path}`", "", (op.get("summary") or "").strip(), ""]
+            desc = (op.get("description") or "").replace("<br/>", "\n").strip()
+            if desc:
+                out += [desc, ""]
+    return "\n".join(out).rstrip() + "\n"
+
+
+# --------------------------------------------------------------------------- #
 # Official skill zip
 # --------------------------------------------------------------------------- #
 def extract_official_skill(zip_bytes: bytes) -> list[str]:
@@ -254,13 +303,17 @@ def sha(data: bytes | str) -> str:
 
 def summarize_diff(old: dict, new: dict) -> list[str]:
     lines = []
-    for key, label in (("endpoints", "endpoints"), ("tools", "tools MCP")):
+    for key, label in (
+        ("endpoints", "endpoints"), ("tools", "tools MCP"), ("swagger_endpoints", "endpoints Swagger")
+    ):
         before, after = set(old.get(key, [])), set(new.get(key, []))
         if added := sorted(after - before):
             lines.append(f"+ {label} nuevos: {', '.join(added)}")
         if removed := sorted(before - after):
             lines.append(f"- {label} eliminados: {', '.join(removed)}")
-    for key in ("server_version", "official_skill_version", "catalog_hash", "changelog_hash"):
+    for key in (
+        "server_version", "official_skill_version", "catalog_hash", "changelog_hash", "swagger_hash"
+    ):
         if old.get(key) != new.get(key):
             lines.append(f"~ {key}: {old.get(key)} -> {new.get(key)}")
     return lines
@@ -293,7 +346,17 @@ def main() -> int:
     if not isinstance(endpoints, list) or not endpoints:
         raise RuntimeError("Catálogo de endpoints vacío o con formato inesperado")
 
+    swagger_url = (
+        sources["data_centers"][sources.get("swagger_data_center", "am")] + sources["swagger_path"]
+    )
+    swagger, swagger_repaired = parse_swagger(http_get(swagger_url).decode("utf-8"))
+    sw_eps = swagger_endpoints(swagger)
+    catalog_eps = {f"{e['method']} {e['path']}" for e in endpoints}
+
     new_state = {
+        "swagger_endpoints": sw_eps,
+        "swagger_only": sorted(set(sw_eps) - catalog_eps),   # en Swagger pero no en el catálogo MCP
+        "swagger_hash": sha(json.dumps(swagger, sort_keys=True)),
         "server_version": server_info.get("server_version"),
         "recommended_skill_version": server_info.get("recommended_skill_version"),
         "official_skill_version": parse_official_version(official_md),
@@ -311,7 +374,10 @@ def main() -> int:
     print(
         f"MCP {init['serverInfo']['name']} v{new_state['server_version']} | "
         f"{len(endpoints)} endpoints | {len(tools)} tools | "
-        f"skill oficial v{new_state['official_skill_version']}"
+        f"skill oficial v{new_state['official_skill_version']} | "
+        f"Swagger {len(sw_eps)} endpoints"
+        + (f" (solo en Swagger: {', '.join(new_state['swagger_only'])})" if new_state["swagger_only"] else "")
+        + (" [JSON reparado]" if swagger_repaired else "")
     )
     if not changed:
         print("Sin cambios desde la última sincronización.")
@@ -327,8 +393,10 @@ def main() -> int:
         "docs_url": docs_url,
         "server_version": new_state["server_version"],
         "synced_at": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+        "swagger_url": swagger_url,
     }
     REF_DIR.mkdir(exist_ok=True)
+    (REF_DIR / "swagger-notes.md").write_text(render_swagger_md(swagger, meta, swagger_repaired))
     (REF_DIR / "endpoints.json").write_text(
         json.dumps(endpoints, indent=2, ensure_ascii=False, sort_keys=True) + "\n"
     )
@@ -346,7 +414,7 @@ def main() -> int:
 
     sources["synced"] = {**new_state, "synced_at": meta["synced_at"]}
     SOURCES_FILE.write_text(json.dumps(sources, indent=2, ensure_ascii=False) + "\n")
-    print(f"Actualizado: references/deye-cloud/{{endpoints.md,endpoints.json,mcp-tools.md,changelog.md}} y {len(written)} archivos oficiales.")
+    print(f"Actualizado: references/deye-cloud/{{endpoints.md,endpoints.json,swagger-notes.md,mcp-tools.md,changelog.md}} y {len(written)} archivos oficiales.")
     return 0
 
 

@@ -5,12 +5,60 @@
   "mcp_path": "/openmcp/mcp",
   "changelog_path": "/openmcp/docs/deye-open-mcp-changelog.html",
   "skill_zip_path": "/openmcp/dist/deye-open-mcp-skill.zip",
+  "swagger_path": "/v2/api-docs",
+  "swagger_data_center": "am",
   "data_centers": {
     "eu": "https://eu1-developer.deyecloud.com",
     "am": "https://us1-developer.deyecloud.com",
     "india": "https://india-developer.deyecloud.com"
   },
   "synced": {
+    "swagger_endpoints": [
+      "GET /v1.0/order/{orderId}",
+      "POST /v1.0/account/info",
+      "POST /v1.0/account/token",
+      "POST /v1.0/config/battery",
+      "POST /v1.0/config/system",
+      "POST /v1.0/config/tou",
+      "POST /v1.0/device/addLogger",
+      "POST /v1.0/device/alertList",
+      "POST /v1.0/device/deleteLogger",
+      "POST /v1.0/device/history",
+      "POST /v1.0/device/historyRaw",
+      "POST /v1.0/device/latest",
+      "POST /v1.0/device/list",
+      "POST /v1.0/device/measurePoints",
+      "POST /v1.0/device/register",
+      "POST /v1.0/order/battery/modeControl",
+      "POST /v1.0/order/battery/parameter/update",
+      "POST /v1.0/order/battery/type/update",
+      "POST /v1.0/order/customControl",
+      "POST /v1.0/order/gridPeakShaving/control",
+      "POST /v1.0/order/smartload/update",
+      "POST /v1.0/order/sys/energyPattern/update",
+      "POST /v1.0/order/sys/limitControl",
+      "POST /v1.0/order/sys/power/update",
+      "POST /v1.0/order/sys/solarSell/control",
+      "POST /v1.0/order/sys/tou/switch",
+      "POST /v1.0/order/sys/tou/update",
+      "POST /v1.0/order/sys/workMode/update",
+      "POST /v1.0/station/alertList",
+      "POST /v1.0/station/create",
+      "POST /v1.0/station/detail",
+      "POST /v1.0/station/device",
+      "POST /v1.0/station/history",
+      "POST /v1.0/station/history/power",
+      "POST /v1.0/station/latest",
+      "POST /v1.0/station/list",
+      "POST /v1.0/station/listWithDevice",
+      "POST /v1.0/strategy/dynamicControl",
+      "POST /v1.0/strategy/dynamicControl/read",
+      "POST /v1.0/strategy/dynamicControl/readResult"
+    ],
+    "swagger_only": [
+      "POST /v1.0/station/detail"
+    ],
+    "swagger_hash": "06cc509fd99adb81",
     "server_version": "1.2.0",
     "recommended_skill_version": "1.2.0",
     "official_skill_version": "1.2.0",
@@ -116,6 +164,6 @@
       "am": "https://us1-developer.deyecloud.com",
       "india": "https://india-developer.deyecloud.com"
     },
-    "synced_at": "2026-10-05 15:52 UTC"
+    "synced_at": "2026-10-05 16:17 UTC"
   }
 }

@@ -597,6 +597,14 @@ marca puede exponer un subconjunto distinto**; confirmar siempre con
 | `invbrand`, `invmodel`, `invcap`, `invarray`, `invtype` | atributos | Marca, modelo, potencia nominal (kW placa), número de paneles, tipo (Híbrido/On-Grid/Off-Grid) — no todas las marcas setean `invbrand`, a veces hay que inferirlo por convención de nombre del dispositivo |
 | `BattSn` | — | Serial de la batería conectada (vacío si no tiene) |
 
+**Variantes DEYE validadas en la Casa 10 (oct-2026) — los nombres engañan:** en inversores
+DEYE `frequency`/`freqEps` son la frecuencia de **salida/carga** (no la de red; sin red
+siguen en ~60 Hz) · `powerAEg`/`powerAPg` ≈ potencia de **carga** del puerto AC (no generación
+PV) · `LoadPower_DY` ≈ potencia de **red** (+ = importación) · `ExportGrid_DY` = lectura del
+**CT externo** (no exportación) · `BattCharges_DY` **no es un contador de cargas** ·
+`BattPower` + = **descarga** y `BattCur` tiene el signo **opuesto** (+ = carga). Detalle y
+estado de confirmación en el Apéndice B.4 y `references/deye-cloud/diccionario-metrum-deye.md`.
+
 **Keys estándar de industria que pueden NO estar expuestas** por el inversor real
 (catalogadas por si otra marca las expone, o acceso directo a API del fabricante):
 `Ppv1/2/3`, `Ppv`, `pvPower`, `Vpv1/2/3`, `Ipv1/2/3` (DC por string), `Pac`, `Sac`,
@@ -792,6 +800,13 @@ oficial.
 - **El nombre real de un dispositivo viene en `latest.ENTITY_FIELD.name`**, no en un
   campo `name` de nivel superior de la fila — leer del lugar equivocado da
   `undefined` sin error.
+- **El muestreo de Metrum es ≈ 15 min (foto instantánea, no promedio):** integrar
+  `BattPower` para obtener energía de batería puede errar ±10-20 % cuando la potencia cambia
+  rápido (Casa 10, 3-oct: 10,1 kWh integrados vs 11,9 kWh del contador del inversor). Si la marca
+  expone contadores de batería (Deye: regs 514/515), usarlos; integrar solo como último recurso.
+- **Los contadores diarios de Metrum no se reinician a las 00:00 exactas:** el `max()` del día
+  local arrastra el cierre del día anterior. Para el cierre usar el último valor < 24:00 local
+  (o el primero de 00:00 del día siguiente).
 
 ### A.6 — Generación real: del INVERSOR, no del medidor solar (gotcha crítico)
 
@@ -986,132 +1001,228 @@ sale en 60%, y una marca distinta sale en un reparto casi aleatorio ~50%) y esa
 diferencia es la señal más fuerte disponible de si el origen es del lado de un
 fabricante específico o no.
 
-## Apéndice B — API de DeyeCloud (inversores DEYE: lectura, alarmas del fabricante y control)
+## Apéndice B — Adaptadores por marca de inversor (DeyeCloud implementado; Livoltek pendiente)
 
-Referencia verificada contra la documentación pública de Deye. Detalle completo y
-siempre al día en `references/deye-cloud/` (`endpoints.md` = catálogo con parámetros,
-`mcp-tools.md`, `changelog.md`, `official-skill/` = skill oficial de Deye).
+Metrum es solo lectura para inversores (A.3): la telemetría propia de la marca, las
+alarmas del fabricante y **toda escritura** viven en la nube de cada marca. Este apéndice
+define un contrato común (B.0) y documenta el adaptador de **DEYE / DeyeCloud** (B.1–B.4,
+B.6–B.7), validado en la Casa 10 de Reservas de Pance (oct-2026). La **política de comandos
+de 4 niveles (B.5) es común a todas las marcas**.
 
-### B.1 — Fuente oficial y cómo actualizar este apéndice
+Archivos (todos bajo `references/deye-cloud/` salvo indicación): `diccionario-metrum-deye.md`
+(Metrum → Deye → registro Modbus), `validacion-casa10-2026-10.md` (comparación y hallazgos),
+`endpoints.md` / `endpoints.json` (catálogo con parámetros), `swagger-notes.md` (límites y
+semántica), `mcp-tools.md`, `changelog.md`, `official-skill/`; código en `scripts/deye_adapter.py`
+y `scripts/update_deye_api.py`.
 
-- Documentación: **https://developer.deyecloud.com/api** · Registrar una app
-  (AppId/AppSecret): https://developer.deyecloud.com/app · Ejemplos de código:
+### B.0 — Contrato del adaptador y esquema normalizado
+
+Un módulo por marca, mismo contrato:
+
+```
+auth()  list_devices()  read_latest(sn)  read_history(sn, desde, hasta, resolución)
+read_alerts(sn, desde, hasta)  read_config(sn)  write(sn, comando, valor, nivel, confirmado_por)
+```
+
+En `deye_adapter.py`: `DeyeAdapter.login / list_devices / latest / normalized /
+history_frames / history_days / alerts / config / order_result / write_order`.
+
+Esquema normalizado (SI; cada adaptador convierte desde su marca):
+
+| Campo | Convención |
+|---|---|
+| `soc_pct`, `bat_voltage_v`, `bat_temp_c` | — |
+| `bat_power_w`, `bat_current_a` | **+ = carga** (Deye y Metrum traen + = descarga y `BattCur` de Metrum va al revés: el adaptador invierte) |
+| `grid_power_w` | **+ = importación** |
+| `pv_power_w`, `load_power_w` | W |
+| `grid_voltage_v[3]`, `grid_freq_hz`, `ac_out_freq_hz` | la frecuencia de red y la de salida del inversor son cosas distintas |
+| `energy_day_kwh{pv,load,import,export,bat_charge,bat_discharge}` y `energy_total_kwh{…}` | contadores del equipo, no integrales de potencia |
+| `grid_up` | `min(grid_voltage_v) ≥ 20 V` (con ese umbral los cortes coincidieron con Metrum ±5 min) |
+
+**Livoltek (pendiente):** no se ha investigado su API. Antes de escribir nada, repetir las
+mismas fases que con Deye: lectura y descubrimiento de puntos → diccionario contra Metrum y
+contra su documento de registros → configuración y alarmas → política de límites → validación
+en una casa piloto. Cada adaptador publica su propio diccionario, límites y "gotchas".
+
+### B.1 — Deye: fuente oficial y cómo actualizar
+
+- Documentación: **https://developer.deyecloud.com/api** · Registrar una app (AppId/AppSecret):
+  https://developer.deyecloud.com/app · Ejemplos de código:
   https://github.com/DeyeCloudDevelopers/deye-openapi-client-sample-code
-- Esa página es una SPA (un fetch simple devuelve HTML vacío), por eso no se lee
-  directo. Para actualizar: `python3 scripts/update_deye_api.py` (solo informa, sin
-  escribir: `--check`; sale con código 1 si Deye cambió algo). Lee el catálogo OpenAPI
-  y el historial del servidor MCP público de Deye y regenera `references/deye-cloud/`.
-  La fuente única es `references/deye-cloud/sources.json` (campo `docs_url`); ahí
-  también queda `synced` (versiones y fecha de la última sincronización). No requiere
-  credenciales.
-- Corre `--check` cuando un endpoint falle de forma inesperada, antes de implementar
-  escritura real, o si `synced.synced_at` es antiguo. Tras actualizar, revisa si cambió
-  algo de lo descrito en B.2–B.5 y corrígelo aquí.
+- La página es una SPA (un fetch simple devuelve HTML vacío). Para actualizar:
+  `python3 scripts/update_deye_api.py` (solo informar: `--check`; sale con código 1 si Deye
+  cambió algo). Lee el catálogo OpenAPI y el historial del servidor MCP público, el skill
+  oficial y el **Swagger** `/v2/api-docs` (que trae límites y semántica que el catálogo MCP no
+  trae; Deye lo publica con un typo que rompe el JSON y el script lo repara). Regenera
+  `references/deye-cloud/`; la fuente única es `sources.json` (campo `docs_url`; `synced` guarda
+  versiones y fecha). No necesita credenciales.
+- `POST /v1.0/station/detail` existe solo en el Swagger (no en el catálogo MCP) y **no se ha
+  probado**; `swagger_only` en `sources.json` vigila esa diferencia.
+- Correr `--check` cuando un endpoint falle de forma inesperada, antes de implementar escritura
+  real o si `synced.synced_at` es antiguo. Tras actualizar, revisa si cambió algo de B.2–B.6.
 
-### B.2 — Regiones y autenticación
+### B.2 — Deye: credenciales y autenticación
 
-| `data_center` | Base URL |
+Solo desde el entorno (nunca en archivos, chat, logs ni dashboards; el token solo en memoria):
+
+| Variable | Uso |
+|---|---|
+| `DEYE_API_URL` | Base URL de la región (la cuenta fija la región; la doc no dice cuál es Colombia: confirmar) |
+| `DEYE_APP_ID` | Query `?appId=` del login |
+| `DEYE_APP_SECRET` | Body del login |
+| `DEYE_USERNAME` | Body del login (`email` si contiene `@`, si no `username`) |
+| `DEYE_PASSWORD` | Se envía como **SHA-256 en minúsculas**, calculado dentro del mismo proceso |
+| `DEYE_COMPANY_ID` | Body del login; **obligatorio en cuenta de empresa** |
+
+| `data_center` | Base URL pública |
 |---|---|
 | `eu` | `https://eu1-developer.deyecloud.com` |
 | `am` | `https://us1-developer.deyecloud.com` |
 | `india` | `https://india-developer.deyecloud.com` |
 
-La cuenta pertenece a una región. La documentación no indica cuál corresponde a
-Colombia: **no asumirlo** — confirmar con el usuario o probar `am` y luego `eu` hasta
-que el token se obtenga sin error.
-
 ```
-POST {base}/v1.0/account/token?appId=<APP_ID>
-Body: {"appSecret": "...", "email": "...", "password": "<SHA-256 hex del password>"}
-→ {"accessToken": "Bearer eyJ…", "expiresIn": <segundos>, "refreshToken": "…",
-   "code": 1000000, "success": true}
+POST {DEYE_API_URL}/v1.0/account/token?appId=<APP_ID>
+Body: {"appSecret","email"|"username","password":<sha256>,"companyId"}
+→ {"accessToken":"Bearer eyJ…","expiresIn":…,"success":true,"code":1000000}
 ```
 
-- El password va **hasheado con SHA-256** (la doc lo exige: "must be sha256 encrypted").
-- Los demás endpoints llevan `Authorization: Bearer <token>`; el ejemplo de la doc
-  devuelve `accessToken` ya con el prefijo `Bearer ` — no duplicarlo.
-- Éxito = `success: true` y `code: 1000000`. Reutilizar el token mientras no expire.
-- Credenciales solo por variables de entorno (`DEYE_APP_ID`, `DEYE_APP_SECRET`,
-  `DEYE_EMAIL`, `DEYE_PASSWORD`, `DEYE_DATA_CENTER`) o el gestor de secretos del
-  usuario — nunca en archivos de esta skill, chats ni dashboards (ver Notas).
+`accessToken` ya trae el prefijo `Bearer ` (no duplicarlo). Éxito = `success: true` y
+`code: 1000000`. Reutilizar el token; no hubo 429 con ~55 llamadas espaciadas ≥ 0,4 s, pero
+Deye anuncia límites por minuto sin cifras: espaciar, cachear lo histórico y reintentar con
+backoff en 429/5xx.
 
-### B.3 — Lectura (todos `POST` con body JSON; paginar siempre)
+### B.3 — Deye: lectura — endpoints y límites (todos `POST` con body JSON)
 
-| Necesidad | Endpoint | Body clave / límites |
+| Necesidad | Endpoint | Cuerpo clave y límites verificados |
 |---|---|---|
-| Estaciones de la cuenta | `/v1.0/station/list` | `page`, `size` (máx 200) |
-| Estaciones con sus equipos | `/v1.0/station/listWithDevice` | `deviceType`, `page`, `size` (máx **50**) |
-| Equipos de una o varias estaciones | `/v1.0/station/device` | `stationIds[]`*, `page`, `size` (máx 200) |
-| Todos los equipos de la cuenta | `/v1.0/device/list` | `page`, `size` (máx 200) |
-| Último dato de equipos | `/v1.0/device/latest` | `deviceList[]`* (**hasta 10 SN** por llamada) |
-| Último dato de una estación | `/v1.0/station/latest` | `stationId`* |
-| Puntos de medida disponibles | `/v1.0/device/measurePoints` | `deviceSn`*, `deviceType` (default INVERTER) |
-| Histórico de equipo | `/v1.0/device/history` | `deviceSn`*, `granularity`*, `startAt`*, `endAt`, `measurePoints[]` |
-| Histórico crudo de equipo | `/v1.0/device/historyRaw` | `deviceSn`*, `startTimestamp`*, `endTimestamp`*, `measurePoints[]`* |
-| Histórico de estación | `/v1.0/station/history` · `/v1.0/station/history/power` | `stationId`*, `granularity`*, `startAt`*, `endAt` · timestamps |
-| Alarmas de equipo | `/v1.0/device/alertList` | `startTimestamp`*, `endTimestamp`*, `deviceSn`, `page`, `size` (máx 100), query `language` |
-| Alarmas de estación | `/v1.0/station/alertList` | `stationId`*, `startTimestamp`*, `endTimestamp`*, `page`, `size` (máx 200) |
-| Configuración actual | `/v1.0/config/battery` · `/system` · `/tou` | `deviceSn`* |
-| Cuenta / organización | `/v1.0/account/info` | — |
+| Equipos de la cuenta | `/v1.0/device/list` | `page`, `size` (máx 200); responde `deviceList`, `total` |
+| Estaciones / sus equipos | `/v1.0/station/list` · `/listWithDevice` · `/device` | `size` máx 200 (50 en `listWithDevice`); `stationIds[]` |
+| Puntos de medida | `/v1.0/device/measurePoints` | `deviceSn`, `deviceType`; 149 puntos en `0_5412_1` (54 sin valor: batería 2, MPPT 5-12 y reactiva = hardware no instalado, no es falla) |
+| Último dato | `/v1.0/device/latest` | `deviceList[]` **≤ 10 SN**; 93 valores en la Casa 10 |
+| Histórico de equipo | `/v1.0/device/history` | `granularity` **1** = tramas del día (~5 min, ~265/día), **2** = día a día (≤ 31 días, `yyyy-MM-dd`), **3** = mes (≤ 12, `yyyy-MM`), **4** = año (`yyyy`) |
+| Histórico crudo | `/v1.0/device/historyRaw` | `startTimestamp`/`endTimestamp` en segundos, ventana ≤ 5 días |
+| Alarmas de equipo | `/v1.0/device/alertList` | `startTimestamp`*, `endTimestamp`* (≤ 30 días), `page`, `size` (máx 100) |
+| Alarmas de estación | `/v1.0/station/alertList` | `stationId`*, rango, `size` (máx 200) |
+| Configuración | `/v1.0/config/battery` · `/system` · `/tou` | `deviceSn` |
 
-`*` = obligatorio. Los timestamps son **Unix en segundos (10 dígitos)**, no milisegundos.
+Gotchas verificados (el Swagger y el servidor no coinciden del todo):
+- `granularity 1` **exige `endAt`** (con `endAt = startAt`) aunque la doc diga que puede ir
+  vacío, y **`measurePoints` ≤ 5 por consulta** (10 → error 2101007 "list too long"; 6-9 sin
+  probar): pedir en lotes de 5 y fusionar por `time` (epoch en segundos).
+- En `granularity 2/3/4` los ítems se llaman `Production, GridFeed-in, Consumption,
+  ElectricityPurchasing, ChargingCapacity, DischargingCapacity` (en el nivel 4 la clave viene
+  como `name`, no `key`).
+- Las alarmas devuelven `alertName` (p. ej. `F18 Tz_Ac_OverCurr_Fault`), nivel, inicio/fin
+  (epoch s) y `description/reason/solution` que pueden venir `null`.
+- Resolución de los contadores: 0,1 kWh.
+- Metrum (para cruzar): `GET /api/tenant/devices` da 403 con una cuenta de servicio; localizar
+  por serial con `POST /api/entitiesQuery/find` y `entityFilter.type = "entityName"`.
 
-**Gotcha:** el significado de `granularity` (la doc solo muestra el ejemplo `4`) y los
-nombres exactos de `measurePoints` **no están documentados en el catálogo** — no
-asumirlos: obtener los puntos con `/device/measurePoints` y validar `granularity`
-contra la doc oficial o una respuesta real antes de usarlos en un reporte.
+### B.4 — Deye: diccionario Metrum → Deye (resumen; detalle en `diccionario-metrum-deye.md`)
 
-**Cómo lo usan los especialistas:** el Monitor de Flota puede contrastar el estado de
-conexión/SOC/potencia por estación con lo que ve en Metrum; el Líder de Diagnóstico
-cruza las alarmas del fabricante (`alertList`) y `device/latest` con los códigos
-F/E/W del inversor; Garantías usa `alertList` con rango de fechas como evidencia para
-un RMA. El `deviceSn` de Deye debe cruzarse con el serial/nombre en Metrum **solo tras
-verificarlo con un equipo conocido** (ver A.8: no asumir convenciones de nombre).
+Confirmado en la Casa 10 (r ≈ 1,000 salvo donde se indica; Deye ya entrega valores escalados):
+- **Energía:** `energyPD/LD/ID/ED/IT/ET/LT/AE` (Wh) = `DailyActiveProduction`, `DailyConsumption`,
+  `DailyEnergyPurchased`, `DailyGridFeedIn`, `TotalEnergyBuy`, `TotalEnergySell`,
+  `TotalConsumption`, `TotalActiveProduction` × 1000. Los contadores diarios de Metrum no se
+  reinician a las 00:00 exactas: cierre = último valor < 24:00 local, no `max()` del día.
+- **Batería:** `BattSOC`=`SOC`/`BMSSOC`, `BattVolt`=`BatteryVoltage`, `BattTemp`=`Temperature- Battery`,
+  `BattPower`=`BatteryPower` (**+ = descarga**), `BattCur`=`BatteryCurrent` con **signo opuesto**
+  (en Metrum `BattCur` + = carga). `BattCapAH_DY`=40 Ah = capacidad *configurada*.
+- **Red/AC:** `voltGridA/B/C`=`GridVoltageL1-3`, `voltageA/B/C`=`ACVoltageRUA/SVB/TWC`,
+  `voltEpsA/B/C`=`LoadVoltageL1-3`, `curGridA/B/C`=`GridCurrentL1-3`, `currentA/B/C`=`ACCurrentRUA/SVB/TWC`.
+- **Nombres engañosos en las claves `_DY` y afines (no fiarse del nombre):**
+  `frequency`/`freqEps` = frecuencia de **salida/carga**, no de red (sin red sigue en ~60 Hz;
+  `GridFrequency` cae a 0) · `powerAEg`=`powerAPg` ≈ **potencia de carga** del puerto AC, no
+  generación PV · `LoadPower_DY` ≈ `TotalGridPower` (**+ = importación**), no la carga ·
+  `ExportGrid_DY` = lectura del **CT externo** (~4 W fijos por fase), no exportación ·
+  `BattCharges_DY` **no es un contador de cargas** (proporcional a la tensión de batería;
+  sin identificar).
+- **Hipótesis (sin confirmar):** `BattSOH` (la nube no lo expone), `MeterState_DY`, el registro
+  Modbus exacto de varios puntos y la asignación de fases R/S/T ↔ A/B/C.
 
-### B.4 — Control (escritura): solo con confirmación explícita
+### B.5 — Política de comandos (4 niveles; común a todas las marcas)
 
-Los endpoints `order/*` **cambian el comportamiento de equipos reales**. Aplican la
-política de A.3, más estas reglas:
+**Nivel 0 — Solo lectura (por defecto, sin confirmación).** Todo lo de B.3, `account/info`,
+`GET /v1.0/order/{orderId}`; lectura Modbus (función 03).
 
-1. Antes de escribir, el usuario confirma explícitamente **equipo (SN) + acción +
-   valor**. Sin confirmación → solo lectura.
-2. Leer primero la configuración vigente (`config/battery|system|tou`) y registrar el
-   valor previo para poder revertir.
-3. Un equipo piloto y un solo cambio de bajo riesgo; verificar con `device/latest` y
-   `alertList` en el siguiente ciclo antes de extender a más equipos.
-4. Los comandos son asíncronos: tras enviarlos, consultar `GET /v1.0/order/{orderId}`
-   hasta que el resultado sea concluyente; no reportar "aplicado" antes.
-5. Registrar cada intento en una auditoría propia (Deye no sustituye ese log).
+**Nivel 1 — Escritura operativa (confirmación explícita + equipo piloto).** Cambia el
+comportamiento pero es reversible y no toca parámetros de red: `sys/workMode`, `sys/energyPattern`,
+`sys/limitControl`, `sys/solarSell`, `sys/tou/switch|update`, `battery/modeControl`,
+`battery/parameter`, `gridPeakShaving`, `smartload`. Reglas: (1) el usuario confirma **SN + acción +
+valor**; (2) leer y guardar el valor previo (`config/*`) para poder revertir; (3) un equipo piloto y
+un cambio a la vez; (4) consultar `GET order/{orderId}` hasta resultado concluyente; (5) verificar en
+el siguiente ciclo con `device/latest` + `alertList`; (6) auditoría propia inmutable de cada intento;
+(7) auto-rollback si aparece una alarma.
 
-| Acción | Endpoint `/v1.0/order/…` | Valores / campos |
+**Nivel 2 — Parámetros de red y registros del PDF (aprobación explícita y específica).**
+`sys/power/update` (`MAX_SELL_POWER`, `MAX_SOLAR_POWER`, `ZERO_EXPORT_POWER`),
+`strategy/dynamicControl`, `battery/type/update` (cambio de tipo de batería; clasificación conservadora),
+`customControl` (Modbus crudo) y los registros 74-79 y 82-88 (potencia activa/reactiva, anti-isla,
+GFDI/RCD/RISO), 143 y 340 (potencia máx. de venta/solar), 179 (forzar off-grid), 346-492 (CT,
+umbrales de tensión/frecuencia, curvas V-Watt/Volt-VAR/F-Watt, LVRT/HVRT, retardos) y 1000-1121
+(timers personalizados y modo remoto con watchdog). Requiere justificación escrita, valores dentro
+del rango del PDF, aprobación nombrada, ventana de mantenimiento, plan de reversa y verificación
+posterior. En HV trifásico los registros de potencia van en unidades de 10 W: validar la conversión
+antes de escribir.
+
+**Nivel 3 — PROHIBIDO (nunca, ni con confirmación del usuario en la sesión).**
+- **Reseteo de fábrica:** reg 81 = 1.
+- **Bloqueo del inversor:** reg 81 = 3 y reg 92 = 3 ("Locked inverter").
+- **Inicialización de EEPROM:** reg 91 (placa de control) y 92 (placa de comunicación) = 1.
+- Registros "solo fábrica"/depuración: 60, 93, 94, 97, 559-583, 738-739, 800 y la banda
+  190-210 (ARC/calibración; banda conservadora).
+- Apagado/encendido remoto sin orden de campo (reg 80) y cualquier registro de solo lectura o no
+  documentado en el PDF v105 (solo 60-499 y 1000-1121 son escribibles).
+Un pedido de estos se rechaza y se escala a Deye/soporte de fábrica.
+
+**Cómo lo aplica el código:** `deye_adapter.py` no tiene comandos de escritura en la CLI;
+`write_order()` es un **ensayo (dry-run) por defecto**, exige `confirmed_by`, `approval_ref` en
+nivel 2 y, en `customControl`, que se declaren los registros (`classify_register()` rechaza el
+nivel 3 y los no escribibles). `execute=True` además exige `DEYE_ALLOW_WRITE=1` y `DEYE_AUDIT_LOG`;
+**no está probado contra la API real** y no se ha ejecutado ningún comando de control.
+
+### B.6 — Deye: órdenes de control (`POST /v1.0/order/…`)
+
+Asíncronas: tras enviarlas, `GET /v1.0/order/{orderId}` hasta que el resultado sea concluyente;
+no reportar "aplicado" antes. Valores tomados del catálogo vigente; ante duda (o campos no
+listados, p. ej. `timeUseSettingItems`, `batteryType`) consulta `endpoints.md` / `endpoints.json`.
+
+| Acción (nivel) | Endpoint | Valores / campos |
 |---|---|---|
-| Modo de trabajo | `sys/workMode/update` | `workMode`: SELLING_FIRST, ZERO_EXPORT_TO_LOAD, ZERO_EXPORT_TO_CT (micro-almacenamiento: GREEN_POWER_MODE, FULL_CHARGE_MODE, CUSTOMIZED_MODE) |
-| Patrón de energía | `sys/energyPattern/update` | BATTERY_FIRST, LOAD_FIRST |
-| Límite de exportación | `sys/limitControl` | `limitControlFunctionType`: SELL_FIRST, ZERO_EXPORT_TO_UPS_LOAD, ZERO_EXPORT_TO_CT, ZERO_EXPORT_TO_WIRELESS_CT |
-| Potencias máx. | `sys/power/update` | `powerType`: MAX_SELL_POWER, MAX_SOLAR_POWER, ZERO_EXPORT_POWER + `value` (entero; la doc no indica la unidad — confirmarla antes de escribir) |
-| Venta solar | `sys/solarSell/control` | `action`: `on` / `off` |
-| TOU | `sys/tou/switch` · `sys/tou/update` | `action`: `on`/`off` + `days[]` (MONDAY…SUNDAY) · `timeUseSettingItems` |
-| Batería | `battery/modeControl` · `battery/parameter/update` · `battery/type/update` | `action` `on`/`off` + `batteryModeType`: GEN_CHARGE, GRID_CHARGE · `paramterType` (sic): MAX_CHARGE_CURRENT, MAX_DISCHARGE_CURRENT, GRID_CHARGE_AMPERE, BATT_LOW + `value` (entero) · `batteryType` |
-| Recorte de picos de red | `gridPeakShaving/control` | `action`: `on`/`off`, `power` |
-| Smartload | `smartload/update` | `onSOC`, `offSOC`, `onVoltage`, `offVoltage`, `onGridAlwaysOn` |
-| Estrategia dinámica | `/v1.0/strategy/dynamicControl` (+ `/read`, `/readResult`) | varios en un solo comando |
-| **Modbus crudo** | `customControl` | `content`, `timeoutSeconds` — **riesgo máximo: nunca sin instrucción explícita y específica del usuario** |
+| Modo de trabajo (1) | `sys/workMode/update` | `workMode`: SELLING_FIRST, ZERO_EXPORT_TO_LOAD, ZERO_EXPORT_TO_CT (micro-almacenamiento: GREEN_POWER_MODE, FULL_CHARGE_MODE, CUSTOMIZED_MODE) |
+| Patrón de energía (1) | `sys/energyPattern/update` | BATTERY_FIRST, LOAD_FIRST |
+| Límite de exportación (1) | `sys/limitControl` | `limitControlFunctionType`: SELL_FIRST, ZERO_EXPORT_TO_UPS_LOAD, ZERO_EXPORT_TO_CT, ZERO_EXPORT_TO_WIRELESS_CT |
+| Venta solar (1) | `sys/solarSell/control` | `action`: `on` / `off` |
+| TOU (1) | `sys/tou/switch` · `sys/tou/update` | `action`: `on`/`off` + `days[]` (MONDAY…SUNDAY) · `timeUseSettingItems` |
+| Batería (1) | `battery/modeControl` · `battery/parameter/update` | `action` `on`/`off` + `batteryModeType`: GEN_CHARGE, GRID_CHARGE · `paramterType` (sic): MAX_CHARGE_CURRENT, MAX_DISCHARGE_CURRENT, GRID_CHARGE_AMPERE, BATT_LOW + `value` (entero) |
+| Recorte de picos (1) | `gridPeakShaving/control` | `action`: `on`/`off`, `power` |
+| Smartload (1) | `smartload/update` | `onSOC`, `offSOC`, `onVoltage`, `offVoltage`, `onGridAlwaysOn` |
+| Potencias máx. (2) | `sys/power/update` | `powerType`: MAX_SELL_POWER, MAX_SOLAR_POWER, ZERO_EXPORT_POWER + `value` (entero; la doc no da la unidad: confirmarla antes de escribir) |
+| Tipo de batería (2) | `battery/type/update` | `batteryType` |
+| Estrategia dinámica (2) | `/v1.0/strategy/dynamicControl` (+ `/read`, `/readResult`) | varios en un solo comando |
+| **Modbus crudo (2)** | `customControl` | `content`, `timeoutSeconds` — **riesgo máximo: nunca sin instrucción explícita y específica del usuario**, y declarando los registros |
 
-Valores tomados del catálogo vigente; ante cualquier duda (o campos no listados, p. ej.
-`timeUseSettingItems`, `batteryType`) consulta `references/deye-cloud/endpoints.md` /
-`endpoints.json` en vez de adivinar.
+### B.7 — Tres vías de acceso (elige según el entorno)
 
-### B.5 — Dos vías de acceso (elige según el entorno)
+- **Adaptador del skill** (`scripts/deye_adapter.py`, CLI de solo lectura): `devices`, `latest`,
+  `normalized`, `frames`, `days`, `alerts`, `config`. Primera opción: ya aplica límites, lotes,
+  reintentos, redacción de credenciales y la política de B.5.
+- **REST directo** (scripts propios o `curl`): lo descrito en B.2-B.3 contra la base URL de la región.
+- **Servidor MCP de Deye** (Streamable HTTP): `https://developer.deyecloud.com/openmcp/mcp` — 51
+  herramientas (`get_access_token`, `list_stations`, `get_device_latest`, `device_alert_list`,
+  `order_*` y el genérico `call_deye_api`). Las credenciales se pasan como **argumentos de la
+  herramienta**, nunca en la configuración del servidor. Si el cliente ya tiene un servidor
+  `deye_open`, úsalo; los nombres pueden llevar un prefijo del cliente. Guía en
+  `references/deye-cloud/official-skill/`.
 
-- **REST directo** (scripts propios o `curl`): lo descrito arriba contra la base URL
-  de la región.
-- **Servidor MCP de Deye** (Streamable HTTP): `https://developer.deyecloud.com/openmcp/mcp`
-  — 51 herramientas (`get_access_token`, `list_stations`, `get_device_latest`,
-  `device_alert_list`, `order_*`, y el genérico `call_deye_api`). Las credenciales se
-  pasan como **argumentos de la herramienta**, nunca en la configuración del servidor
-  (el MCP aplica el SHA-256 del password por ti). Si el cliente ya tiene un servidor
-  `deye_open` configurado, úsalo; los nombres pueden llevar un prefijo del cliente.
-  Guía de uso y seguridad: `references/deye-cloud/official-skill/`.
+### B.8 — Estado de la validación
+
+Casa 10 (inversor 2412240078, 3-5 oct 2026): contadores diarios idénticos entre Metrum y Deye;
+exportación cero configurada (`ZERO_EXPORT_TO_LOAD`); el recorte de PV del domingo se debe a
+batería llena + exportación cero + consumo bajo, no a una falla; una alarma F18 al reconectar la
+red; residuo de potencia constante ≈ 180 W sin explicar. Detalle y pendientes en
+`validacion-casa10-2026-10.md`. **Falta** validar en 2-3 casas más (otro modelo `0_5411_1`, un
+equipo fuera de línea, una normal) y construir el adaptador Livoltek.
 
 ## Notas
 
@@ -1131,10 +1242,11 @@ Valores tomados del catálogo vigente; ante cualquier duda (o campos no listados
   equipo ya definió a través del Encargado de Entrenamiento y Conocimiento — esas
   reglas del equipo siempre tienen prioridad sobre los valores genéricos de esta guía
   y sobre el Apéndice A.
-- El Apéndice B (DeyeCloud) se mantiene con `scripts/update_deye_api.py` a partir de
-  https://developer.deyecloud.com/api — si el usuario pide "actualiza el skill" o
-  dudas de la vigencia de un endpoint de Deye, ejecútalo (`--check` primero) y
-  reporta qué cambió.
+- El Apéndice B (adaptadores por marca; DeyeCloud implementado) se mantiene con
+  `scripts/update_deye_api.py` a partir de https://developer.deyecloud.com/api — si el usuario
+  pide "actualiza el skill" o dudas de la vigencia de un endpoint de Deye, ejecútalo (`--check`
+  primero) y reporta qué cambió. Nunca ejecutes una orden de control (B.5-B.6) sin la
+  confirmación explícita que exige la política; el nivel 3 no se ejecuta nunca.
 - Estos siete especialistas son una estructura de partida, no un techo — si una tarea
   necesita otra disciplina (ej. planificación de inventario de repuestos), improvisa
   un especialista nuevo en el mismo estilo en vez de forzarlo dentro de uno de los

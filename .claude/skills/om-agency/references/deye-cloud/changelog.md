@@ -1,6 +1,6 @@
 # Historial de cambios de Deye Open MCP
 
-> Copia de https://developer.deyecloud.com/openmcp/docs/deye-open-mcp-changelog.html (sync 2026-10-05 15:52 UTC).
+> Copia de https://developer.deyecloud.com/openmcp/docs/deye-open-mcp-changelog.html (sync 2026-10-05 16:17 UTC).
 
 Deye Open MCP 更新历史 
  Deye Open MCP MCP Skill MCP 工具文档 更新历史 EN 

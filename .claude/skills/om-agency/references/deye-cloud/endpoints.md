@@ -1,6 +1,6 @@
 # Catálogo de endpoints DeyeCloud OpenAPI
 
-> Generado por `scripts/update_deye_api.py` desde https://developer.deyecloud.com/api (servidor MCP v1.2.0, sync 2026-10-05 15:52 UTC). **No editar a mano.**
+> Generado por `scripts/update_deye_api.py` desde https://developer.deyecloud.com/api (servidor MCP v1.2.0, sync 2026-10-05 16:17 UTC). **No editar a mano.**
 
 Todos los endpoints requieren el header `Authorization: Bearer <token>` salvo `/v1.0/account/token` (que usa `appId` por query). Base URL por región: ver SKILL.md.
 

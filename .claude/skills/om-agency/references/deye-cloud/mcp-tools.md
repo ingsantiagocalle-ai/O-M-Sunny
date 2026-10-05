@@ -1,6 +1,6 @@
 # Herramientas del servidor Deye Open MCP
 
-> Generado por `scripts/update_deye_api.py` (servidor v1.2.0, 51 tools, sync 2026-10-05 15:52 UTC). **No editar a mano.**
+> Generado por `scripts/update_deye_api.py` (servidor v1.2.0, 51 tools, sync 2026-10-05 16:17 UTC). **No editar a mano.**
 
 | Tool | Argumentos | Descripción |
 |---|---|---|
