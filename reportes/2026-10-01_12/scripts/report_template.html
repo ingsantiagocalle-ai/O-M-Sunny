@@ -1,0 +1,514 @@
+<title>Operación Sunny 1–12 oct</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+<style>
+/* Layout: informe técnico de una columna (máx. 1180 px) con índice fijo; cada sección abre con su conclusión y debajo van gráficos y tablas de respaldo. */
+:root{
+  --bg:#eef1f2; --surface:#fcfcfb; --surface-2:#f4f6f6; --ink:#111518; --ink-2:#465058; --muted:#6f7880; --line:#dce1e3; --line-2:#c4cbcf;
+  --accent:#8a5800; --accent-ink:#6b4400; --accent-soft:#f4e9d2;
+  --s-solar:#eda100; --s-grid:#2a78d6; --s-batt:#1baf7a; --s-dis:#6250d6; --s-exp:#eb6834;
+  --heat-lo:#eef4fc; --heat-hi:#0d366b;
+  --ok:#0ca30c; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0e1112; --surface:#1a1a19; --surface-2:#202221; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#959a96; --line:#2c2e2d; --line-2:#3c3f3d;
+  --accent:#e4a83e; --accent-ink:#f0c46f; --accent-soft:#33291a;
+  --s-solar:#c98500; --s-grid:#3987e5; --s-batt:#199e70; --s-dis:#9085e9; --s-exp:#d95926;
+  --heat-lo:#1d2530; --heat-hi:#9ec5f4; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0e1112; --surface:#1a1a19; --surface-2:#202221; --ink:#f0efec; --ink-2:#c3c2b7; --muted:#959a96; --line:#2c2e2d; --line-2:#3c3f3d;
+  --accent:#e4a83e; --accent-ink:#f0c46f; --accent-soft:#33291a;
+  --s-solar:#c98500; --s-grid:#3987e5; --s-batt:#199e70; --s-dis:#9085e9; --s-exp:#d95926;
+  --heat-lo:#1d2530; --heat-hi:#9ec5f4; color-scheme:dark }
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;margin:0}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px;padding-block:0 64px}
+a{color:var(--accent-ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;line-height:1.1;margin:0}
+h2{font-size:2rem;font-weight:700;letter-spacing:.01em}
+h3{font-size:1.3rem;font-weight:600;margin-block:28px 8px}
+p{margin:0 0 12px;max-width:72ch}
+small{font-size:.78em;color:var(--muted)}
+code{font-family:var(--f-mono);font-size:.85em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+.muted{color:var(--muted)}
+/* cabecera */
+header.top{padding-block:36px 22px;display:grid;gap:14px;border-bottom:1px solid var(--line-2)}
+.eyebrow{font-family:var(--f-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+header.top h1{font-size:clamp(2.6rem,6vw,4.2rem);font-weight:700;letter-spacing:.005em}
+header.top h1 span{color:var(--muted);font-weight:500}
+.lede{font-size:1.15rem;color:var(--ink-2);max-width:70ch;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 22px;font-family:var(--f-mono);font-size:.78rem;color:var(--muted)}
+/* índice */
+nav.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);margin-inline:-20px;padding-inline:20px}
+nav.toc ol{list-style:none;margin:0;padding:10px 0;display:flex;gap:4px 18px;overflow-x:auto;white-space:nowrap;scrollbar-width:thin}
+nav.toc a{font-family:var(--f-display);font-weight:600;font-size:1.02rem;letter-spacing:.02em;text-decoration:none;color:var(--ink-2)}
+nav.toc a:hover{color:var(--accent-ink)}
+nav.toc a b{font-family:var(--f-mono);font-weight:500;font-size:.75rem;color:var(--muted);margin-right:4px}
+section{padding-block:44px 8px;border-bottom:1px solid var(--line);scroll-margin-top:52px}
+.sec-head{display:grid;gap:6px;margin-bottom:18px}
+.sec-head .num{font-family:var(--f-mono);font-size:.8rem;color:var(--accent-ink);letter-spacing:.08em}
+.thesis{font-size:1.12rem;color:var(--ink);max-width:76ch;margin:4px 0 14px}
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;margin-block:8px 22px}
+.kpi{background:var(--surface);padding:16px 18px;display:grid;gap:2px;align-content:start;min-width:0}
+.kpi .l{font-size:.82rem;color:var(--ink-2);font-weight:600}
+.kpi .v{font-family:var(--f-display);font-size:2.3rem;font-weight:600;line-height:1.05}
+.kpi .v small{font-family:var(--f-body);font-size:.9rem;font-weight:400;color:var(--muted);margin-left:3px}
+.kpi .s{font-size:.85rem;color:var(--muted)}
+/* hallazgos */
+.findings{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+.findings li{display:grid;grid-template-columns:118px 1fr;gap:6px 16px;padding:12px 0;border-bottom:1px solid var(--line)}
+.findings li p{margin:0;max-width:none}
+.findings li .where{font-weight:700}
+@media (max-width:640px){.findings li{grid-template-columns:1fr}}
+/* chips de estado (forma + texto, nunca solo color) */
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;font-weight:600;white-space:nowrap;padding:2px 9px 2px 7px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);color:var(--ink)}
+.chip i{font-style:normal;font-size:.72rem;line-height:1}
+.chip.crit i{color:var(--crit)} .chip.serious i{color:var(--serious)} .chip.warn i{color:var(--warn)} .chip.ok i{color:var(--ok)} .chip.none i{color:var(--muted)}
+.chip.crit{border-color:color-mix(in srgb,var(--crit) 55%,var(--line-2))}
+.chip.serious{border-color:color-mix(in srgb,var(--serious) 55%,var(--line-2))}
+/* paneles de gráfico */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px 16px 10px;margin-block:12px 18px;min-width:0}
+.panel h4{font-family:var(--f-body);font-size:1rem;font-weight:700;margin:0}
+.panel .cap{font-size:.86rem;color:var(--muted);margin:2px 0 8px;max-width:none}
+.legend{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:.84rem;color:var(--ink-2);margin-block:4px 6px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px}
+.legend i.ln{height:3px;width:16px;border-radius:2px}
+.chart{width:100%;min-height:120px;position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-family:var(--f-body);font-size:11.5px;fill:var(--muted)}
+.chart text.lab{fill:var(--ink-2)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:0 18px}
+.grid2>*{min-width:0}
+#tt{position:fixed;z-index:50;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line-2);border-radius:6px;padding:8px 10px;font-size:.82rem;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.14);max-width:280px}
+#tt b{font-weight:700} #tt .r{display:flex;justify-content:space-between;gap:14px} #tt .r i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px}
+/* controles */
+.controls{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:end;margin-block:6px 10px}
+.controls label{display:grid;gap:3px;font-size:.8rem;font-weight:600;color:var(--ink-2)}
+select,input[type=search]{font:inherit;font-size:.95rem;padding:6px 10px;border:1px solid var(--line-2);border-radius:6px;background:var(--surface);color:var(--ink);min-width:0;max-width:100%}
+/* tablas */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);margin-block:10px 20px}
+table{border-collapse:collapse;width:100%;font-size:.86rem;font-variant-numeric:tabular-nums}
+th{font-weight:600;text-align:right;color:var(--ink-2);background:var(--surface-2);padding:8px 10px;border-bottom:1px solid var(--line-2);vertical-align:bottom;line-height:1.25;white-space:nowrap}
+th small{font-weight:400}
+th.txt,td.txt{text-align:left}
+td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap;vertical-align:top}
+td.wrap{white-space:normal;min-width:260px}
+td small{color:var(--muted)}
+td.hot{font-weight:700}
+tr:last-child td{border-bottom:0}
+tr.tot td{font-weight:700;background:var(--surface-2)}
+table.sortable th{cursor:pointer;user-select:none}
+table.sortable th:hover{color:var(--accent-ink)}
+table.sortable th[aria-sort]::after{content:" ▾";color:var(--accent-ink)}
+table.sortable th[aria-sort="ascending"]::after{content:" ▴"}
+tbody tr:hover td{background:color-mix(in srgb,var(--accent-soft) 45%,transparent)}
+.answer{border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);padding:16px 18px;margin-block:8px 18px;display:grid;gap:8px}
+.answer .q{font-family:var(--f-display);font-size:1.25rem;font-weight:600}
+.answer p{margin:0}
+ul.plain{margin:0 0 12px;padding-left:20px;max-width:78ch} ul.plain li{margin-bottom:6px}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px;margin-block:8px 16px}
+.pair>div{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;min-width:0}
+.pair .big{font-family:var(--f-display);font-size:2rem;font-weight:600;line-height:1.1}
+footer{padding-block:28px;font-size:.85rem;color:var(--muted)}
+sup{font-family:var(--f-mono);font-size:.68em;color:var(--accent-ink);margin-left:2px}
+@media (prefers-reduced-motion:no-preference){ html{scroll-behavior:smooth} }
+@media (max-width:900px){ .kpis{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:520px){ .kpis{grid-template-columns:1fr} h2{font-size:1.65rem} .kpi .v{font-size:1.9rem} body{font-size:15px} }
+</style>
+
+<div class="wrap">
+<header class="top">
+  <div class="eyebrow">Reporte operativo O&amp;M · Solar fotovoltaica + baterías</div>
+  <h1>Proyecto Sunny <span>· 1–12 oct 2026</span></h1>
+  <p class="lede">Operación de {{N_HOUSES}} viviendas con telemetría en Cali, Turbaco, Barranquilla y Cartagena: rendimiento, cobertura solar, consumo horario, cargas por fase, exportación, interrupciones de red, respaldo y uso de baterías.</p>
+  <div class="meta"><span>Periodo: 01-oct 00:00 → 12-oct 24:00 (hora Colombia, UTC−5)</span><span>Fuente: telemetría cruda Metrum (15 min) + DeyeCloud (solo lectura)</span><span>Emitido: 13-oct-2026</span></div>
+</header>
+
+<nav class="toc" aria-label="Índice"><ol>
+  <li><a href="#resumen"><b>01</b>Resumen</a></li><li><a href="#energia"><b>02</b>Energía</a></li><li><a href="#horario"><b>03</b>Perfil horario</a></li>
+  <li><a href="#viviendas"><b>04</b>Viviendas</a></li><li><a href="#fases"><b>05</b>Fases y tensiones</a></li><li><a href="#exportacion"><b>06</b>Exportación</a></li>
+  <li><a href="#interrupciones"><b>07</b>Interrupciones y respaldo</a></li><li><a href="#bateria"><b>08</b>Batería</a></li><li><a href="#alarmas"><b>09</b>Alarmas</a></li>
+  <li><a href="#datos"><b>10</b>Datos y método</a></li><li><a href="#plan"><b>11</b>Plan de acción</a></li>
+</ol></nav>
+
+<!-- 01 -->
+<section id="resumen">
+  <div class="sec-head"><span class="num">01</span><h2>Resumen ejecutivo</h2></div>
+  <p class="thesis">La flota cubrió con energía solar el {{COV}} % de su demanda y respaldó el {{BK_COV}} % de las {{OUT_H}} horas-vivienda de corte de red. Los riesgos están concentrados: dos viviendas con falla activa (Casa 121 CR y Casa 447p), seis con corrientes por fase al nivel de la capacidad estimada del inversor y una con sobretensión permanente de la red.</p>
+  <div class="kpis">
+    <div class="kpi"><span class="l">Generación solar</span><span class="v">{{GEN}}<small>kWh</small></span><span class="s">{{GEN_HD}} kWh por vivienda al día</span></div>
+    <div class="kpi"><span class="l">Consumo de los clientes</span><span class="v">{{LOAD}}<small>kWh</small></span><span class="s">{{LOAD_HD}} kWh por vivienda al día</span></div>
+    <div class="kpi"><span class="l">Cobertura solar</span><span class="v">{{COV}}<small>%</small></span><span class="s">Autosuficiencia en cargas {{SELFSUF}} %</span></div>
+    <div class="kpi"><span class="l">Importación de red</span><span class="v">{{IMP}}<small>kWh</small></span><span class="s">Máxima a las {{PEAK_H_IMP}}, con baterías en su piso</span></div>
+    <div class="kpi"><span class="l">Exportación a red</span><span class="v">{{EXP}}<small>kWh</small></span><span class="s">{{EXP_PCT}} % de la generación (exportación cero activa)</span></div>
+    <div class="kpi"><span class="l">Cortes de red</span><span class="v">{{GRID_EV}}<small>eventos</small></span><span class="s">{{N_OUT}} cortes-vivienda &gt;3 min · {{SAIDI}} h por vivienda</span></div>
+    <div class="kpi"><span class="l">Respaldo efectivo</span><span class="v">{{BK_COV}}<small>%</small></span><span class="s">{{UNS_H}} h-vivienda sin tensión en cargas · {{E_BK}} kWh servidos</span></div>
+    <div class="kpi"><span class="l">Viviendas con riesgo</span><span class="v">{{R_CRIT}}<small>críticas</small></span><span class="s">{{R_ALERT}} en alerta · {{R_VIG}} en vigilancia · {{R_OK}} normales</span></div>
+  </div>
+  <h3>Hallazgos principales</h3>
+  <ul class="findings">
+    <li><span>{{CHIP_CRIT}}</span><p><span class="where">Casa 121 CR (Castellana Real, Barranquilla).</span> Indicios de neutro abierto o flotante: el 2-oct la tensión fase-neutro llegó a {{C121_VMAX}} V en el medidor de red y a {{C121_VLOAD}} V en las cargas, con {{C121_MN}} registros de neutro ausente. Tuvo {{C121_SYS}} cortes en cargas sin corte de red y un corte nocturno de 3 h 14 min (10-oct) sin respaldo, con la batería en su límite de descarga. Respaldo efectivo {{C121_BK}} %. Requiere visita prioritaria por seguridad.</p></li>
+    <li><span>{{CHIP_CRIT}}</span><p><span class="where">Casa 447p (Prado Verde, Turbaco).</span> Cero generación del 1 al 7 de octubre con {{C447_IGF}} eventos <code>igf</code> del inversor Livoltek. La batería bajó hasta 0 % y la vivienda quedó sin respaldo en el corte del 7-oct. La generación volvió el 8-oct, pero sigue baja: {{C447_GEN}} kWh en el periodo ({{C447_KWKW}} kWh/kW·día) y cobertura de {{C447_COV}} %.</p></li>
+    <li><span>{{CHIP_CRIT}}</span><p><span class="where">Corrientes altas por fase en {{N_CRIT_CUR}} viviendas: {{CRIT_CUR}}.</span> La corriente de carga por fase llega a la capacidad nominal estimada del inversor o la supera (Casa 18PR {{C18PR_MAX}} A, {{C18PR_R}} %). En todas ellas el percentil 99 también supera el 80 % de la nominal, así que la carga alta dura horas y no es un pico aislado. En la Casa 74 es una carga bifásica de ~7 kW que funciona de noche (p99 de {{C74_P99}} A); en las Casas 10 y 99 aparece de día en las fases B y C. No superan el umbral de acometida de 70 A, pero en modo respaldo el inversor debe entregar toda esa corriente solo. Ver sección 05.</p></li>
+    <li><span>{{CHIP_ALERT}}</span><p><span class="where">Casa 9G (Gerona Club House, Barranquilla).</span> Sobretensión permanente de la red: {{C9G_VMIN}}–{{C9G_VMAX}} V fase-neutro, promedio {{C9G_VAVG}} V, por encima de 132 V el {{C9G_HI}} % del tiempo. Es un tema del operador de red (Air-e) y expone a los equipos del cliente.</p></li>
+    <li><span>{{CHIP_ALERT}}</span><p><span class="where">Respaldo de los inversores Livoltek.</span> El 4-oct, tras tres caídas de red seguidas (17:37, 17:52, 17:56), {{OCT4_N}} de {{LIVO_RP_N}} Livoltek de Reservas de Pance dejaron las cargas sin tensión unos 34 min con la batería entre {{OCT4_SOCMIN}} % y {{OCT4_SOCMAX}} %. La transferencia mediana registrada fue de {{TR_LIVO}} min en Livoltek frente a {{TR_DEYE}} min en DEYE. Respaldo efectivo: Livoltek {{BK_LIVO}} %, DEYE {{BK_DEYE}} %. En isla, los Livoltek entregan {{LV_EPS}} V fase-neutro frente a ~124 V de la red.</p></li>
+    <li><span>{{CHIP_ALERT}}</span><p><span class="where">Reconexión de red con una fase ausente (3-oct, ~19:00–19:17, Reservas de Pance).</span> Al volver la red tras 9 h de corte, una fase quedó en ~20 V durante unos 15 min en {{REC_GRID_N}} viviendas. Coincide con las alarmas DEYE F18 (sobrecorriente AC) en las Casas 10 y 111 y W3 (fase de red incorrecta) en la Casa 99. Es evidencia para reclamar a EMCALI.</p></li>
+    <li><span>{{CHIP_ALERT}}</span><p><span class="where">Reserva de batería para cortes.</span> Reservas de Pance tuvo {{RP_EVENTS}} cortes que afectaron a sus {{RP_N}} viviendas ({{RP_SAIDI}} h por vivienda en 12 días). Con un SOC mínimo configurado de 15–21 %, la flota amanece en promedio con {{SOC_MIN_V}} % y las Casas 10 y 99 quedaron sin respaldo en cortes que empezaron con la batería en su piso.</p></li>
+    <li><span>{{CHIP_ALERT}}</span><p><span class="where">Calidad de datos de Metrum.</span> En {{N_SCALED}} inversores DEYE los contadores de energía llegan a Metrum 10 veces por debajo del valor real (validado contra DeyeCloud y el balance de medidores); en este reporte están corregidos. La Casa 104 operó aislada de la red unas {{C104_SLOTS}} h con tensión presente en su medidor. Los pilotos de Oficina Promigas no reportan telemetría.</p></li>
+    <li><span>{{CHIP_VIG}}</span><p><span class="where">Recorte de generación por exportación cero.</span> El pico solar de la flota llega a las {{PV_PEAK_H}} y luego cae mientras las baterías se llenan. Las viviendas con más horas de luz con batería llena son {{TOP_FULL}}. Esa energía no se aprovecha.</p></li>
+  </ul>
+</section>
+
+<!-- 02 -->
+<section id="energia">
+  <div class="sec-head"><span class="num">02</span><h2>Energía: generación, demanda y cobertura</h2></div>
+  <p class="thesis">Las {{N_HOUSES}} viviendas generaron {{GEN}} kWh e importaron {{IMP}} kWh para un consumo medido de {{LOAD}} kWh. La cobertura solar diaria osciló entre {{COV_MIN}} % ({{COV_MIN_D}}) y {{COV_MAX}} % ({{COV_MAX_D}}); los días 6 y 7 fueron los más bajos por menor generación y más importación.</p>
+  <div class="panel">
+    <h4>Energía diaria de la flota</h4>
+    <p class="cap">Columnas apiladas: energía que entra al sistema (generación FV + importación de red). Línea: consumo medido en las cargas. kWh por día.</p>
+    <div class="legend"><span><i style="background:var(--s-solar)"></i>Generación FV</span><span><i style="background:var(--s-grid)"></i>Importación de red</span><span><i class="ln" style="background:var(--ink)"></i>Consumo medido</span></div>
+    <div class="chart" id="ch-daily" role="img" aria-label="Energía diaria de la flota, 1 a 12 de octubre"></div>
+  </div>
+  <div class="panel">
+    <h4>Cobertura solar diaria</h4>
+    <p class="cap">Generación ÷ demanda del sistema (generación + importación − exportación). La línea fina marca el promedio del periodo ({{COV}} %).</p>
+    <div class="chart" id="ch-cov" role="img" aria-label="Cobertura solar diaria"></div>
+  </div>
+  {{T_DAILY}}
+  <p><b>Cómo leer estas cifras.</b> La <i>demanda del sistema</i> (generación + importación − exportación) es mayor que el <i>consumo medido</i> en las cargas en {{LOSSES}} kWh ({{LOSSES_PCT}} % de la generación). Esa diferencia corresponde a pérdidas de conversión, eficiencia de ida y vuelta de la batería, autoconsumo de inversor y BMS, y la variación de energía almacenada entre el inicio y el fin del periodo. La <i>autosuficiencia en cargas</i> mide qué parte del consumo del cliente no vino de la red: (consumo − importación) ÷ consumo.</p>
+  <h3>Por sector</h3>
+  {{T_SECT}}
+</section>
+
+<!-- 03 -->
+<section id="horario">
+  <div class="sec-head"><span class="num">03</span><h2>Consumo horario: solar, batería y red</h2></div>
+  <p class="thesis">El consumo de la flota tiene su máximo a las {{PEAK_H_LOAD}} ({{LOAD_PEAK_V}} kW promedio por vivienda) y la importación de red crece en la madrugada, cuando las baterías llegan a su piso (SOC promedio de {{SOC_MIN_V}} % a las {{SOC_MIN_H}}). La generación tiene su pico a las {{PV_PEAK_H}} y cae antes del mediodía solar porque las baterías se llenan y no se exporta.</p>
+  <div class="controls">
+    <label for="sel-house">Vivienda
+      <select id="sel-house"><option value="__flota__">Promedio de la flota ({{N_HOUSES}} viviendas)</option>{{HOUSE_OPTS}}</select>
+    </label>
+    <span class="muted" id="sel-note" style="font-size:.85rem">Promedio horario de los 12 días, en kW (equivale a kWh por hora).</span>
+  </div>
+  <div class="grid2">
+    <div class="panel">
+      <h4>¿De dónde sale la energía que consume el cliente?</h4>
+      <p class="cap">Consumo medido por hora, separado en lo que llegó de la red y lo que cubrieron la FV y la batería.</p>
+      <div class="legend"><span><i style="background:var(--s-grid)"></i>Desde la red</span><span><i style="background:var(--s-solar)"></i>Desde FV y batería</span></div>
+      <div class="chart" id="ch-p1" role="img" aria-label="Consumo horario por fuente"></div>
+    </div>
+    <div class="panel">
+      <h4>Generación FV y uso de la batería</h4>
+      <p class="cap">Arriba de cero: generación FV y carga de batería. Abajo: descarga de batería. kW promedio.</p>
+      <div class="legend"><span><i class="ln" style="background:var(--s-solar)"></i>Generación FV</span><span><i style="background:var(--s-batt)"></i>Carga de batería</span><span><i style="background:var(--s-dis)"></i>Descarga de batería</span></div>
+      <div class="chart" id="ch-p2" role="img" aria-label="Generación FV y batería por hora"></div>
+    </div>
+    <div class="panel">
+      <h4>Estado de carga de la batería</h4>
+      <p class="cap">SOC promedio por hora del día, en %.</p>
+      <div class="chart" id="ch-p3" role="img" aria-label="SOC promedio por hora"></div>
+    </div>
+    <div class="panel">
+      <h4>Corriente de carga por fase</h4>
+      <p class="cap">Corriente promedio por hora en el medidor de cargas, en amperios por fase.</p>
+      <div class="legend"><span><i class="ln" style="background:var(--s-grid)"></i>Fase A</span><span><i class="ln" style="background:var(--s-exp)"></i>Fase B</span><span><i class="ln" style="background:var(--s-batt)"></i>Fase C</span></div>
+      <div class="chart" id="ch-p4" role="img" aria-label="Corriente por fase y hora"></div>
+    </div>
+  </div>
+  <div class="panel">
+    <h4>Importación de red de la flota por día y hora</h4>
+    <p class="cap">kWh importados por toda la flota en cada hora. Las celdas oscuras de la noche y la madrugada son consumo cubierto por la red cuando las baterías llegan a su piso; la noche del 6 al 7 de octubre fue la de mayor importación.</p>
+    <div class="chart" id="ch-heat" role="img" aria-label="Mapa de calor de importación de red"></div>
+  </div>
+</section>
+
+<!-- 04 -->
+<section id="viviendas">
+  <div class="sec-head"><span class="num">04</span><h2>Rendimiento por vivienda</h2></div>
+  <p class="thesis">La flota promedió {{GEN_HD}} kWh de generación por vivienda al día, equivalente a {{KWKW}} kWh por kW nominal de inversor ({{CAP_INV}} kW instalados). En muchas viviendas la generación queda limitada por el consumo: con exportación cero y la batería llena, el inversor recorta la FV.</p>
+  <p>El rendimiento específico real (kWh/kWp) y el índice de desempeño (PR) necesitan la potencia pico instalada de cada arreglo y la irradiancia de la zona; ninguno de los dos está en Metrum. Por eso esta tabla usa kWh por kW nominal del inversor, útil para comparar viviendas del mismo sector, no como PR. La columna <i>Pérdidas</i> es la diferencia promedio entre la demanda del sistema y el consumo medido.</p>
+  <div class="controls">
+    <label for="f-zone">Sector<select id="f-zone"><option value="">Todos</option>{{ZONE_OPTS}}</select></label>
+    <label for="f-q">Buscar vivienda<input type="search" id="f-q" placeholder="Ej.: Casa 74" autocomplete="off"></label>
+    <span class="muted" style="font-size:.85rem">Clic en un encabezado para ordenar.</span>
+  </div>
+  {{T_RANK}}
+  <p class="muted" style="font-size:.85rem"><sup>×10</sup> generación corregida por escala (sección 10). <sup>*</sup> días completados con DeyeCloud o con el contador diario del inversor por falta de cierre en Metrum.</p>
+</section>
+
+<!-- 05 -->
+<section id="fases">
+  <div class="sec-head"><span class="num">05</span><h2>Fases, corrientes y tensiones</h2></div>
+  <div class="answer">
+    <span class="q">¿Hay indicios de que un sistema pueda fallar por corrientes altas?</span>
+    <p>Sí, en {{N_CRIT_CUR}} viviendas: {{CRIT_CUR}}. Su corriente máxima de carga por fase está entre el {{RATIO_MIN}} % y el {{RATIO_MAX}} % de la corriente nominal estimada del inversor, y en todas el percentil 99 supera el 80 % ({{P99_LIST}}): la carga alta no es un pico aislado, dura horas. El riesgo práctico aparece en modo respaldo, cuando el inversor debe entregar toda esa corriente sin la red. Otras {{N_ALERT_CUR}} viviendas ({{ALERT_CUR}}) tienen picos puntuales por encima del 80 % de la nominal, con percentil 99 bajo.</p>
+    <p>La única falla por sobrecorriente registrada (F18 en las Casas 10 y 111, 3-oct 19:01–19:19) coincidió con la reconexión de la red con una fase ausente, en viviendas con fases B/C muy cargadas. Ninguna vivienda supera el umbral genérico de acometida (70 A de alerta, 80 A crítico).</p>
+  </div>
+  <div class="panel">
+    <h4>Corriente máxima de carga por fase frente a la nominal del inversor</h4>
+    <p class="cap">Barra: corriente máxima observada (muestras cada 15 min) ÷ corriente nominal estimada por fase. Marca negra: percentil 99. Líneas de referencia en 80 % y 100 %.</p>
+    <div class="legend"><span><i style="background:var(--s-grid)"></i>I máx ÷ I nominal</span><span><i class="ln" style="background:var(--ink);width:3px;height:12px"></i>Percentil 99</span></div>
+    <div class="chart" id="ch-ratio" role="img" aria-label="Corriente máxima por vivienda relativa a la nominal"></div>
+  </div>
+  <h3>Detalle por vivienda</h3>
+  <p>La corriente nominal por fase se estima como potencia nominal del inversor ÷ (3 × 127 V): 26,2 A para 10 kW, 39,4 A para 15 kW y 15,7 A para 6 kW. Hay que confirmarla con la ficha técnica de cada modelo y con el calibre del breaker y el cableado instalados. Los valores en negrita superan el 80 % de esa nominal. Las tensiones de red excluyen los periodos de corte.</p>
+  {{T_PH}}
+  <h3>Tensiones</h3>
+  <ul class="plain">
+    <li><b>Casa 9G:</b> red en {{C9G_VMIN}}–{{C9G_VMAX}} V (promedio {{C9G_VAVG}} V) todo el periodo. Con 120 V nominales, eso es +8 % a +13 %. Reclamar al operador y verificar protecciones contra sobretensión.</li>
+    <li><b>Casa 121 CR:</b> 205,5 V en la fase B y 198,9 V en la fase C a las 14:00 del 2-oct, con la fase A en 36,6 V; en las cargas, 150,1 V a las 12:30. Es el patrón de un neutro abierto. Revisar neutro de acometida, tablero y bornes del medidor.</li>
+    <li><b>Salida de respaldo Livoltek:</b> mediana de {{LV_EPS}} V fase-neutro en isla (DEYE: {{DY_EPS}} V). Equivale a ~230 V entre fases y sugiere que la tensión de salida EPS está ajustada a 230/400 V y no a la red local. Conviene revisar el parámetro en una vivienda piloto.</li>
+    <li><b>3-oct 19:00–19:17, Reservas de Pance:</b> al reconectar la red, una fase quedó en ~20 V en {{REC_GRID_N}} viviendas (eventos <code>uv</code>, <code>mv</code> y <code>nv</code> de los medidores). En {{REC_LOAD_N}} viviendas esa fase ausente llegó a las cargas.</li>
+    <li><b>Secuencia de fases:</b> {{RPS_N}} viviendas registran el código <code>rps</code> (secuencia invertida) después de cada retorno de tensión. No afecta cargas monofásicas, pero sí motores trifásicos y la lectura por fase. Verificar en la próxima visita.</li>
+  </ul>
+</section>
+
+<!-- 06 -->
+<section id="exportacion">
+  <div class="sec-head"><span class="num">06</span><h2>Exportación de energía activa a la red</h2></div>
+  <p class="thesis">La flota exportó {{EXP}} kWh en 12 días, el {{EXP_PCT}} % de lo generado. La limitación de exportación cero está funcionando en todas las viviendas.</p>
+  <p>Los pocos kWh exportados son probablemente transitorios: cuando una carga grande se apaga, el inversor tarda unos segundos en reducir su salida. La mayor exportación fue la de la Casa 447p (2,5 kWh), concentrada el 8 y 9 de octubre, cuando volvió su generación. La consecuencia de no exportar es el recorte: cuando la batería está llena y el consumo es bajo, la FV se limita.</p>
+  {{T_EX}}
+  <p>Las viviendas con más horas de luz (08:00–16:00) con la batería llena y sin exportar son {{TOP_FULL}}. Para dimensionar la energía perdida se necesita irradiancia de la zona; si el operador lo permite, la exportación limitada o la gestión de cargas diurnas aprovecharía esa energía.</p>
+</section>
+
+<!-- 07 -->
+<section id="interrupciones">
+  <div class="sec-head"><span class="num">07</span><h2>Interrupciones de red y respaldo</h2></div>
+  <p class="thesis">Hubo {{GRID_EV}} eventos de corte de red de más de 3 min (agrupados por sector) y {{GRID_EV_T}} transitorios. En total fueron {{N_OUT}} cortes-vivienda y {{OUT_H}} horas-vivienda sin red. Los sistemas sostuvieron las cargas el {{BK_COV}} % de ese tiempo y entregaron {{E_BK}} kWh en isla. Reservas de Pance concentra el problema: {{RP_SAIDI}} h de corte por vivienda.</p>
+  <div class="kpis">
+    <div class="kpi"><span class="l">Frecuencia de cortes</span><span class="v">{{SAIFI}}<small>por vivienda</small></span><span class="s">Cortes &gt;3 min en 12 días (equivalente a SAIFI)</span></div>
+    <div class="kpi"><span class="l">Duración de cortes</span><span class="v">{{SAIDI}}<small>h por vivienda</small></span><span class="s">Equivalente a SAIDI · {{HOUSES_OUT}} viviendas afectadas</span></div>
+    <div class="kpi"><span class="l">Tiempo sin tensión en cargas</span><span class="v">{{UNS_H}}<small>h-vivienda</small></span><span class="s">De {{OUT_H}} h-vivienda de corte de red</span></div>
+    <div class="kpi"><span class="l">Microcortes</span><span class="v">{{N_TRANS}}<small>≤3 min</small></span><span class="s">Cortes breves de red por vivienda</span></div>
+  </div>
+  <div class="panel">
+    <h4>Cronología de cortes por sector</h4>
+    <p class="cap">Cada barra es un evento de corte en el sector (duración mediana entre las viviendas afectadas). Las marcas cortas son eventos de 3 min o menos.</p>
+    <div class="legend"><span><i style="background:var(--s-grid)"></i>Corte &gt;3 min</span><span><i style="background:var(--muted);width:3px"></i>Transitorio ≤3 min</span></div>
+    <div class="chart" id="ch-tl" role="img" aria-label="Cronología de cortes por sector"></div>
+  </div>
+  <div class="pair">
+    <div><span class="muted" style="font-size:.85rem;font-weight:600">DEYE · {{N_OUT_DEYE}} cortes-vivienda</span><div class="big">{{BK_DEYE}} % respaldado</div><span class="muted" style="font-size:.85rem">Transferencia mediana registrada: {{TR_DEYE}} min. Probablemente es el tiempo de reinicio del medidor de cargas; el corte real en cargas sería menor.</span></div>
+    <div><span class="muted" style="font-size:.85rem;font-weight:600">Livoltek · {{N_OUT_LIVO}} cortes-vivienda</span><div class="big">{{BK_LIVO}} % respaldado</div><span class="muted" style="font-size:.85rem">Transferencia mediana registrada: {{TR_LIVO}} min, con interrupciones adicionales durante el respaldo y al reconectar.</span></div>
+  </div>
+  <h3>Lo que explica los minutos sin respaldo</h3>
+  <ul class="plain">
+    <li><b>Cortes en cargas durante el respaldo (Livoltek):</b> en el corte de 9 h del 3-oct, las cargas de los Livoltek de Reservas de Pance se cayeron entre 2 y 5 veces (10:41, 13:42, 13:50, 14:35 y 14:43) por 3–6 min cada vez, con la batería entre 60 % y 100 %. Las mismas horas aparecen como microcortes de ~1 min en los DEYE, lo que sugiere intentos de reconexión de la red que los Livoltek manejan peor.</li>
+    <li><b>Bloqueo tras fluctuaciones (4-oct):</b> {{OCT4_LIST}} quedaron sin tensión entre 31 y 34 min desde las 17:56, con SOC entre {{OCT4_SOCMIN}} % y {{OCT4_SOCMAX}} %.</li>
+    <li><b>Batería en su límite de descarga:</b> Casa 99 (6-oct 09:29, SOC 20 % → 10 %, 22 min sin tensión), Casa 10 (2-oct 14:45, SOC 15 %, 64 min sin tensión) y Casa 121 CR (10-oct 01:13, SOC 15 %, 3 h 07 min sin tensión). Son cortes que empezaron cuando la batería ya estaba en el piso configurado.</li>
+    <li><b>Batería fuera de servicio:</b> Casa 447p (7-oct, 41 min sin respaldo, SOC 0 %).</li>
+    <li><b>Telemetría del inversor durante cortes:</b> en {{INV_GAP}} el inversor deja de reportar a Metrum durante buena parte de los cortes, mientras los medidores siguen reportando. El análisis de respaldo usa el medidor de cargas, que sí reporta.</li>
+  </ul>
+  <h3>Eventos de corte &gt;3 min</h3>
+  {{T_EV}}
+  <h3>Respaldo por vivienda</h3>
+  <p>Respaldo efectivo = minutos de corte de red con tensión en las cargas ÷ minutos de corte. Se cuenta como <i>sin tensión</i> todo intervalo de más de 2 min registrado por el medidor de cargas (eventos <code>po</code>/<code>pr</code> y muestras de tensión). Los microcortes de 2 min o menos al inicio del corte se tratan como transferencia.</p>
+  {{T_BK}}
+</section>
+
+<!-- 08 -->
+<section id="bateria">
+  <div class="sec-head"><span class="num">08</span><h2>Uso de la batería</h2></div>
+  <p class="thesis">Las baterías hicieron en promedio {{CYC}} ciclos equivalentes por día, con SOC medio de {{SOC_AVG}} %. Cargaron unos {{BCH}} kWh y descargaron {{BDC}} kWh en el periodo; solo {{GRID_CH}} kWh de la carga vinieron de la red. El patrón es de ciclo diario completo: llenas a media tarde y en su piso al amanecer.</p>
+  <p>Ese patrón maximiza el autoconsumo, pero deja casi sin reserva para cortes de madrugada. La columna <i>Autonomía 06:00</i> estima cuántas horas podría sostener la batería la carga típica de la mañana si la red cayera a esa hora, con un piso supuesto de 15 %. Es menor a 2 h en {{AUT6_LT2}} de las {{N_HOUSES}} viviendas y nula en {{AUT6_ZERO}}. En sectores con cortes frecuentes como Reservas de Pance conviene subir la reserva a 30–40 % y medir el efecto en la cobertura.</p>
+  {{T_BT}}
+  <p class="muted" style="font-size:.85rem">Ciclos equivalentes = suma de descensos de SOC ÷ 100. Energía de carga y descarga integrada de la potencia de batería cada 15 min (error típico de ±10–20 %). Capacidad estimada = Ah configurados × tensión nominal de módulos de 51,2 V inferida de la tensión de batería; confirmar con la ficha de cada banco. El SOH es el valor que reporta el BMS.</p>
+</section>
+
+<!-- 09 -->
+<section id="alarmas">
+  <div class="sec-head"><span class="num">09</span><h2>Alarmas y eventos</h2></div>
+  <p class="thesis">DeyeCloud registró 4 alarmas en el periodo, todas asociadas a eventos de red. Metrum registró estados de falla en los Livoltek, casi siempre en el momento en que regresa la red (2-oct 17:30, 3-oct 09:45 y 6-oct 14:30).</p>
+  {{T_AL}}
+  <p>Eventos <code>igf</code> de los Livoltek: Casa 447p ({{C447_IGF}}, del 2 al 9 de octubre, durante su periodo sin generación), Casa 24 (16), Casa 121 CR y Casa 104 (4 cada una), y 1 o 2 en otras 13 viviendas. El significado del código no está documentado en la fuente consultada. Por su coincidencia con la pérdida de FV en la Casa 447p, la hipótesis es una falla de aislamiento o de tierra en el lado DC; hay que confirmarlo con Livoltek.</p>
+  <h3>Códigos de los medidores</h3>
+  {{T_CODES}}
+  <p class="muted" style="font-size:.85rem">La interpretación de los códigos es probable, no confirmada con el fabricante del medidor.</p>
+</section>
+
+<!-- 10 -->
+<section id="datos">
+  <div class="sec-head"><span class="num">10</span><h2>Datos y método</h2></div>
+  <h3>Fuentes</h3>
+  <ul class="plain">
+    <li><b>Metrum (ThingsBoard):</b> series crudas de 15 min del 30-sep al 13-oct de los inversores, medidores de red y medidores de cargas de 50 sitios. Disponibilidad promedio: inversores {{AV_INV}} %, medidores de red {{AV_RED}} %, medidores de cargas {{AV_SOL}} %.</li>
+    <li><b>DeyeCloud (solo lectura):</b> energía diaria y alarmas de los 18 inversores DEYE, y configuración de la Casa 74. No se envió ninguna orden de control.</li>
+    <li><b>Alcance:</b> {{N_HOUSES}} viviendas con datos. Los pilotos de Oficina Promigas (Huawei y Livoltek) no reportaron telemetría en el periodo. Se excluyeron 5 inversores y 1 medidor asociados a gateways de equipos reemplazados (sin datos) y 2 inversores adicionales registrados en la Casa 121 CR sin telemetría útil.</li>
+  </ul>
+  <h3>Fórmulas</h3>
+  <ul class="plain">
+    <li><b>Generación:</b> diferencia de cierres diarios (00:00) del contador acumulado del inversor (<code>CenergyAE</code>). Si falta un cierre, se usa el contador diario del inversor o DeyeCloud.</li>
+    <li><b>Importación y exportación:</b> cierres diarios de <code>CenergyAI</code> y <code>CenergyAE</code> del medidor de red. <b>Consumo del cliente:</b> cierres de <code>CenergyAI</code> del medidor de cargas, instalado a la salida del inversor (sigue con tensión durante los cortes).</li>
+    <li><b>Demanda del sistema</b> = generación + importación − exportación. <b>Cobertura solar</b> = generación ÷ demanda del sistema. <b>Autosuficiencia en cargas</b> = (consumo − importación) ÷ consumo.</li>
+    <li><b>Perfiles horarios:</b> diferencias horarias de los contadores acumulados de 15 min. Batería: potencia integrada con signo normalizado (+ = carga). El signo se verificó contra la variación del SOC en cada vivienda (97–100 % de coincidencia): DEYE reporta + = descarga y Livoltek + = carga.</li>
+    <li><b>Cortes:</b> pares de eventos <code>po</code>→<code>pr</code> del medidor de red, completados con muestras de tensión (&lt;5 V en las tres fases) y agrupados si están separados por menos de 10 min. Un corte de más de 3 min es sostenido.</li>
+  </ul>
+  <h3>Corrección de escala en inversores DEYE</h3>
+  <p>En {{N_SCALED}} inversores DEYE, los contadores de energía de Metrum (<code>CenergyAE</code>, <code>energyPD</code> y otros) valen la décima parte de la energía real. En siete de ellos DeyeCloud reporta 10 veces más; en la Casa 48PC DeyeCloud coincide con Metrum, pero el balance de medidores y la batería integrada muestran el mismo factor. La potencia de batería no está afectada. Hay que corregir el mapeo en Metrum y en cualquier reporte que lea esos contadores.</p>
+  {{T_SC}}
+  <h3>Limitaciones</h3>
+  <ul class="plain">
+    <li>Sin kWp instalado ni irradiancia no se calculan rendimiento específico ni PR; se usa kWh por kW nominal del inversor.</li>
+    <li>Las corrientes y tensiones son muestras instantáneas cada 15 min: los picos reales (arranques de motores, transitorios) pueden ser mayores.</li>
+    <li>La corriente nominal por fase y la capacidad de batería son estimaciones; deben confirmarse con fichas técnicas.</li>
+    <li>Días sin generación: {{ZERO_GEN}}. En la Casa 104 la generación baja se explica por consumo muy bajo y batería llena; en las Casas 412p y 415p coincide con el arranque del sistema o con la FV desconectada (confirmar en bitácora).</li>
+    <li>Casa 55p: el atributo de modelo en Metrum dice "HP3-15KL2" (Livoltek), pero el equipo es DEYE. Casa 121 CR tiene tres inversores registrados; se usó el que reporta datos.</li>
+  </ul>
+</section>
+
+<!-- 11 -->
+<section id="plan">
+  <div class="sec-head"><span class="num">11</span><h2>Plan de acción</h2></div>
+  <p class="thesis">Ordenado por riesgo para las personas y los equipos, después por energía perdida.</p>
+  <div class="tw"><table>
+    <thead><tr><th class="txt">Prioridad</th><th class="txt">Vivienda o alcance</th><th class="txt">Acción</th><th class="txt">Responsable</th><th class="txt">Plazo</th></tr></thead>
+    <tbody>
+      <tr><td class="txt">{{CHIP_CRIT}}</td><td class="txt">Casa 121 CR</td><td class="txt wrap">Visita de diagnóstico: continuidad y torque del neutro en acometida, tablero y medidor; prueba de tensiones fase-neutro bajo carga; revisar por qué el respaldo no actúa. Confirmar cuál de los tres inversores registrados está instalado y depurar Metrum.</td><td class="txt">Diagnóstico de fallas</td><td class="txt">Inmediato</td></tr>
+      <tr><td class="txt">{{CHIP_CRIT}}</td><td class="txt">Casa 447p</td><td class="txt wrap">Medir aislamiento del arreglo DC y revisar el historial de eventos <code>igf</code>. Verificar la batería (tensión 93–220 V, SOC 0 % del 6 al 8 de octubre). Abrir caso con Livoltek si se confirma falla de equipo.</td><td class="txt">Diagnóstico / Garantías</td><td class="txt">Esta semana</td></tr>
+      <tr><td class="txt">{{CHIP_CRIT}}</td><td class="txt">Casas 18PR, 74, 10, 99, 23 y 63</td><td class="txt wrap">Identificar las cargas bifásicas de ~7 kW (posible cargador de vehículo eléctrico, ducha o secadora). Verificar calibre de breakers y conductores, termografía de bornes, y redistribuir circuitos para equilibrar fases. Evaluar limitar la corriente del cargador o programarlo fuera de los cortes.</td><td class="txt">Mantenimiento preventivo</td><td class="txt">2 semanas</td></tr>
+      <tr><td class="txt">{{CHIP_ALERT}}</td><td class="txt">Casa 9G · Air-e</td><td class="txt wrap">Reclamo formal por sobretensión permanente (130–136 V) con estas mediciones. Verificar protección contra sobretensión en el tablero.</td><td class="txt">Operación / cliente</td><td class="txt">Esta semana</td></tr>
+      <tr><td class="txt">{{CHIP_ALERT}}</td><td class="txt">Reservas de Pance · EMCALI</td><td class="txt wrap">Reportar los 8 cortes del periodo y la reconexión con fase ausente del 3-oct 19:00–19:17, con la lista de viviendas y las alarmas F18/W3 asociadas.</td><td class="txt">Operación</td><td class="txt">Esta semana</td></tr>
+      <tr><td class="txt">{{CHIP_ALERT}}</td><td class="txt">Livoltek de Reservas de Pance</td><td class="txt wrap">Revisar con Livoltek la transferencia lenta, las caídas de EPS durante el respaldo y el bloqueo del 4-oct. Verificar el ajuste de tensión de salida EPS (~133 V) en una vivienda piloto antes de cambiarlo en la flota.</td><td class="txt">Diagnóstico / Garantías</td><td class="txt">2 semanas</td></tr>
+      <tr><td class="txt">{{CHIP_ALERT}}</td><td class="txt">Reservas de Pance</td><td class="txt wrap">Piloto de reserva de batería de 30–40 % en 2–3 viviendas DEYE (cambio de TOU, nivel 1 de la política de comandos: confirmación explícita y valor previo guardado). Medir la pérdida de cobertura frente a la ganancia de respaldo.</td><td class="txt">Operación</td><td class="txt">2 semanas</td></tr>
+      <tr><td class="txt">{{CHIP_ALERT}}</td><td class="txt">Metrum · 8 inversores DEYE</td><td class="txt wrap">Corregir la escala ×0,1 de los contadores de energía y revisar los reportes que ya los usaron. Revisar por qué los inversores de las Casas 2, 74, 111, 18PR y 30 dejan de reportar durante los cortes. Activar telemetría de los pilotos de Oficina Promigas.</td><td class="txt">Plataforma de monitoreo</td><td class="txt">2 semanas</td></tr>
+      <tr><td class="txt">{{CHIP_VIG}}</td><td class="txt">Casa 104</td><td class="txt wrap">Verificar el breaker entre medidor e inversor y el registro de fallas del 3-oct 19:30–20:00 (operó aislada unas {{C104_SLOTS}} h con red presente).</td><td class="txt">Diagnóstico de fallas</td><td class="txt">Próxima visita</td></tr>
+      <tr><td class="txt">{{CHIP_VIG}}</td><td class="txt">Casa 76</td><td class="txt wrap">Explicar los {{C76_LW}} W promedio de diferencia entre demanda del sistema y consumo medido (posibles cargas fuera del medidor de cargas o autoconsumo anómalo).</td><td class="txt">Diagnóstico de fallas</td><td class="txt">Próxima visita</td></tr>
+      <tr><td class="txt">{{CHIP_VIG}}</td><td class="txt">{{RPS_N}} viviendas con código <code>rps</code></td><td class="txt wrap">Verificar la secuencia de fases y el cableado de los medidores.</td><td class="txt">Mantenimiento preventivo</td><td class="txt">Próxima visita</td></tr>
+      <tr><td class="txt">{{CHIP_VIG}}</td><td class="txt">Flota</td><td class="txt wrap">Cargar en el inventario los kWp instalados por vivienda y una fuente de irradiancia por zona para calcular PR y cuantificar el recorte por exportación cero.</td><td class="txt">Reportes</td><td class="txt">Próximo reporte</td></tr>
+    </tbody>
+  </table></div>
+</section>
+<footer>Reporte generado a partir de telemetría cruda; cada cifra puede reproducirse desde Metrum y DeyeCloud con las fórmulas de la sección 10. Las interpretaciones marcadas como hipótesis requieren confirmación en campo o con el fabricante.</footer>
+</div>
+<div id="tt" hidden></div>
+<script id="data" type="application/json">{{DATA}}</script>
+<script>
+(function(){
+const DATA=JSON.parse(document.getElementById('data').textContent);
+const NS='http://www.w3.org/2000/svg';
+const tok=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fm=(v,d=1)=>v==null||isNaN(v)?'—':Number(v).toLocaleString('es-CO',{minimumFractionDigits:d,maximumFractionDigits:d});
+function E(tag,a,p){const x=document.createElementNS(NS,tag);for(const k in a)x.setAttribute(k,a[k]);if(p)p.appendChild(x);return x;}
+function nice(max,n=4){if(!(max>0))return{max:1,step:.25};const raw=max/n,p=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/p;const s=(m<=1?1:m<=2?2:m<=2.5?2.5:m<=5?5:10)*p;return{max:Math.ceil(max/s-1e-9)*s,step:s};}
+const tt=document.getElementById('tt');
+function showTT(html,ev){tt.innerHTML=html;tt.hidden=false;const r=tt.getBoundingClientRect();let x=ev.clientX+14,y=ev.clientY+14;if(x+r.width>innerWidth-8)x=ev.clientX-r.width-14;if(y+r.height>innerHeight-8)y=ev.clientY-r.height-14;tt.style.left=Math.max(8,x)+'px';tt.style.top=Math.max(8,y)+'px';}
+function hideTT(){tt.hidden=true;}
+const row=(c,l,v)=>`<div class="r"><span><i style="background:${c}"></i>${l}</span><b>${v}</b></div>`;
+function colPath(x,y,w,h,r){r=Math.max(0,Math.min(r,h,w/2));if(h<=0)return'';return`M${x},${y+h}V${y+r}Q${x},${y} ${x+r},${y}H${x+w-r}Q${x+w},${y} ${x+w},${y+r}V${y+h}Z`;}
+function colPathDown(x,y,w,h,r){r=Math.max(0,Math.min(r,h,w/2));if(h<=0)return'';return`M${x},${y}V${y+h-r}Q${x},${y+h} ${x+r},${y+h}H${x+w-r}Q${x+w},${y+h} ${x+w},${y+h-r}V${y}Z`;}
+function frame(host,H,M){host.innerHTML='';const W=Math.max(280,host.clientWidth);const svg=E('svg',{viewBox:`0 0 ${W} ${H}`,width:W,height:H},host);return{svg,W,H,iw:W-M.l-M.r,ih:H-M.t-M.b,M};}
+function yAxis(f,max,step,unit,min=0){const g=E('g',{},f.svg);for(let v=min;v<=max+1e-9;v+=step){const y=f.M.t+f.ih-(v-min)/(max-min)*f.ih;E('line',{x1:f.M.l,x2:f.M.l+f.iw,y1:y,y2:y,stroke:tok(v===0?'--line-2':'--line'),'stroke-width':1},g);const t=E('text',{x:f.M.l-6,y:y+4,'text-anchor':'end'},g);t.textContent=fm(v,step<1?(step<0.1?2:1):0)+(unit&&v===max?' '+unit:'');}return g;}
+function xLabels(f,labels,every){const band=f.iw/labels.length;labels.forEach((l,i)=>{if(i%every)return;const t=E('text',{x:f.M.l+band*i+band/2,y:f.H-8,'text-anchor':'middle'},f.svg);t.textContent=l;});return band;}
+function bandHover(f,n,band,html,hl){const g=E('g',{},f.svg);const sh=E('rect',{x:0,y:f.M.t,width:band,height:f.ih,fill:tok('--ink'),opacity:0},g);for(let i=0;i<n;i++){const r=E('rect',{x:f.M.l+band*i,y:f.M.t,width:band,height:f.ih,fill:'transparent'},f.svg);r.addEventListener('mousemove',ev=>{sh.setAttribute('x',f.M.l+band*i);sh.setAttribute('opacity',.06);showTT(html(i),ev);});r.addEventListener('mouseleave',()=>{sh.setAttribute('opacity',0);hideTT();});}g.parentNode.insertBefore(g,g.parentNode.firstChild.nextSibling);}
+
+/* 1. energía diaria */
+function drawDaily(){const host=document.getElementById('ch-daily');const d=DATA.daily;const f=frame(host,280,{l:50,r:14,t:14,b:28});
+ const max=nice(Math.max(...d.map(x=>Math.max(x.gen+x.imp,x.load)))*1.02);yAxis(f,max.max,max.step,'kWh');
+ const band=xLabels(f,d.map(x=>String(x.day).padStart(2,'0')),1);const bw=Math.min(24,band*.6);const sy=v=>f.ih*v/max.max;const surf=tok('--surface');
+ d.forEach((x,i)=>{const cx=f.M.l+band*i+band/2-bw/2;const base=f.M.t+f.ih;const hg=sy(x.gen),hi=sy(x.imp);
+  E('path',{d:`M${cx},${base}V${base-hg}H${cx+bw}V${base}Z`,fill:tok('--s-solar')},f.svg);
+  E('path',{d:colPath(cx,base-hg-hi,bw,Math.max(0,hi-2),4),fill:tok('--s-grid')},f.svg);});
+ const pts=d.map((x,i)=>[f.M.l+band*i+band/2,f.M.t+f.ih-sy(x.load)]);E('polyline',{points:pts.map(p=>p.join(',')).join(' '),fill:'none',stroke:tok('--ink'),'stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'},f.svg);
+ pts.forEach(p=>E('circle',{cx:p[0],cy:p[1],r:4,fill:tok('--ink'),stroke:surf,'stroke-width':2},f.svg));
+ bandHover(f,d.length,band,i=>{const x=d[i];return`<b>${String(x.day).padStart(2,'0')}-oct</b>`+row(tok('--s-solar'),'Generación FV',fm(x.gen,0)+' kWh')+row(tok('--s-grid'),'Importación',fm(x.imp,0)+' kWh')+row(tok('--ink'),'Consumo medido',fm(x.load,0)+' kWh')+`<div class="r"><span>Cobertura</span><b>${fm(x.cov,1)} %</b></div>`;});}
+
+/* 2. cobertura */
+function drawCov(){const host=document.getElementById('ch-cov');const d=DATA.daily;const f=frame(host,220,{l:50,r:14,t:14,b:28});const lo=40,hi=100;
+ const g=E('g',{},f.svg);for(let v=lo;v<=hi;v+=20){const y=f.M.t+f.ih-(v-lo)/(hi-lo)*f.ih;E('line',{x1:f.M.l,x2:f.M.l+f.iw,y1:y,y2:y,stroke:tok('--line')},g);const t=E('text',{x:f.M.l-6,y:y+4,'text-anchor':'end'},g);t.textContent=v+' %';}
+ const band=xLabels(f,d.map(x=>String(x.day).padStart(2,'0')),1);const Y=v=>f.M.t+f.ih-(v-lo)/(hi-lo)*f.ih;
+ const avg=d.reduce((a,x)=>a+x.gen,0)/d.reduce((a,x)=>a+x.dem,0)*100;E('line',{x1:f.M.l,x2:f.M.l+f.iw,y1:Y(avg),y2:Y(avg),stroke:tok('--muted'),'stroke-width':1},f.svg);
+ const tl=E('text',{x:f.M.l+f.iw-2,y:Y(avg)-5,'text-anchor':'end',class:'lab'},f.svg);tl.textContent='Promedio '+fm(avg,1)+' %';
+ const pts=d.map((x,i)=>[f.M.l+band*i+band/2,Y(x.cov)]);const c=tok('--s-batt');
+ E('path',{d:`M${pts[0][0]},${f.M.t+f.ih}L`+pts.map(p=>p.join(',')).join('L')+`L${pts[pts.length-1][0]},${f.M.t+f.ih}Z`,fill:c,opacity:.1},f.svg);
+ E('polyline',{points:pts.map(p=>p.join(',')).join(' '),fill:'none',stroke:c,'stroke-width':2,'stroke-linejoin':'round'},f.svg);
+ pts.forEach(p=>E('circle',{cx:p[0],cy:p[1],r:4,fill:c,stroke:tok('--surface'),'stroke-width':2},f.svg));
+ let mi=0,ma=0;d.forEach((x,i)=>{if(x.cov<d[mi].cov)mi=i;if(x.cov>d[ma].cov)ma=i;});[[mi,14],[ma,-9]].forEach(([i,dy])=>{const t=E('text',{x:pts[i][0],y:pts[i][1]+dy,'text-anchor':'middle',class:'lab'},f.svg);t.textContent=fm(d[i].cov,1)+' %';});
+ bandHover(f,d.length,band,i=>`<b>${String(d[i].day).padStart(2,'0')}-oct</b>`+row(c,'Cobertura solar',fm(d[i].cov,1)+' %')+`<div class="r"><span>Autosuficiencia</span><b>${fm(d[i].selfsuf,1)} %</b></div>`);}
+
+/* 3. perfiles */
+const HRS=[...Array(24).keys()].map(h=>String(h).padStart(2,'0'));
+function drawP1(k){const host=document.getElementById('ch-p1');const p=DATA.prof[k];const f=frame(host,240,{l:44,r:10,t:12,b:26});
+ const load=p.load.map(v=>v||0),grid=p.imp.map((v,i)=>Math.min(v||0,load[i])),sol=load.map((v,i)=>Math.max(0,v-grid[i]));
+ const max=nice(Math.max(...load)*1.05);yAxis(f,max.max,max.step,'kW');const band=xLabels(f,HRS,3);const bw=Math.min(24,band*.7);const sy=v=>f.ih*v/max.max;
+ load.forEach((v,i)=>{const x=f.M.l+band*i+band/2-bw/2,b=f.M.t+f.ih;const hg=sy(grid[i]),hs=sy(sol[i]);
+  if(hg>0)E('path',{d:`M${x},${b}V${b-hg}H${x+bw}V${b}Z`,fill:tok('--s-grid')},f.svg);
+  E('path',{d:colPath(x,b-hg-hs-(hg>0?2:0)+(hg>0?2:0),bw,Math.max(0,hs-(hg>0?2:0)),4),fill:tok('--s-solar')},f.svg);});
+ bandHover(f,24,band,i=>`<b>${HRS[i]}:00–${HRS[(i+1)%24]}:00</b>`+row(tok('--s-grid'),'Desde la red',fm(grid[i],2)+' kW')+row(tok('--s-solar'),'Desde FV y batería',fm(sol[i],2)+' kW')+`<div class="r"><span>Consumo</span><b>${fm(load[i],2)} kW</b></div>`);}
+function drawP2(k){const host=document.getElementById('ch-p2');const p=DATA.prof[k];const f=frame(host,240,{l:44,r:10,t:12,b:26});
+ const gen=p.gen.map(v=>v||0),ch=p.bch.map(v=>v||0),dc=p.bdc.map(v=>v||0);const top=nice(Math.max(...gen,...ch)*1.05),bot=nice(Math.max(...dc,0.05)*1.05,2);
+ const lo=-bot.max,hi=top.max;const Y=v=>f.M.t+(hi-v)/(hi-lo)*f.ih;const step=top.step;
+ for(let v=Math.ceil(lo/step)*step;v<=hi+1e-9;v+=step){E('line',{x1:f.M.l,x2:f.M.l+f.iw,y1:Y(v),y2:Y(v),stroke:tok(Math.abs(v)<1e-9?'--line-2':'--line')},f.svg);const t=E('text',{x:f.M.l-6,y:Y(v)+4,'text-anchor':'end'},f.svg);t.textContent=fm(v,step<1?1:0);}
+ const band=xLabels(f,HRS,3);const bw=Math.min(22,band*.6);
+ ch.forEach((v,i)=>{const x=f.M.l+band*i+band/2-bw/2;if(v>0.005)E('path',{d:colPath(x,Y(v),bw,Y(0)-Y(v),4),fill:tok('--s-batt')},f.svg);if(dc[i]>0.005)E('path',{d:colPathDown(x,Y(0),bw,Y(-dc[i])-Y(0),4),fill:tok('--s-dis')},f.svg);});
+ const pts=gen.map((v,i)=>[f.M.l+band*i+band/2,Y(v)]);const c=tok('--s-solar');
+ E('path',{d:`M${pts[0][0]},${Y(0)}L`+pts.map(q=>q.join(',')).join('L')+`L${pts[23][0]},${Y(0)}Z`,fill:c,opacity:.12},f.svg);
+ E('polyline',{points:pts.map(q=>q.join(',')).join(' '),fill:'none',stroke:c,'stroke-width':2,'stroke-linejoin':'round'},f.svg);
+ bandHover(f,24,band,i=>`<b>${HRS[i]}:00–${HRS[(i+1)%24]}:00</b>`+row(c,'Generación FV',fm(gen[i],2)+' kW')+row(tok('--s-batt'),'Carga batería',fm(ch[i],2)+' kW')+row(tok('--s-dis'),'Descarga batería',fm(dc[i],2)+' kW'));}
+function lineChart(host,series,{lo=0,hi,unit,H=220,dec=0}){const f=frame(host,H,{l:44,r:10,t:12,b:26});const all=series.flatMap(s=>s.v.filter(v=>v!=null));
+ const top=hi!=null?{max:hi,step:hi/4}:nice(Math.max(...all,0.1)*1.08);const Y=v=>f.M.t+f.ih-(v-lo)/(top.max-lo)*f.ih;
+ for(let v=lo;v<=top.max+1e-9;v+=top.step){E('line',{x1:f.M.l,x2:f.M.l+f.iw,y1:Y(v),y2:Y(v),stroke:tok(v===lo?'--line-2':'--line')},f.svg);const t=E('text',{x:f.M.l-6,y:Y(v)+4,'text-anchor':'end'},f.svg);t.textContent=fm(v,top.step<1?1:0)+(v===top.max&&unit?' '+unit:'');}
+ const band=xLabels(f,HRS,3);series.forEach(s=>{const pts=s.v.map((v,i)=>v==null?null:[f.M.l+band*i+band/2,Y(v)]).filter(Boolean);if(!pts.length)return;
+  if(s.area)E('path',{d:`M${pts[0][0]},${Y(lo)}L`+pts.map(q=>q.join(',')).join('L')+`L${pts[pts.length-1][0]},${Y(lo)}Z`,fill:s.c,opacity:.1},f.svg);
+  E('polyline',{points:pts.map(q=>q.join(',')).join(' '),fill:'none',stroke:s.c,'stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round'},f.svg);});
+ bandHover(f,24,band,i=>`<b>${HRS[i]}:00</b>`+series.map(s=>row(s.c,s.n,fm(s.v[i],dec)+' '+unit)).join(''));}
+function drawProfiles(){const k=document.getElementById('sel-house').value;drawP1(k);drawP2(k);
+ lineChart(document.getElementById('ch-p3'),[{n:'SOC',v:DATA.prof[k].soc,c:tok('--s-batt'),area:true}],{lo:0,hi:100,unit:'%'});
+ const cu=DATA.cur[k];lineChart(document.getElementById('ch-p4'),[{n:'Fase A',v:cu.A,c:tok('--s-grid')},{n:'Fase B',v:cu.B,c:tok('--s-exp')},{n:'Fase C',v:cu.C,c:tok('--s-batt')}],{unit:'A',dec:1});}
+
+/* 4. mapa de calor */
+function mix(a,b,t){const p=h=>[1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const A=p(a),B=p(b);return'rgb('+A.map((v,i)=>Math.round(v+(B[i]-v)*t)).join(',')+')';}
+function drawHeat(){const host=document.getElementById('ch-heat');const m=DATA.heat.imp;const W0=Math.max(300,host.clientWidth);const M={l:52,r:8,t:8,b:46};const cw=(W0-M.l-M.r)/24,chh=Math.max(14,Math.min(22,cw*.9));
+ const H=M.t+chh*m.length+M.b;const f=frame(host,H,M);const max=Math.max(...m.flat());const lo=tok('--heat-lo'),hi=tok('--heat-hi');
+ m.forEach((r,d)=>{const t=E('text',{x:M.l-6,y:M.t+chh*d+chh/2+4,'text-anchor':'end'},f.svg);t.textContent=String(d+1).padStart(2,'0')+'-oct';
+  r.forEach((v,h)=>{const c=E('rect',{x:M.l+cw*h+1,y:M.t+chh*d+1,width:Math.max(1,cw-2),height:chh-2,rx:2,fill:mix(lo,hi,Math.pow(v/max,.8))},f.svg);
+   c.addEventListener('mousemove',ev=>showTT(`<b>${String(d+1).padStart(2,'0')}-oct · ${HRS[h]}:00</b><div class="r"><span>Importación flota</span><b>${fm(v,1)} kWh</b></div>`,ev));c.addEventListener('mouseleave',hideTT);});});
+ HRS.forEach((l,h)=>{if(h%3)return;const t=E('text',{x:M.l+cw*h+cw/2,y:M.t+chh*m.length+14,'text-anchor':'middle'},f.svg);t.textContent=l+'h';});
+ const gx=M.l,gy=H-16,gw=Math.min(220,f.iw*.5);const id='hg'+Math.random().toString(36).slice(2,7);const defs=E('defs',{},f.svg);const lg=E('linearGradient',{id},defs);E('stop',{offset:'0',['stop-color']:lo},lg);E('stop',{offset:'1',['stop-color']:hi},lg);
+ E('rect',{x:gx+40,y:gy-8,width:gw,height:8,rx:2,fill:`url(#${id})`},f.svg);const a=E('text',{x:gx+34,y:gy,'text-anchor':'end'},f.svg);a.textContent='0';const b=E('text',{x:gx+46+gw,y:gy},f.svg);b.textContent=fm(max,0)+' kWh/h';}
+
+/* 5. corriente relativa */
+function drawRatio(){const host=document.getElementById('ch-ratio');const d=DATA.ratio;const rh=19;const M={l:84,r:46,t:22,b:24};const H=M.t+d.length*rh+M.b;const f=frame(host,H,M);
+ const xmax=Math.max(1.6,Math.ceil(Math.max(...d.map(x=>x.r))*10)/10);const X=v=>M.l+v/xmax*f.iw;
+ for(let v=0;v<=xmax+1e-9;v+=0.2){E('line',{x1:X(v),x2:X(v),y1:M.t,y2:M.t+f.ih,stroke:tok('--line')},f.svg);const t=E('text',{x:X(v),y:H-6,'text-anchor':'middle'},f.svg);t.textContent=Math.round(v*100)+' %';}
+ [[0.8,'80 %'],[1,'100 % nominal']].forEach(([v,l])=>{E('line',{x1:X(v),x2:X(v),y1:M.t-6,y2:M.t+f.ih,stroke:tok('--ink-2'),'stroke-width':1.5},f.svg);const t=E('text',{x:X(v),y:M.t-9,'text-anchor':'middle',class:'lab'},f.svg);t.textContent=l;});
+ const c=tok('--s-grid'),ink=tok('--ink');d.forEach((x,i)=>{const y=M.t+i*rh;const t=E('text',{x:M.l-8,y:y+rh/2+4,'text-anchor':'end',class:'lab'},f.svg);t.textContent=x.casa;
+  const w=X(x.r)-M.l;E('path',{d:`M${M.l},${y+4}H${M.l+w-4}Q${M.l+w},${y+4} ${M.l+w},${y+8}V${y+rh-8}Q${M.l+w},${y+rh-4} ${M.l+w-4},${y+rh-4}H${M.l}Z`,fill:c},f.svg);
+  if(x.p99!=null)E('line',{x1:X(x.p99),x2:X(x.p99),y1:y+2,y2:y+rh-2,stroke:ink,'stroke-width':2.5},f.svg);
+  const v=E('text',{x:M.l+w+5,y:y+rh/2+4},f.svg);v.textContent=Math.round(x.r*100)+' %';
+  const hit=E('rect',{x:0,y,width:f.W,height:rh,fill:'transparent'},f.svg);hit.addEventListener('mousemove',ev=>showTT(`<b>${x.casa}</b> · ${x.brand}`+`<div class="r"><span>I máx (fase ${x.ph})</span><b>${fm(x.imax,1)} A</b></div><div class="r"><span>I nominal est.</span><b>${fm(x.inom,1)} A</b></div><div class="r"><span>Máx / nominal</span><b>${fm(x.r*100,0)} %</b></div><div class="r"><span>p99 / nominal</span><b>${fm(x.p99*100,0)} %</b></div><div class="r"><span>Riesgo</span><b>${x.risk}</b></div>`,ev));hit.addEventListener('mouseleave',hideTT);});}
+
+/* 6. cronología */
+function drawTL(){const host=document.getElementById('ch-tl');const Z=DATA.zones;const ev=DATA.events;const rh=26;const M={l:150,r:12,t:8,b:26};const H=M.t+Z.length*rh+M.b;const f=frame(host,H,M);
+ const t0=Date.parse('2026-10-01T00:00:00-05:00'),t1=Date.parse('2026-10-13T00:00:00-05:00');const X=t=>M.l+(t-t0)/(t1-t0)*f.iw;const narrow=f.iw<520;
+ for(let d=0;d<=12;d++){const x=X(t0+d*864e5);E('line',{x1:x,x2:x,y1:M.t,y2:M.t+f.ih,stroke:tok('--line')},f.svg);if(d<12&&(!narrow||d%2===0)){const t=E('text',{x:x+(f.iw/12)/2,y:H-8,'text-anchor':'middle'},f.svg);t.textContent=String(d+1).padStart(2,'0');}}
+ Z.forEach((z,i)=>{const t=E('text',{x:M.l-8,y:M.t+i*rh+rh/2+4,'text-anchor':'end',class:'lab'},f.svg);t.textContent=z;if(i)E('line',{x1:M.l,x2:M.l+f.iw,y1:M.t+i*rh,y2:M.t+i*rh,stroke:tok('--line')},f.svg);});
+ const c=tok('--s-grid'),mu=tok('--muted');ev.forEach(e=>{const i=Z.indexOf(e.zone);if(i<0)return;const a=Date.parse(e.start.replace(' ','T')+':00-05:00'),b=Date.parse(e.end.replace(' ','T')+':00-05:00');const y=M.t+i*rh;
+  const x=X(a),w=Math.max(e.s?3:2,X(b)-X(a));const r=E('rect',{x,y:y+(e.s?6:9),width:w,height:e.s?rh-12:rh-18,rx:e.s?2:1,fill:e.s?c:mu},f.svg);
+  const hit=E('rect',{x:x-4,y,width:w+8,height:rh,fill:'transparent'},f.svg);hit.addEventListener('mousemove',ev2=>showTT(`<b>${e.zone}</b><div class="r"><span>Inicio</span><b>${e.start.slice(8,10)}-oct ${e.start.slice(11)}</b></div><div class="r"><span>Duración (mediana)</span><b>${fm(e.dur,0)} min</b></div><div class="r"><span>Viviendas</span><b>${e.n} de ${e.nz}</b></div><div class="r"><span>Con &gt;2 min sin tensión</span><b>${e.u}</b></div>`,ev2));hit.addEventListener('mouseleave',hideTT);});}
+
+function drawAll(){try{drawDaily();drawCov();drawProfiles();drawHeat();drawRatio();drawTL();}catch(err){console.error(err);}}
+document.getElementById('sel-house').addEventListener('change',()=>{drawProfiles();const k=document.getElementById('sel-house').value;document.getElementById('sel-note').textContent=k==='__flota__'?'Promedio horario de los 12 días, en kW (equivale a kWh por hora).':'Promedio horario de los 12 días para '+k+', en kW.';});
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(drawAll,150);});
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',drawAll);
+new MutationObserver(drawAll).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(drawAll);drawAll();
+
+/* tablas ordenables */
+document.querySelectorAll('table.sortable').forEach(tb=>{const ths=tb.querySelectorAll('th');ths.forEach((th,ci)=>{th.tabIndex=0;const go=()=>{const asc=th.getAttribute('aria-sort')==='descending';ths.forEach(x=>x.removeAttribute('aria-sort'));th.setAttribute('aria-sort',asc?'ascending':'descending');
+ const body=tb.tBodies[0];const rows=[...body.rows];const val=r=>{const c=r.cells[ci];const v=c.dataset.v!==undefined?c.dataset.v:c.textContent.trim();const n=parseFloat(v);return v!==''&&!isNaN(n)&&/^-?[\d.]+(e-?\d+)?$/.test(v)?n:v.toLowerCase();};
+ rows.sort((a,b)=>{const x=val(a),y=val(b);if(typeof x==='number'&&typeof y==='number')return asc?x-y:y-x;return asc?String(x).localeCompare(String(y),'es'):String(y).localeCompare(String(x),'es');});rows.forEach(r=>body.appendChild(r));};
+ th.addEventListener('click',go);th.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});});});
+/* filtro de viviendas */
+const fz=document.getElementById('f-zone'),fq=document.getElementById('f-q');function filt(){const z=fz.value,q=fq.value.trim().toLowerCase();document.querySelectorAll('#t-rank tbody tr').forEach(r=>{r.hidden=(z&&r.dataset.zone!==z)||(q&&!r.dataset.casa.includes(q));});}
+fz.addEventListener('change',filt);fq.addEventListener('input',filt);
+})();
+</script>
