@@ -1,0 +1,242 @@
+{
+ "Casa 2": {
+  "city": "Cali",
+  "equip": "Deye SUN-15K-SG01HP3 HV trifásico",
+  "kwp": 7.14
+ },
+ "Casa 10": {
+  "city": "Cali",
+  "equip": "Deye SUN-15K-SG01HP3 HV trifásico",
+  "kwp": 7.14
+ },
+ "Casa 11": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-15KL2",
+  "kwp": 4.17
+ },
+ "Casa 12": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-15KL2",
+  "kwp": 13.09
+ },
+ "Casa 15": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-15KL2",
+  "kwp": 8.93
+ },
+ "Casa 18": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 4.17
+ },
+ "Casa 18PR": {
+  "city": "Cali",
+  "equip": "Deye SUN-15K-SG01HP3",
+  "kwp": 4.17
+ },
+ "Casa 23": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 6.54
+ },
+ "Casa 29": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 5.36
+ },
+ "Casa 30": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 4.17
+ },
+ "Casa 35": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 3.57
+ },
+ "Casa 42": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 4.17
+ },
+ "Casa 48": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 3.57
+ },
+ "Casa 48PC": {
+  "city": "Cali",
+  "equip": "Deye SUN-15K-SG01HP3 HV trifásico",
+  "kwp": 11.35
+ },
+ "Casa 56": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 4.17
+ },
+ "Casa 57": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 4.17
+ },
+ "Casa 63": {
+  "city": "Cali",
+  "equip": "Deye LV trifásico",
+  "kwp": 3.57
+ },
+ "Casa 70": {
+  "city": "Cali",
+  "equip": "Deye HV trifásico",
+  "kwp": 5.36
+ },
+ "Casa 73": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-15KL2",
+  "kwp": 3.57
+ },
+ "Casa 74": {
+  "city": "Cali",
+  "equip": "Deye SUN-15K-SG01HP3",
+  "kwp": 5.36
+ },
+ "Casa 76": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-15KL2",
+  "kwp": 7.14
+ },
+ "Casa 77": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 4.17
+ },
+ "Casa 99": {
+  "city": "Cali",
+  "equip": "Deye HV trifásico",
+  "kwp": 5.36
+ },
+ "Casa 104": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 4.17
+ },
+ "Casa 108": {
+  "city": "Cali",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 4.17
+ },
+ "Casa 111": {
+  "city": "Cali",
+  "equip": "Deye SUN-15K-SG01HP3 HV trifásico",
+  "kwp": 8.93
+ },
+ "Casa 10p": {
+  "city": "Turbaco",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 3.57
+ },
+ "Casa 15p": {
+  "city": "Turbaco",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 2.98
+ },
+ "Casa 18Ap": {
+  "city": "Turbaco",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 3.57
+ },
+ "Casa 23p": {
+  "city": "Turbaco",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 2.98
+ },
+ "Casa 55p": {
+  "city": "Turbaco",
+  "equip": "Deye HP3-15KL2",
+  "kwp": 4.76
+ },
+ "Casa 60p": {
+  "city": "Turbaco",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 2.98
+ },
+ "Casa 86p": {
+  "city": "Turbaco",
+  "equip": "Deye SUN-15K-SG01HP3 HV trifásico",
+  "kwp": 4.17
+ },
+ "Casa 93p": {
+  "city": "Turbaco",
+  "equip": "Deye SUN-15K-SG01HP3",
+  "kwp": 4.76
+ },
+ "Casa 102p": {
+  "city": "Turbaco",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 2.98
+ },
+ "Casa 382p": {
+  "city": "Turbaco",
+  "equip": "Deye SUN-15K-SG01HP3",
+  "kwp": 4.17
+ },
+ "Casa 412p": {
+  "city": "Turbaco",
+  "equip": "Deye SUN-15K-SG01HP3",
+  "kwp": 5.36
+ },
+ "Casa 415p": {
+  "city": "Turbaco",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 2.98
+ },
+ "Casa 425p": {
+  "city": "Turbaco",
+  "equip": "Deye SUN-15K-SG01HP3",
+  "kwp": 5.36
+ },
+ "Casa 435p": {
+  "city": "Turbaco",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 3.57
+ },
+ "Casa 446p": {
+  "city": "Turbaco",
+  "equip": "Deye SUN-15K-SG01HP3 HV trifásico",
+  "kwp": 4.17
+ },
+ "Casa 447p": {
+  "city": "Turbaco",
+  "equip": "Livoltek HP3-15KL2",
+  "kwp": 3.57
+ },
+ "Casa 9G": {
+  "city": "Barranquilla",
+  "equip": "Deye SUN-15K-SG01HP3",
+  "kwp": 12.5
+ },
+ "Casa 24": {
+  "city": "Barranquilla",
+  "equip": "Livoltek HP3-15KL2",
+  "kwp": 9.52
+ },
+ "Casa 121 CR": {
+  "city": "Barranquilla",
+  "equip": "Livoltek HP3-15KL2",
+  "kwp": 12.5
+ },
+ "Casa 155": {
+  "city": "Barranquilla",
+  "equip": "Livoltek HP3-15KL2",
+  "kwp": 7.14
+ },
+ "Casa 287": {
+  "city": "Barranquilla",
+  "equip": "Livoltek HP3-10KL2",
+  "kwp": 2.98
+ },
+ "Casa 78T": {
+  "city": "Cartagena",
+  "equip": "Deye SUN-15K-SG01HP3",
+  "kwp": 8.93
+ }
+}

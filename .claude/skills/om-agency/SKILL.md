@@ -459,6 +459,11 @@ error de cálculo sino posible falla real de equipo, pasarlas al Líder de Diagn
 de Fallas en vez de solo dejarlas en la tabla del reporte — el reporte no reemplaza el
 triage.
 
+**Tablero diario en HTML:** para el reporte «Operación diaria» (ventana de 24 h 07:00→07:00: cortes de red y
+respaldo por casa, baterías, generación, yield, exportación y comunicación) usa
+`scripts/reporte_diario/build_report.py` (ver su `README.md`: fuentes, validación contra el reporte del 16 oct,
+reglas inferidas y límites). Lee solo de Metrum; el kWp por casa sale de `assets/systems.json`, no de Metrum.
+
 ### Encargado de Entrenamiento y Conocimiento (`training-knowledge`)
 **Misión:** ser la puerta de entrada para que un ingeniero o cualquier usuario le
 enseñe algo nuevo al equipo — un umbral, una fórmula, una regla de diagnóstico, un
