@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Estado batería flota</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:rgba(11,11,11,.10);
+  --s1:#2a78d6; --s2:#eb6834; --track:#e1e0d9;
+  --critical:#d03b3b; --serious:#ec835a; --warning:#fab219; --good:#0ca30c;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
+    --s1:#3987e5; --s2:#d95926; --track:#2c2c2a;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#898781;
+  --grid:#2c2c2a; --axis:#383835; --border:rgba(255,255,255,.10);
+  --s1:#3987e5; --s2:#d95926; --track:#2c2c2a;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; }
+.wrap-page { max-width:1200px; margin:0 auto; padding:24px 16px 56px; }
+h1 { font-size:24px; line-height:1.2; margin:0 0 4px; font-weight:650; }
+h2 { font-size:15px; margin:0 0 12px; font-weight:650; }
+.lede { color:var(--ink2); margin:0; }
+.num { font-variant-numeric: tabular-nums; }
+.mono { font-family: ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:12px; }
+.sub { display:block; color:var(--ink2); font-size:12px; }
+.sub.wrap { margin-top:4px; max-width:46ch; }
+.u { color:var(--ink2); font-size:12px; }
+.badge { display:inline-block; border:1px solid var(--border); background:var(--surface); border-radius:999px; padding:3px 10px; font-size:12px; color:var(--ink2); margin-top:10px; }
+header { margin-bottom:20px; }
+
+.card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px; }
+.kpis { display:grid; gap:12px; grid-template-columns: 2fr repeat(5, 1fr); margin-bottom:12px; }
+.tile { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px 16px; min-width:0; }
+.tile .k { color:var(--ink2); font-size:12px; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+.tile .v { font-size:30px; line-height:1.1; font-weight:650; }
+.tile.hero .v { font-size:52px; }
+.tile .d { color:var(--ink2); font-size:12px; margin-top:6px; }
+
+.two { display:grid; gap:12px; grid-template-columns: 1fr 1.6fr; margin-bottom:24px; align-items:start; }
+.brow { display:grid; grid-template-columns: 76px 1fr 36px; gap:10px; align-items:center; padding:5px 0; }
+.brow .bl { color:var(--ink2); font-size:12px; }
+.bt { height:12px; }
+.bt span { display:block; height:100%; background:var(--s1); border-radius:0 4px 4px 0; min-width:0; }
+.brow b { text-align:right; }
+ul.att { list-style:none; margin:0; padding:0; display:grid; gap:10px; }
+ul.att li { display:grid; grid-template-columns: auto 1fr; gap:10px; align-items:start; }
+ul.att li b { font-weight:600; }
+
+.chip { display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--ink); border:1px solid var(--border); border-radius:999px; padding:1px 8px 1px 6px; white-space:nowrap; }
+.chip .sh { display:inline-block; width:10px; height:10px; background:var(--c); }
+.chip.critical { --c:var(--critical); } .chip.critical .sh { border-radius:50%; }
+.chip.serious  { --c:var(--serious); }  .chip.serious .sh { transform:rotate(45deg) scale(.85); }
+.chip.warn     { --c:var(--warning); }  .chip.warn .sh { clip-path:polygon(50% 0,100% 100%,0 100%); }
+ul.att .chip { padding:0; border:0; }
+
+.filters { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 10px; }
+.filters input, .filters select { font:inherit; color:var(--ink); background:var(--surface); border:1px solid var(--axis); border-radius:8px; padding:7px 10px; min-width:0; }
+.filters input { flex:1 1 220px; max-width:320px; }
+.filters .cnt { color:var(--ink2); margin-left:auto; font-size:12px; }
+:focus-visible { outline:2px solid var(--s1); outline-offset:2px; }
+
+.tw { background:var(--surface); border:1px solid var(--border); border-radius:12px; overflow-x:auto; }
+table { width:100%; border-collapse:collapse; }
+th, td { padding:10px 12px; text-align:left; vertical-align:middle; border-bottom:1px solid var(--grid); }
+tbody tr:last-child td { border-bottom:0; }
+th { font-size:12px; font-weight:600; color:var(--ink2); white-space:nowrap; background:var(--surface); position:sticky; top:0; }
+th button { all:unset; cursor:pointer; display:inline-flex; gap:4px; align-items:center; }
+th button:focus-visible { outline:2px solid var(--s1); outline-offset:2px; }
+th[aria-sort] button::after { content:attr(data-arrow); color:var(--ink); }
+td.r, th.r { text-align:right; white-space:nowrap; }
+td.casa b { display:block; }
+td.casa { min-width:150px; }
+td.soc { min-width:240px; }
+.socwrap { display:grid; grid-template-columns:120px 46px 58px; align-items:center; gap:10px; }
+.meter { height:8px; background:var(--track); border-radius:4px; overflow:hidden; }
+.meter span { display:block; height:100%; background:var(--s1); border-radius:0 4px 4px 0; }
+.socwrap b { text-align:right; }
+td.est { white-space:nowrap; }
+td.est .stl { margin-left:6px; }
+td.est .sub { margin-left:20px; }
+.ico { font-size:11px; }
+.ico.up { color:var(--s1); } .ico.dn { color:var(--s2); } .ico.idle { color:var(--muted); }
+tbody tr[hidden] { display:none; }
+.section-gap { margin-top:28px; }
+.empty { padding:20px; color:var(--ink2); }
+
+details.method { margin-top:28px; }
+details.method summary { cursor:pointer; font-weight:600; }
+details.method .card { margin-top:10px; }
+details.method ul { margin:6px 0 14px; padding-left:20px; }
+details.method li { margin:4px 0; }
+details.method h3 { font-size:13px; margin:16px 0 4px; }
+footer { margin-top:24px; color:var(--ink2); font-size:12px; }
+
+@media (max-width: 1000px) {
+  .kpis { grid-template-columns: repeat(3, 1fr); }
+  .tile.hero { grid-column: 1 / -1; }
+  .two { grid-template-columns: 1fr; }
+}
+@media (max-width: 760px) {
+  .kpis { grid-template-columns: repeat(2, 1fr); }
+  .tile.hero .v { font-size:44px; }
+  .kpis .tile:last-child { grid-column: 1 / -1; }
+  .tw { overflow:visible; background:transparent; border:0; }
+  table thead { display:none; }
+  table, tbody { display:block; }
+  table tr { display:grid; grid-template-columns: 1fr 1fr; gap:8px 14px; padding:12px; margin-bottom:10px; background:var(--surface); border:1px solid var(--border); border-radius:12px; }
+  table td { display:block; padding:0; border:0; text-align:left !important; }
+  table td::before { content:attr(data-label); display:block; font-size:11px; color:var(--ink2); }
+  td.casa, td.soc { grid-column: 1 / -1; }
+  td.casa::before, td.soc::before { display:none; }
+  td.casa b { font-size:15px; }
+  td.est .sub { margin-left:0; }
+  .socwrap { grid-template-columns: 1fr 46px 58px; }
+  td.soc { min-width:0; }
+}
+@media print {
+  body { background:#fff; }
+  .filters { display:none; }
+  .tw { overflow:visible; }
+}
+</style>
+</head>
+<body>
+<div class="wrap-page">
+<header>
+  <h1>Estado de batería · flota de casas</h1>
+  <p class="lede">Instantánea de las <b>16:15</b> del 07/11/2026 (hora Colombia, UTC−5) · telemetría cruda de Metrum · 49 de 53 casas con dato</p>
+  <span class="badge">Un punto por casa: el último muestreo ≤ 16:15 del inversor activo</span>
+</header>
+
+<section class="kpis" aria-label="Resumen de la flota">
+  <div class="tile hero"><div class="k">SOC promedio · 49 casas con dato</div><div class="v num">78,7 %</div><div class="d">Promedio simple entre casas; no está ponderado por capacidad (la capacidad real de cada batería no viene de Metrum).</div></div>
+  <div class="tile"><div class="k"><span class="ico up" aria-hidden="true">▲</span> Cargando</div><div class="v num">13</div><div class="d num">4,0 kW en total</div></div>
+  <div class="tile"><div class="k"><span class="ico dn" aria-hidden="true">▼</span> Descargando</div><div class="v num">24</div><div class="d num">22,1 kW en total</div></div>
+  <div class="tile"><div class="k"><span class="ico idle" aria-hidden="true">●</span> En reposo</div><div class="v num">12</div><div class="d">|P| &lt; 50 W</div></div>
+  <div class="tile"><div class="k"><span class="chip critical"><i class="sh"></i>SOC ≤ 20 %</span></div><div class="v num">3</div><div class="d">Casa 10, Casa 101, Casa 18PR</div></div>
+  <div class="tile"><div class="k"><span class="chip serious"><i class="sh"></i>Sin dato</span></div><div class="v num">4</div><div class="d">Gateway offline (detalle abajo)</div></div>
+</section>
+
+<section class="two">
+  <div class="card">
+    <h2>Casas por rango de SOC</h2>
+    <div class="brow"><span class="bl">0 – 20 %</span><div class="bt"><span style="width:16.7%"></span></div><b class="num">3</b></div><div class="brow"><span class="bl">21 – 50 %</span><div class="bt"><span style="width:22.2%"></span></div><b class="num">4</b></div><div class="brow"><span class="bl">51 – 80 %</span><div class="bt"><span style="width:77.8%"></span></div><b class="num">14</b></div><div class="brow"><span class="bl">81 – 99 %</span><div class="bt"><span style="width:100.0%"></span></div><b class="num">18</b></div><div class="brow"><span class="bl">100 %</span><div class="bt"><span style="width:55.6%"></span></div><b class="num">10</b></div>
+    <span class="sub" style="margin-top:8px">49 casas con dato · los rangos son de referencia</span>
+  </div>
+  <div class="card">
+    <h2>Para mirar primero</h2>
+    <ul class="att"><li><span class="chip serious"><i class="sh"></i></span><div><b>Casa 6 — inversor en isla (off-grid)</b><span class="sub wrap">SOC 28 % y descargando 0,84 kW; opera aislado de la red: las cargas respaldadas dependen del FV y de la batería.</span></div></li><li><span class="chip serious"><i class="sh"></i></span><div><b>Casa 9G — inversor en alarma</b><span class="sub wrap">SOC 78 %, batería cargando. Revisar eventos/alarmas del equipo.</span></div></li><li><span class="chip critical"><i class="sh"></i></span><div><b>Casa 10 — SOC 15 %</b><span class="sub wrap">En reposo (0,03 kW) · Deye.</span></div></li><li><span class="chip critical"><i class="sh"></i></span><div><b>Casa 101 — SOC 15 %</b><span class="sub wrap">En reposo (0,00 kW) · Livoltek.</span></div></li><li><span class="chip critical"><i class="sh"></i></span><div><b>Casa 18PR — SOC 20 %</b><span class="sub wrap">Descargando (0,08 kW) · Deye.</span></div></li><li><span class="chip warn"><i class="sh"></i></span><div><b>Casa 121 CR — SOC 22 % y descargando</b><span class="sub wrap">2,30 kW de descarga a las 16:15.</span></div></li><li><span class="chip serious"><i class="sh"></i></span><div><b>4 casas sin dato a las 16:15</b><span class="sub wrap">Casa 382p y Casa 447p (Prado Verde Primavera) quedaron offline con 1 min de diferencia (14:02–14:03): posible causa común local. Las otras 14 casas de esa zona reportan normal.</span></div></li></ul>
+  </div>
+</section>
+
+<section aria-label="Detalle por casa">
+  <h2>Detalle por casa <span class="u">· ordenado por SOC, de menor a mayor</span></h2>
+  <div class="filters" role="search">
+    <input id="q" type="search" placeholder="Buscar casa, zona o serial…" aria-label="Buscar casa, zona o serial">
+    <select id="fz" aria-label="Filtrar por zona"><option value="">Todas las zonas</option><option value="Castellana Real">Castellana Real</option><option value="Condominio Los Abedules">Condominio Los Abedules</option><option value="Condominio Terranova">Condominio Terranova</option><option value="Gerona Club House">Gerona Club House</option><option value="Las Palmeras">Las Palmeras</option><option value="Llanos de Pance">Llanos de Pance</option><option value="Pance Campestre">Pance Campestre</option><option value="Porton de la Rivera">Porton de la Rivera</option><option value="Prado Verde Primavera">Prado Verde Primavera</option><option value="Reservas de Pance">Reservas de Pance</option><option value="Terra by Kaia">Terra by Kaia</option></select>
+    <select id="fs" aria-label="Filtrar por estado">
+      <option value="">Todos los estados</option><option value="carga">Cargando</option><option value="descarga">Descargando</option>
+      <option value="reposo">En reposo</option><option value="bajo">SOC ≤ 20 %</option><option value="alerta">Con alerta</option>
+    </select>
+    <span class="cnt" id="cnt" aria-live="polite">Mostrando 49 de 49</span>
+  </div>
+  <div class="tw">
+  <table id="fleet">
+    <thead><tr>
+      <th aria-sort="none"><button data-i="0" data-t="nat">Casa</button></th>
+      <th><button data-i="1" data-t="str">Equipo</button></th>
+      <th aria-sort="ascending" data-arrow="▲"><button data-i="2" data-t="num" data-arrow="▲">Carga (SOC)</button></th>
+      <th><button data-i="3" data-t="num">Batería</button></th>
+      <th class="r"><button data-i="4" data-t="num">Tensión</button></th>
+      <th class="r"><button data-i="5" data-t="num">Temp.</button></th>
+      <th class="r"><button data-i="6" data-t="num">SOH</button></th>
+      <th><button data-i="7" data-t="str">Inversor</button></th>
+      <th class="r"><button data-i="8" data-t="num">Dato</button></th>
+    </tr></thead>
+    <tbody>
+<tr data-zone="Reservas de Pance" data-st="reposo bajo alerta" data-q="casa 10 reservas de pance 2412240078 deye">
+<td class="casa" data-label="Casa" data-v="Casa 10"><b>Casa 10</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">SUN-15K-SG01HP3 HV trifásico</span><span class="sub mono">2412240078</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="15.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="15" aria-label="SOC Casa 10"><span style="width:15.0%"></span></div><b class="num">15 %</b><span class="chip critical"><i class="sh"></i>Bajo</span></div></td>
+<td class="est" data-label="Batería" data-v="-30.0" title="El equipo no reporta estado propio de batería"><span class="ico idle" aria-hidden="true">●</span><span class="stl">Reposo</span><span class="sub num">−0,03 kW</span></td>
+<td class="r" data-label="Tensión" data-v="419.4"><span class="num">419,4</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="34.0"><span class="num">34,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="97.0"><span class="num">97</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Terra by Kaia" data-st="reposo bajo alerta" data-q="casa 101 terra by kaia hp310k2hwc290019 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 101"><b>Casa 101</b><span class="sub">Terra by Kaia</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290019</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="15.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="15" aria-label="SOC Casa 101"><span style="width:15.0%"></span></div><b class="num">15 %</b><span class="chip critical"><i class="sh"></i>Bajo</span></div></td>
+<td class="est" data-label="Batería" data-v="0.0" title="Estado reportado por el equipo: stopped"><span class="ico idle" aria-hidden="true">●</span><span class="stl">Reposo</span><span class="sub num">0,00 kW</span></td>
+<td class="r" data-label="Tensión" data-v="307.2"><span class="num">307,2</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="30.5"><span class="num">30,5</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Porton de la Rivera" data-st="descarga bajo alerta" data-q="casa 18pr porton de la rivera 2412240075 deye">
+<td class="casa" data-label="Casa" data-v="Casa 18PR"><b>Casa 18PR</b><span class="sub">Porton de la Rivera</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">SUN-15K-SG01HP3</span><span class="sub mono">2412240075</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="20.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="20" aria-label="SOC Casa 18PR"><span style="width:20.0%"></span></div><b class="num">20 %</b><span class="chip critical"><i class="sh"></i>Bajo</span></div></td>
+<td class="est" data-label="Batería" data-v="-80.0" title="El equipo no reporta estado propio de batería"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,08 kW</span></td>
+<td class="r" data-label="Tensión" data-v="312.3"><span class="num">312,3</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="36.0"><span class="num">36,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Castellana Real" data-st="descarga" data-q="casa 121 cr castellana real hp315k2hwc290040 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 121 CR"><b>Casa 121 CR</b><span class="sub">Castellana Real</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-15KL2</span><span class="sub mono">HP315K2HWC290040</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="22.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="22" aria-label="SOC Casa 121 CR"><span style="width:22.0%"></span></div><b class="num">22 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-2300.0" title="Estado reportado por el equipo: discharging"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−2,30 kW</span></td>
+<td class="r" data-label="Tensión" data-v="618.5"><span class="num">618,5</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="31.7"><span class="num">31,7</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Las Palmeras" data-st="descarga alerta" data-q="casa 6 las palmeras hv2640071399 huawei">
+<td class="casa" data-label="Casa" data-v="Casa 6"><b>Casa 6</b><span class="sub">Las Palmeras</span></td>
+<td data-label="Equipo" data-v="Huawei"><span>Huawei</span><span class="sub">SUN2000-10K-LC0</span><span class="sub mono">HV2640071399</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="28.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="28" aria-label="SOC Casa 6"><span style="width:28.0%"></span></div><b class="num">28 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-843.0" title="Estado reportado por el equipo: running"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,84 kW</span></td>
+<td class="r" data-label="Tensión" data-v="435.8"><span class="num">435,8</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="37.7"><span class="num">37,7</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="off-grid"><span class="mono">on · off-grid</span><span class="chip serious"><i class="sh"></i>Isla (off-grid)</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Terra by Kaia" data-st="descarga" data-q="casa 24 terra by kaia hp315k2hwc290046 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 24"><b>Casa 24</b><span class="sub">Terra by Kaia</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-15KL2</span><span class="sub mono">HP315K2HWC290046</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="41.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="41" aria-label="SOC Casa 24"><span style="width:41.0%"></span></div><b class="num">41 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-1370.0" title="Estado reportado por el equipo: discharging"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−1,37 kW</span></td>
+<td class="r" data-label="Tensión" data-v="628.4"><span class="num">628,4</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="28.3"><span class="num">28,3</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="98.0"><span class="num">98</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Condominio Terranova" data-st="descarga" data-q="casa 78t condominio terranova 2412240058 deye">
+<td class="casa" data-label="Casa" data-v="Casa 78T"><b>Casa 78T</b><span class="sub">Condominio Terranova</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">SUN-15K-SG01HP3</span><span class="sub mono">2412240058</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="46.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="46" aria-label="SOC Casa 78T"><span style="width:46.0%"></span></div><b class="num">46 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-1200.0" title="El equipo no reporta estado propio de batería"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−1,20 kW</span></td>
+<td class="r" data-label="Tensión" data-v="421.0"><span class="num">421,0</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="32.0"><span class="num">32,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Terra by Kaia" data-st="reposo" data-q="casa 205 terra by kaia hp315k2hwc290026 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 205"><b>Casa 205</b><span class="sub">Terra by Kaia</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-15KL2</span><span class="sub mono">HP315K2HWC290026</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="54.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="54" aria-label="SOC Casa 205"><span style="width:54.0%"></span></div><b class="num">54 %</b></div></td>
+<td class="est" data-label="Batería" data-v="0.0" title="Estado reportado por el equipo: stopped"><span class="ico idle" aria-hidden="true">●</span><span class="stl">Reposo</span><span class="sub num">0,00 kW</span></td>
+<td class="r" data-label="Tensión" data-v="421.6"><span class="num">421,6</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="30.9"><span class="num">30,9</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Prado Verde Primavera" data-st="descarga" data-q="casa 415p prado verde primavera hp310k2hwc290022 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 415p"><b>Casa 415p</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290022</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="56.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="56" aria-label="SOC Casa 415p"><span style="width:56.0%"></span></div><b class="num">56 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-60.0" title="Estado reportado por el equipo: discharging"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,06 kW</span></td>
+<td class="r" data-label="Tensión" data-v="211.2"><span class="num">211,2</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="31.3"><span class="num">31,3</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Prado Verde Primavera" data-st="reposo" data-q="casa 15p prado verde primavera hp310k2hwc290025 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 15p"><b>Casa 15p</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290025</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="60.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60" aria-label="SOC Casa 15p"><span style="width:60.0%"></span></div><b class="num">60 %</b></div></td>
+<td class="est" data-label="Batería" data-v="0.0" title="Estado reportado por el equipo: stopped"><span class="ico idle" aria-hidden="true">●</span><span class="stl">Reposo</span><span class="sub num">0,00 kW</span></td>
+<td class="r" data-label="Tensión" data-v="212.4"><span class="num">212,4</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="31.7"><span class="num">31,7</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Prado Verde Primavera" data-st="carga" data-q="casa 102p prado verde primavera hp310k2hwc290023 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 102p"><b>Casa 102p</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290023</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="62.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="62" aria-label="SOC Casa 102p"><span style="width:62.0%"></span></div><b class="num">62 %</b></div></td>
+<td class="est" data-label="Batería" data-v="150.0" title="Estado reportado por el equipo: charging"><span class="ico up" aria-hidden="true">▲</span><span class="stl">Cargando</span><span class="sub num">+0,15 kW</span></td>
+<td class="r" data-label="Tensión" data-v="212.6"><span class="num">212,6</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="30.3"><span class="num">30,3</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="99.0"><span class="num">99</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Prado Verde Primavera" data-st="carga" data-q="casa 23p prado verde primavera hp310k2hwc290016 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 23p"><b>Casa 23p</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290016</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="64.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="64" aria-label="SOC Casa 23p"><span style="width:64.0%"></span></div><b class="num">64 %</b></div></td>
+<td class="est" data-label="Batería" data-v="290.0" title="Estado reportado por el equipo: charging"><span class="ico up" aria-hidden="true">▲</span><span class="stl">Cargando</span><span class="sub num">+0,29 kW</span></td>
+<td class="r" data-label="Tensión" data-v="213.3"><span class="num">213,3</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="31.8"><span class="num">31,8</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="99.0"><span class="num">99</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Prado Verde Primavera" data-st="carga" data-q="casa 93p prado verde primavera 2412240074 deye">
+<td class="casa" data-label="Casa" data-v="Casa 93p"><b>Casa 93p</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">SUN-15K-SG01HP3</span><span class="sub mono">2412240074</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="65.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="65" aria-label="SOC Casa 93p"><span style="width:65.0%"></span></div><b class="num">65 %</b></div></td>
+<td class="est" data-label="Batería" data-v="830.0" title="El equipo no reporta estado propio de batería"><span class="ico up" aria-hidden="true">▲</span><span class="stl">Cargando</span><span class="sub num">+0,83 kW</span></td>
+<td class="r" data-label="Tensión" data-v="426.1"><span class="num">426,1</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="33.0"><span class="num">33,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Prado Verde Primavera" data-st="carga" data-q="casa 18ap prado verde primavera hp310k2hwc290034 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 18Ap"><b>Casa 18Ap</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290034</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="67.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="67" aria-label="SOC Casa 18Ap"><span style="width:67.0%"></span></div><b class="num">67 %</b></div></td>
+<td class="est" data-label="Batería" data-v="190.0" title="Estado reportado por el equipo: charging"><span class="ico up" aria-hidden="true">▲</span><span class="stl">Cargando</span><span class="sub num">+0,19 kW</span></td>
+<td class="r" data-label="Tensión" data-v="214.3"><span class="num">214,3</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="31.2"><span class="num">31,2</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="99.0"><span class="num">99</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Prado Verde Primavera" data-st="reposo" data-q="casa 60p prado verde primavera hp310k2hwc290018 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 60p"><b>Casa 60p</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290018</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="67.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="67" aria-label="SOC Casa 60p"><span style="width:67.0%"></span></div><b class="num">67 %</b></div></td>
+<td class="est" data-label="Batería" data-v="0.0" title="Estado reportado por el equipo: stopped"><span class="ico idle" aria-hidden="true">●</span><span class="stl">Reposo</span><span class="sub num">0,00 kW</span></td>
+<td class="r" data-label="Tensión" data-v="213.5"><span class="num">213,5</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="32.5"><span class="num">32,5</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Terra by Kaia" data-st="descarga" data-q="casa 155 terra by kaia hp315k2hwc290021 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 155"><b>Casa 155</b><span class="sub">Terra by Kaia</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-15KL2</span><span class="sub mono">HP315K2HWC290021</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="72.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="72" aria-label="SOC Casa 155"><span style="width:72.0%"></span></div><b class="num">72 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-720.0" title="Estado reportado por el equipo: discharging"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,72 kW</span></td>
+<td class="r" data-label="Tensión" data-v="423.4"><span class="num">423,4</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="31.6"><span class="num">31,6</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="99.0"><span class="num">99</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Prado Verde Primavera" data-st="descarga" data-q="casa 425p prado verde primavera 2605041691 deye">
+<td class="casa" data-label="Casa" data-v="Casa 425p"><b>Casa 425p</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">SUN-15K-SG01HP3</span><span class="sub mono">2605041691</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="73.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="73" aria-label="SOC Casa 425p"><span style="width:73.0%"></span></div><b class="num">73 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-190.0" title="El equipo no reporta estado propio de batería"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,19 kW</span></td>
+<td class="r" data-label="Tensión" data-v="427.0"><span class="num">427,0</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="33.0"><span class="num">33,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Prado Verde Primavera" data-st="carga" data-q="casa 446p prado verde primavera 2412240070 deye">
+<td class="casa" data-label="Casa" data-v="Casa 446p"><b>Casa 446p</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">SUN-15K-SG01HP3 HV trifásico</span><span class="sub mono">2412240070</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="74.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="74" aria-label="SOC Casa 446p"><span style="width:74.0%"></span></div><b class="num">74 %</b></div></td>
+<td class="est" data-label="Batería" data-v="740.0" title="El equipo no reporta estado propio de batería"><span class="ico up" aria-hidden="true">▲</span><span class="stl">Cargando</span><span class="sub num">+0,74 kW</span></td>
+<td class="r" data-label="Tensión" data-v="322.2"><span class="num">322,2</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="34.0"><span class="num">34,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794085200000"><span class="num">16:00</span><span class="sub">hace 15 min vs 16:15</span></td>
+</tr>
+<tr data-zone="Condominio Los Abedules" data-st="descarga" data-q="casa 12 condominio los abedules hp315k2hwc290025 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 12"><b>Casa 12</b><span class="sub">Condominio Los Abedules</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-15KL2</span><span class="sub mono">HP315K2HWC290025</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="76.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="76" aria-label="SOC Casa 12"><span style="width:76.0%"></span></div><b class="num">76 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-4600.0" title="Estado reportado por el equipo: discharging"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−4,60 kW</span></td>
+<td class="r" data-label="Tensión" data-v="635.3"><span class="num">635,3</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="34.6"><span class="num">34,6</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="96.0"><span class="num">96</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Gerona Club House" data-st="carga alerta" data-q="casa 9g gerona club house 2412240069 deye">
+<td class="casa" data-label="Casa" data-v="Casa 9G"><b>Casa 9G</b><span class="sub">Gerona Club House</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">SUN-15K-SG01HP3</span><span class="sub mono">2412240069</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="78.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="78" aria-label="SOC Casa 9G"><span style="width:78.0%"></span></div><b class="num">78 %</b></div></td>
+<td class="est" data-label="Batería" data-v="160.0" title="El equipo no reporta estado propio de batería"><span class="ico up" aria-hidden="true">▲</span><span class="stl">Cargando</span><span class="sub num">+0,16 kW</span></td>
+<td class="r" data-label="Tensión" data-v="423.6"><span class="num">423,6</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="36.0"><span class="num">36,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="alarm"><span class="mono">on · alarm</span><span class="chip serious"><i class="sh"></i>Alarma</span></td>
+<td class="r" data-label="Dato" data-v="1794086040000"><span class="num">16:14</span></td>
+</tr>
+<tr data-zone="Terra by Kaia" data-st="descarga" data-q="casa 287 terra by kaia hp310k2hwc290033 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 287"><b>Casa 287</b><span class="sub">Terra by Kaia</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290033</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="79.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="79" aria-label="SOC Casa 287"><span style="width:79.0%"></span></div><b class="num">79 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-140.0" title="Estado reportado por el equipo: discharging"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,14 kW</span></td>
+<td class="r" data-label="Tensión" data-v="213.2"><span class="num">213,2</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="29.7"><span class="num">29,7</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="99.0"><span class="num">99</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Prado Verde Primavera" data-st="carga" data-q="casa 10p prado verde primavera hp310k2hwc290026 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 10p"><b>Casa 10p</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290026</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="87.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="87" aria-label="SOC Casa 10p"><span style="width:87.0%"></span></div><b class="num">87 %</b></div></td>
+<td class="est" data-label="Batería" data-v="190.0" title="Estado reportado por el equipo: charging"><span class="ico up" aria-hidden="true">▲</span><span class="stl">Cargando</span><span class="sub num">+0,19 kW</span></td>
+<td class="r" data-label="Tensión" data-v="215.3"><span class="num">215,3</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="32.4"><span class="num">32,4</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="99.0"><span class="num">99</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Prado Verde Primavera" data-st="carga" data-q="casa 55p prado verde primavera 2605041689 deye">
+<td class="casa" data-label="Casa" data-v="Casa 55p"><b>Casa 55p</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">HP3-15KL2</span><span class="sub mono">2605041689</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="88.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="88" aria-label="SOC Casa 55p"><span style="width:88.0%"></span></div><b class="num">88 %</b></div></td>
+<td class="est" data-label="Batería" data-v="780.0" title="El equipo no reporta estado propio de batería"><span class="ico up" aria-hidden="true">▲</span><span class="stl">Cargando</span><span class="sub num">+0,78 kW</span></td>
+<td class="r" data-label="Tensión" data-v="430.1"><span class="num">430,1</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="36.0"><span class="num">36,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="carga" data-q="casa 35 reservas de pance hp310k2hwc290020 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 35"><b>Casa 35</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290020</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="90.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="90" aria-label="SOC Casa 35"><span style="width:90.0%"></span></div><b class="num">90 %</b></div></td>
+<td class="est" data-label="Batería" data-v="120.0" title="Estado reportado por el equipo: charging"><span class="ico up" aria-hidden="true">▲</span><span class="stl">Cargando</span><span class="sub num">+0,12 kW</span></td>
+<td class="r" data-label="Tensión" data-v="215.0"><span class="num">215,0</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="32.4"><span class="num">32,4</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="99.0"><span class="num">99</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="descarga" data-q="casa 30 reservas de pance hp310k2hwc290036 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 30"><b>Casa 30</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290036</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="91.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="91" aria-label="SOC Casa 30"><span style="width:91.0%"></span></div><b class="num">91 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-980.0" title="Estado reportado por el equipo: discharging"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,98 kW</span></td>
+<td class="r" data-label="Tensión" data-v="212.4"><span class="num">212,4</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="32.4"><span class="num">32,4</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="98.0"><span class="num">98</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="descarga" data-q="casa 18 reservas de pance hp310k2hwc290004 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 18"><b>Casa 18</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290004</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="92.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="92" aria-label="SOC Casa 18"><span style="width:92.0%"></span></div><b class="num">92 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-1310.0" title="Estado reportado por el equipo: discharging"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−1,31 kW</span></td>
+<td class="r" data-label="Tensión" data-v="213.0"><span class="num">213,0</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="35.1"><span class="num">35,1</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="98.0"><span class="num">98</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="descarga" data-q="casa 56 reservas de pance hp310k2hwc290012 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 56"><b>Casa 56</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290012</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="94.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="94" aria-label="SOC Casa 56"><span style="width:94.0%"></span></div><b class="num">94 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-1200.0" title="Estado reportado por el equipo: discharging"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−1,20 kW</span></td>
+<td class="r" data-label="Tensión" data-v="212.8"><span class="num">212,8</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="33.1"><span class="num">33,1</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="98.0"><span class="num">98</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="descarga" data-q="casa 15 reservas de pance hp315k2hwc290037 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 15"><b>Casa 15</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-15KL2</span><span class="sub mono">HP315K2HWC290037</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="96.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="96" aria-label="SOC Casa 15"><span style="width:96.0%"></span></div><b class="num">96 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-2530.0" title="Estado reportado por el equipo: discharging"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−2,53 kW</span></td>
+<td class="r" data-label="Tensión" data-v="424.6"><span class="num">424,6</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="33.3"><span class="num">33,3</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="99.0"><span class="num">99</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="descarga" data-q="casa 57 reservas de pance hp310k2hwc290032 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 57"><b>Casa 57</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290032</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="97.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="97" aria-label="SOC Casa 57"><span style="width:97.0%"></span></div><b class="num">97 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-1100.0" title="Estado reportado por el equipo: discharging"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−1,10 kW</span></td>
+<td class="r" data-label="Tensión" data-v="212.8"><span class="num">212,8</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="30.9"><span class="num">30,9</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="98.0"><span class="num">98</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="descarga" data-q="casa 77 reservas de pance hp310k2hwc290003 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 77"><b>Casa 77</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290003</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="97.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="97" aria-label="SOC Casa 77"><span style="width:97.0%"></span></div><b class="num">97 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-600.0" title="Estado reportado por el equipo: discharging"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,60 kW</span></td>
+<td class="r" data-label="Tensión" data-v="212.6"><span class="num">212,6</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="30.8"><span class="num">30,8</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="98.0"><span class="num">98</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="descarga" data-q="casa 11 reservas de pance hp315k2hwc290016 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 11"><b>Casa 11</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-15KL2</span><span class="sub mono">HP315K2HWC290016</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="99.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="99" aria-label="SOC Casa 11"><span style="width:99.0%"></span></div><b class="num">99 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-350.0" title="Estado reportado por el equipo: discharging"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,35 kW</span></td>
+<td class="r" data-label="Tensión" data-v="216.9"><span class="num">216,9</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="34.4"><span class="num">34,4</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="99.0"><span class="num">99</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="carga" data-q="casa 23 reservas de pance hp310k2hwc290007 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 23"><b>Casa 23</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290007</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="99.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="99" aria-label="SOC Casa 23"><span style="width:99.0%"></span></div><b class="num">99 %</b></div></td>
+<td class="est" data-label="Batería" data-v="140.0" title="Estado reportado por el equipo: charging"><span class="ico up" aria-hidden="true">▲</span><span class="stl">Cargando</span><span class="sub num">+0,14 kW</span></td>
+<td class="r" data-label="Tensión" data-v="338.0"><span class="num">338,0</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="32.2"><span class="num">32,2</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="98.0"><span class="num">98</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="descarga" data-q="casa 29 reservas de pance hp310k2hwc290029 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 29"><b>Casa 29</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290029</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="99.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="99" aria-label="SOC Casa 29"><span style="width:99.0%"></span></div><b class="num">99 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-150.0" title="Estado reportado por el equipo: stopped"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,15 kW</span></td>
+<td class="r" data-label="Tensión" data-v="329.6"><span class="num">329,6</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="34.0"><span class="num">34,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="96.0"><span class="num">96</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="reposo" data-q="casa 48 reservas de pance hp310k2hwc290010 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 48"><b>Casa 48</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290010</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="99.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="99" aria-label="SOC Casa 48"><span style="width:99.0%"></span></div><b class="num">99 %</b></div></td>
+<td class="est" data-label="Batería" data-v="0.0" title="Estado reportado por el equipo: stopped"><span class="ico idle" aria-hidden="true">●</span><span class="stl">Reposo</span><span class="sub num">0,00 kW</span></td>
+<td class="r" data-label="Tensión" data-v="218.3"><span class="num">218,3</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="30.5"><span class="num">30,5</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="99.0"><span class="num">99</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Llanos de Pance" data-st="descarga" data-q="casa 73 llanos de pance hp315k2hwc290038 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 73"><b>Casa 73</b><span class="sub">Llanos de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-15KL2</span><span class="sub mono">HP315K2HWC290038</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="99.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="99" aria-label="SOC Casa 73"><span style="width:99.0%"></span></div><b class="num">99 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-160.0" title="Estado reportado por el equipo: stopped"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,16 kW</span></td>
+<td class="r" data-label="Tensión" data-v="216.7"><span class="num">216,7</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="29.6"><span class="num">29,6</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="99.0"><span class="num">99</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="reposo" data-q="casa 76 reservas de pance hp315k2hwc290018 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 76"><b>Casa 76</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-15KL2</span><span class="sub mono">HP315K2HWC290018</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="99.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="99" aria-label="SOC Casa 76"><span style="width:99.0%"></span></div><b class="num">99 %</b></div></td>
+<td class="est" data-label="Batería" data-v="0.0" title="Estado reportado por el equipo: stopped"><span class="ico idle" aria-hidden="true">●</span><span class="stl">Reposo</span><span class="sub num">0,00 kW</span></td>
+<td class="r" data-label="Tensión" data-v="434.2"><span class="num">434,2</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="33.4"><span class="num">33,4</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="98.0"><span class="num">98</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Prado Verde Primavera" data-st="carga" data-q="casa 86p prado verde primavera 2605041682 deye">
+<td class="casa" data-label="Casa" data-v="Casa 86p"><b>Casa 86p</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">SUN-15K-SG01HP3 HV trifásico</span><span class="sub mono">2605041682</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="99.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="99" aria-label="SOC Casa 86p"><span style="width:99.0%"></span></div><b class="num">99 %</b></div></td>
+<td class="est" data-label="Batería" data-v="210.0" title="El equipo no reporta estado propio de batería"><span class="ico up" aria-hidden="true">▲</span><span class="stl">Cargando</span><span class="sub num">+0,21 kW</span></td>
+<td class="r" data-label="Tensión" data-v="322.0"><span class="num">322,0</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="34.0"><span class="num">34,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="reposo" data-q="casa 108 reservas de pance hp310k2hwc290027 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 108"><b>Casa 108</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290027</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="99.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="99" aria-label="SOC Casa 108"><span style="width:99.0%"></span></div><b class="num">99 %</b></div></td>
+<td class="est" data-label="Batería" data-v="0.0" title="Estado reportado por el equipo: discharging"><span class="ico idle" aria-hidden="true">●</span><span class="stl">Reposo</span><span class="sub num">0,00 kW</span></td>
+<td class="r" data-label="Tensión" data-v="216.9"><span class="num">216,9</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="31.2"><span class="num">31,2</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="99.0"><span class="num">99</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Prado Verde Primavera" data-st="reposo" data-q="casa 435p prado verde primavera hp310k2hwc290015 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 435p"><b>Casa 435p</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290015</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="99.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="99" aria-label="SOC Casa 435p"><span style="width:99.0%"></span></div><b class="num">99 %</b></div></td>
+<td class="est" data-label="Batería" data-v="0.0" title="Estado reportado por el equipo: stopped"><span class="ico idle" aria-hidden="true">●</span><span class="stl">Reposo</span><span class="sub num">0,00 kW</span></td>
+<td class="r" data-label="Tensión" data-v="218.5"><span class="num">218,5</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="32.1"><span class="num">32,1</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="99.0"><span class="num">99</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="descarga" data-q="casa 2 reservas de pance 2412240071 deye">
+<td class="casa" data-label="Casa" data-v="Casa 2"><b>Casa 2</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">SUN-15K-SG01HP3 HV trifásico</span><span class="sub mono">2412240071</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="100.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="SOC Casa 2"><span style="width:100.0%"></span></div><b class="num">100 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-270.0" title="El equipo no reporta estado propio de batería"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,27 kW</span></td>
+<td class="r" data-label="Tensión" data-v="449.7"><span class="num">449,7</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="34.0"><span class="num">34,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="reposo" data-q="casa 42 reservas de pance hp310k2hwc290014 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 42"><b>Casa 42</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290014</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="100.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="SOC Casa 42"><span style="width:100.0%"></span></div><b class="num">100 %</b></div></td>
+<td class="est" data-label="Batería" data-v="0.0" title="Estado reportado por el equipo: stopped"><span class="ico idle" aria-hidden="true">●</span><span class="stl">Reposo</span><span class="sub num">0,00 kW</span></td>
+<td class="r" data-label="Tensión" data-v="223.1"><span class="num">223,1</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="33.0"><span class="num">33,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="98.0"><span class="num">98</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Pance Campestre" data-st="descarga" data-q="casa 48pc pance campestre 2412240062 deye">
+<td class="casa" data-label="Casa" data-v="Casa 48PC"><b>Casa 48PC</b><span class="sub">Pance Campestre</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">SUN-15K-SG01HP3 HV trifásico</span><span class="sub mono">2412240062</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="100.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="SOC Casa 48PC"><span style="width:100.0%"></span></div><b class="num">100 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-450.0" title="El equipo no reporta estado propio de batería"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,45 kW</span></td>
+<td class="r" data-label="Tensión" data-v="423.4"><span class="num">423,4</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="36.0"><span class="num">36,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="97.0"><span class="num">97</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="reposo" data-q="casa 63 reservas de pance 2504093125 deye">
+<td class="casa" data-label="Casa" data-v="Casa 63"><b>Casa 63</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">LV trifásico</span><span class="sub mono">2504093125</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="100.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="SOC Casa 63"><span style="width:100.0%"></span></div><b class="num">100 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-3.0" title="El equipo no reporta estado propio de batería"><span class="ico idle" aria-hidden="true">●</span><span class="stl">Reposo</span><span class="sub num">−0,00 kW</span></td>
+<td class="r" data-label="Tensión" data-v="52.81"><span class="num">52,8</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="32.7"><span class="num">32,7</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="-1"><span class="num">—</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="descarga" data-q="casa 70 reservas de pance 2412240077 deye">
+<td class="casa" data-label="Casa" data-v="Casa 70"><b>Casa 70</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">HV trifásico</span><span class="sub mono">2412240077</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="100.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="SOC Casa 70"><span style="width:100.0%"></span></div><b class="num">100 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-800.0" title="El equipo no reporta estado propio de batería"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,80 kW</span></td>
+<td class="r" data-label="Tensión" data-v="318.0"><span class="num">318,0</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="34.0"><span class="num">34,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="reposo" data-q="casa 74 reservas de pance 2412240050 deye">
+<td class="casa" data-label="Casa" data-v="Casa 74"><b>Casa 74</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">SUN-15K-SG01HP3</span><span class="sub mono">2412240050</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="100.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="SOC Casa 74"><span style="width:100.0%"></span></div><b class="num">100 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-0.0" title="El equipo no reporta estado propio de batería"><span class="ico idle" aria-hidden="true">●</span><span class="stl">Reposo</span><span class="sub num">0,00 kW</span></td>
+<td class="r" data-label="Tensión" data-v="434.1"><span class="num">434,1</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="34.0"><span class="num">34,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="carga" data-q="casa 99 reservas de pance 2412240064 deye">
+<td class="casa" data-label="Casa" data-v="Casa 99"><b>Casa 99</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">HV trifásico</span><span class="sub mono">2412240064</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="100.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="SOC Casa 99"><span style="width:100.0%"></span></div><b class="num">100 %</b></div></td>
+<td class="est" data-label="Batería" data-v="70.0" title="El equipo no reporta estado propio de batería"><span class="ico up" aria-hidden="true">▲</span><span class="stl">Cargando</span><span class="sub num">+0,07 kW</span></td>
+<td class="r" data-label="Tensión" data-v="332.2"><span class="num">332,2</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="33.0"><span class="num">33,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="descarga" data-q="casa 104 reservas de pance hp310k2hwc290005 livoltek">
+<td class="casa" data-label="Casa" data-v="Casa 104"><b>Casa 104</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Livoltek"><span>Livoltek</span><span class="sub">HP3-10KL2</span><span class="sub mono">HP310K2HWC290005</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="100.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="SOC Casa 104"><span style="width:100.0%"></span></div><b class="num">100 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-140.0" title="Estado reportado por el equipo: stopped"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,14 kW</span></td>
+<td class="r" data-label="Tensión" data-v="219.7"><span class="num">219,7</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="32.2"><span class="num">32,2</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="98.0"><span class="num">98</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="throttled"><span class="mono">on · throttled</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Reservas de Pance" data-st="descarga" data-q="casa 111 reservas de pance 2412240067 deye">
+<td class="casa" data-label="Casa" data-v="Casa 111"><b>Casa 111</b><span class="sub">Reservas de Pance</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">SUN-15K-SG01HP3 HV trifásico</span><span class="sub mono">2412240067</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="100.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="SOC Casa 111"><span style="width:100.0%"></span></div><b class="num">100 %</b></div></td>
+<td class="est" data-label="Batería" data-v="-520.0" title="El equipo no reporta estado propio de batería"><span class="ico dn" aria-hidden="true">▼</span><span class="stl">Descargando</span><span class="sub num">−0,52 kW</span></td>
+<td class="r" data-label="Tensión" data-v="425.9"><span class="num">425,9</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="37.0"><span class="num">37,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+<tr data-zone="Prado Verde Primavera" data-st="carga" data-q="casa 412p prado verde primavera 2605041685 deye">
+<td class="casa" data-label="Casa" data-v="Casa 412p"><b>Casa 412p</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo" data-v="Deye"><span>Deye</span><span class="sub">SUN-15K-SG01HP3</span><span class="sub mono">2605041685</span></td>
+<td class="soc" data-label="Carga (SOC)" data-v="100.0"><div class="socwrap"><div class="meter" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="100" aria-label="SOC Casa 412p"><span style="width:100.0%"></span></div><b class="num">100 %</b></div></td>
+<td class="est" data-label="Batería" data-v="110.0" title="El equipo no reporta estado propio de batería"><span class="ico up" aria-hidden="true">▲</span><span class="stl">Cargando</span><span class="sub num">+0,11 kW</span></td>
+<td class="r" data-label="Tensión" data-v="432.9"><span class="num">432,9</span> <span class="u">V</span></td>
+<td class="r" data-label="Temp." data-v="34.0"><span class="num">34,0</span> <span class="u">°C</span></td>
+<td class="r" data-label="SOH" data-v="100.0"><span class="num">100</span> <span class="u">%</span></td>
+<td data-label="Inversor" data-v="normal"><span class="mono">on · normal</span></td>
+<td class="r" data-label="Dato" data-v="1794086100000"><span class="num">16:15</span></td>
+</tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<section class="section-gap" aria-label="Casas sin dato">
+  <h2>Casas sin dato a las 16:15 <span class="u">· 4 de 53</span></h2>
+  <div class="tw">
+  <table>
+    <thead><tr><th>Casa</th><th>Equipo</th><th>Último dato en Metrum</th><th class="r">Último SOC conocido</th><th>Observación</th></tr></thead>
+    <tbody>
+<tr>
+<td class="casa" data-label="Casa"><b>Casa 447p</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo"><span>Livoltek</span><span class="sub">HP3-15KL2</span><span class="sub mono">HP315K2HWC290047</span></td>
+<td data-label="Último dato en Metrum"><span class="num">07/11 13:40</span><span class="sub">2,6 h antes de las 16:15</span></td>
+<td class="r" data-label="Último SOC conocido"><b class="num">76 %</b><span class="sub">histórico, no es el de las 16:15</span></td>
+<td data-label="Observación"><span class="chip serious"><i class="sh"></i>Sin dato</span><span class="sub wrap">Gateway offline desde las 14:02 de hoy, 1 min antes que Casa 382p (misma zona).</span></td>
+</tr>
+<tr>
+<td class="casa" data-label="Casa"><b>Casa 382p</b><span class="sub">Prado Verde Primavera</span></td>
+<td data-label="Equipo"><span>Deye</span><span class="sub">SUN-15K-SG01HP3</span><span class="sub mono">2412240060</span></td>
+<td data-label="Último dato en Metrum"><span class="num">07/11 13:30</span><span class="sub">2,8 h antes de las 16:15</span></td>
+<td class="r" data-label="Último SOC conocido"><b class="num">95 %</b><span class="sub">histórico, no es el de las 16:15</span></td>
+<td data-label="Observación"><span class="chip serious"><i class="sh"></i>Sin dato</span><span class="sub wrap">Gateway offline desde las 14:03 de hoy. DeyeCloud tampoco ayuda: su último reporte de este equipo es del 04/11 15:15.</span></td>
+</tr>
+<tr>
+<td class="casa" data-label="Casa"><b>Piloto Promigas</b><span class="sub">Oficina Promigas</span></td>
+<td data-label="Equipo"><span>Livoltek</span><span class="sub">HP3-15KL2</span><span class="sub mono">HP315K2HWC290014</span></td>
+<td data-label="Último dato en Metrum"><span class="num">29/10 08:21</span><span class="sub">9 días antes de las 16:15</span></td>
+<td class="r" data-label="Último SOC conocido"><b class="num">35 %</b><span class="sub">histórico, no es el de las 16:15</span></td>
+<td data-label="Observación"><span class="chip serious"><i class="sh"></i>Sin dato</span><span class="sub wrap">Gateway offline desde el 29/10 09:27.</span></td>
+</tr>
+<tr>
+<td class="casa" data-label="Casa"><b>Piloto HUAWEI</b><span class="sub">Oficina Promigas</span></td>
+<td data-label="Equipo"><span>Huawei</span><span class="sub">SUN2000-3KTL-L1</span><span class="sub mono">HV2150024762</span></td>
+<td data-label="Último dato en Metrum"><span class="num">14/09 09:45</span><span class="sub">54 días antes de las 16:15</span></td>
+<td class="r" data-label="Último SOC conocido"><b class="num">100 %</b><span class="sub">histórico, no es el de las 16:15</span></td>
+<td data-label="Observación"><span class="chip serious"><i class="sh"></i>Sin dato</span><span class="sub wrap">Gateway offline desde el 14/09 10:10.</span></td>
+</tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<details class="method">
+  <summary>Cómo se calculó y qué tener en cuenta</summary>
+  <div class="card">
+    <h3>Fuente y momento</h3>
+    <ul>
+      <li>Telemetría cruda de Metrum (ThingsBoard) de los 60 inversores de la flota; 53 casas = 53 gateways. Para cada inversor se tomó el último muestreo con marca de tiempo ≤ 16:15 (21:15 UTC) dentro de la ventana 15:30–16:31. En 47 de 49 casas el dato es exactamente de las 16:15.</li>
+      <li>Llaves usadas: <span class="mono">BattSOC, BattPower, BattVolt, BattTemp, BattSOH</span>, estado propio de batería (<span class="mono">BattStateOp_LV</span>, solo Livoltek/Huawei) y <span class="mono">invstate / invrun</span>.</li>
+    </ul>
+    <h3>Convención de signo de la potencia de batería</h3>
+    <ul>
+      <li>Se normalizó a <b>+ = carga, − = descarga</b>. Livoltek y Huawei reportan <span class="mono">BattPower</span> con + = carga; Deye con + = descarga (se invirtió).</li>
+      <li>Verificado con los datos de hoy contra la variación del SOC en la ventana: Livoltek/Huawei 24 de 24 casos con signo coincidente, Deye 3 de 3 con signo opuesto, más el caso de Casa 55p (SOC 85→88 %, potencia cruda negativa).</li>
+    </ul>
+    <h3>Estado y umbrales</h3>
+    <ul>
+      <li>Estado derivado de la potencia con banda muerta de ±50 W (|P| &lt; 50 W = reposo). En algunos Livoltek el estado que reporta el equipo en ese minuto no coincide con el signo de la potencia (p. ej. Casa 108, Casa 29, Casa 104, Casa 73); por eso se usó la potencia. El estado propio del equipo queda en el tooltip de la celda.</li>
+      <li>«SOC ≤ 20 %» y los rangos de SOC son umbrales de referencia genéricos: no hay reglas del equipo registradas (<span class="mono">references/reglas-aprendidas.md</span> no existe todavía). Si el equipo usa otros, se ajustan.</li>
+      <li>No se estima autonomía restante: requiere la capacidad útil de cada batería (kWh), que Metrum no entrega.</li>
+    </ul>
+    <h3>Casas con más de un inversor registrado</h3>
+    <ul><li><b>Casa 10</b>: 2 inversores registrados (2412240078, HP315K2HWC290041); se usó 2412240078 (único con telemetría a las 16:15; los demás no reportan desde hace semanas o meses).</li><li><b>Casa 23p</b>: 2 inversores registrados (HP310K2HWC290002, HP310K2HWC290016); se usó HP310K2HWC290016 (único con telemetría a las 16:15; los demás no reportan desde hace semanas o meses).</li><li><b>Casa 48PC</b>: 2 inversores registrados (2412240062, 2412240073); se usó 2412240062 (único con telemetría a las 16:15; los demás no reportan desde hace semanas o meses).</li><li><b>Casa 55p</b>: 2 inversores registrados (2412240054, 2605041689); se usó 2605041689 (único con telemetría a las 16:15; los demás no reportan desde hace semanas o meses).</li><li><b>Casa 99</b>: 2 inversores registrados (2412240064, HP315K2HWC290042); se usó 2412240064 (único con telemetría a las 16:15; los demás no reportan desde hace semanas o meses).</li><li><b>Casa 121 CR</b>: 3 inversores registrados (2412240048, 2605041670, HP315K2HWC290040); se usó HP315K2HWC290040 (único con telemetría a las 16:15; los demás no reportan desde hace semanas o meses).</li></ul>
+    <h3>Datos con salvedad</h3>
+    <ul>
+      <li>Casa 446p (Deye): su último punto es de las 16:00 (15 min antes); se muestra tal cual y se marca.</li>
+      <li>Casa 55p: en Metrum el equipo figura como marca Deye con modelo «HP3-15KL2» (nombre de modelo Livoltek). Se trató como Deye por sus llaves de telemetría y por el signo verificado.</li>
+      <li>Casa 63: batería de baja tensión (≈ 53 V frente a 210–630 V del resto) y sin SOH reportado.</li>
+      <li>Livoltek y Huawei reportan el SOC en enteros; Deye también se muestra redondeado.</li>
+      <li>Casas sin dato: se confirmó que los 4 gateways están <span class="mono">offline</span> (no es un problema de ingesta de una sola métrica). Para Casa 382p (Deye) también se consultó DeyeCloud en modo solo lectura: su último reporte es del 04/11 15:15, así que no aporta un dato de las 16:15.</li>
+    </ul>
+  </div>
+</details>
+
+<footer>Generado el 07/11/2026 16:31 (hora Colombia) con la skill om-agency. Sin credenciales ni tokens en este archivo.</footer>
+</div>
+
+<script>
+(function () {
+  var tbl = document.getElementById('fleet'), body = tbl.tBodies[0];
+  var rows = Array.prototype.slice.call(body.rows);
+  var q = document.getElementById('q'), fz = document.getElementById('fz'), fs = document.getElementById('fs'), cnt = document.getElementById('cnt');
+  function apply() {
+    var t = q.value.trim().toLowerCase(), z = fz.value, s = fs.value, shown = 0;
+    rows.forEach(function (r) {
+      var ok = (!t || r.dataset.q.indexOf(t) > -1) && (!z || r.dataset.zone === z) && (!s || (' ' + r.dataset.st + ' ').indexOf(' ' + s + ' ') > -1);
+      r.hidden = !ok; if (ok) shown++;
+    });
+    cnt.textContent = 'Mostrando ' + shown + ' de ' + rows.length;
+  }
+  [q, fz, fs].forEach(function (el) { el.addEventListener('input', apply); el.addEventListener('change', apply); });
+  function nat(a) { var m = /^Casa\s+(\d+)\s*(.*)$/.exec(a); return m ? [0, +m[1], m[2]] : [1, 0, a]; }
+  var dir = {};
+  Array.prototype.forEach.call(tbl.tHead.querySelectorAll('button'), function (b) {
+    b.addEventListener('click', function () {
+      var i = +b.dataset.i, t = b.dataset.t, d = dir[i] = (dir[i] === 1 ? -1 : 1);
+      rows.sort(function (x, y) {
+        var a = x.cells[i].dataset.v, c = y.cells[i].dataset.v, r;
+        if (t === 'num') r = parseFloat(a) - parseFloat(c);
+        else if (t === 'nat') { var p = nat(a), o = nat(c); r = (p[0] - o[0]) || (p[1] - o[1]) || p[2].localeCompare(o[2]); }
+        else r = a.localeCompare(c, 'es');
+        return r * d;
+      });
+      rows.forEach(function (r) { body.appendChild(r); });
+      Array.prototype.forEach.call(tbl.tHead.querySelectorAll('th'), function (th) { th.removeAttribute('aria-sort'); th.removeAttribute('data-arrow'); });
+      Array.prototype.forEach.call(tbl.tHead.querySelectorAll('button'), function (x) { x.removeAttribute('data-arrow'); });
+      b.parentNode.setAttribute('aria-sort', d === 1 ? 'ascending' : 'descending');
+      b.dataset.arrow = d === 1 ? '▲' : '▼';
+    });
+  });
+})();
+</script>
+</body>
+</html>
