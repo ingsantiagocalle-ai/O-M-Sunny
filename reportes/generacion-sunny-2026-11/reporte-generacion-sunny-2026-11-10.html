@@ -1,0 +1,482 @@
+<title>Generación Proyecto Sunny</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Concepto: informe técnico de campo. Columna única, cifras primero, gráficos pequeños en cuadrícula y tablas de apoyo al final. */
+:root{
+  --bg:#f2f5f6; --surface:#ffffff; --surface-2:#e8eef0; --ink:#0c1a21; --ink-2:#44565f; --muted:#667882;
+  --line:#d5dee2; --grid:#e3eaed; --accent:#1c5cab;
+  --s-irr:#7d8e98; --s-gen:#2a78d6; --s-pm:#eb6834; --s-oct:#8a9aa3; --s-nov:#2a78d6;
+  --good-bg:#dff3df; --good-fg:#0a5e0a; --bad-bg:#fbe2e2; --bad-fg:#9b2323; --warn-bg:#fcefcb; --warn-fg:#70490a;
+  --pos:#0a6a0a; --neg:#b3261e; --band:rgba(42,120,214,.08);
+  --shadow:0 1px 2px rgba(12,26,33,.06);
+  --font-display:'Space Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0f1519; --surface:#151d22; --surface-2:#1c262c; --ink:#e8eef1; --ink-2:#a9b7bf; --muted:#8a9aa3;
+    --line:#2a363d; --grid:#222d33; --accent:#6da7ec;
+    --s-irr:#8c9ca6; --s-gen:#3987e5; --s-pm:#d95926; --s-oct:#8c9ca6; --s-nov:#3987e5;
+    --good-bg:#12311a; --good-fg:#7fd987; --bad-bg:#3a1b1d; --bad-fg:#f19a9a; --warn-bg:#3a2e10; --warn-fg:#f2c45a;
+    --pos:#7fd987; --neg:#f19a9a; --band:rgba(57,135,229,.12); --shadow:none; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0f1519; --surface:#151d22; --surface-2:#1c262c; --ink:#e8eef1; --ink-2:#a9b7bf; --muted:#8a9aa3;
+  --line:#2a363d; --grid:#222d33; --accent:#6da7ec;
+  --s-irr:#8c9ca6; --s-gen:#3987e5; --s-pm:#d95926; --s-oct:#8c9ca6; --s-nov:#3987e5;
+  --good-bg:#12311a; --good-fg:#7fd987; --bad-bg:#3a1b1d; --bad-fg:#f19a9a; --warn-bg:#3a2e10; --warn-fg:#f2c45a;
+  --pos:#7fd987; --neg:#f19a9a; --band:rgba(57,135,229,.12); --shadow:none; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:15px;line-height:1.55;-webkit-text-size-adjust:100%}
+.wrap{max-width:1040px;margin:0 auto;padding-block:28px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3,h4{font-family:var(--font-display);text-wrap:balance;margin:0;line-height:1.15}
+h1{font-size:clamp(28px,5vw,42px);font-weight:700;letter-spacing:-.01em}
+h2{font-size:clamp(21px,3vw,26px);font-weight:600;margin-top:56px}
+h3{font-size:17px;font-weight:600}
+h4{font-size:14px;font-weight:600;margin:22px 0 8px}
+p{margin:0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.88em;background:var(--surface-2);padding:1px 5px;border-radius:4px}
+a{color:var(--accent)}
+small{color:var(--muted);font-size:12px}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.meta{color:var(--ink-2);margin-top:10px;max-width:70ch}
+.sec-lead{color:var(--ink-2);max-width:68ch;margin-top:8px}
+.src{font-size:12px;color:var(--muted);margin-top:10px}
+nav.jump{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:20px;font-size:13px}
+nav.jump a{text-decoration:none;color:var(--ink-2);border-bottom:1px solid var(--line)}
+nav.jump a:hover,nav.jump a:focus-visible{color:var(--accent);border-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.answer{margin-top:28px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:22px clamp(16px,3vw,28px);box-shadow:var(--shadow)}
+.answer h2{margin:0;font-size:clamp(22px,3.4vw,30px)}
+.answer ul{margin:14px 0 0;padding-left:20px;display:grid;gap:8px;max-width:76ch}
+.answer li::marker{color:var(--muted)}
+
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;line-height:1;padding:4px 9px;border-radius:999px;white-space:nowrap}
+.pill.good{background:var(--good-bg);color:var(--good-fg)}
+.pill.bad{background:var(--bad-bg);color:var(--bad-fg)}
+.pill.warn{background:var(--warn-bg);color:var(--warn-fg)}
+.pill.neutral{background:var(--surface-2);color:var(--ink-2)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px;min-width:0}
+.card header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.card .big{font-family:var(--font-display);font-size:36px;font-weight:600;line-height:1.1;margin-top:12px}
+.card .cap{font-size:12px;color:var(--muted);margin-top:2px}
+.card dl{margin:12px 0 0;font-size:13px}
+.card dl div{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid var(--line)}
+.card dt{color:var(--ink-2)} .card dd{margin:0;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+
+.legend{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px;color:var(--ink-2);margin:14px 0 4px}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{display:inline-block;width:16px;height:3px;border-radius:2px}
+.legend i.sq{width:11px;height:11px;border-radius:3px}
+.i-irr{background:var(--s-irr)} .i-gen{background:var(--s-gen)} .i-pm{background:var(--s-pm)} .i-oct{background:var(--s-oct)} .i-nov{background:var(--s-nov)}
+.i-band{background:var(--band);outline:1px solid var(--line)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 14px 10px;margin-top:12px}
+.chart{position:relative;width:100%;min-width:0}
+.chart svg{display:block;width:100%;height:auto;touch-action:pan-y;overflow:visible}
+.mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:12px;margin-top:12px}
+.mini-grid figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 12px 6px;min-width:0}
+.mini-grid figcaption{font-family:var(--font-display);font-weight:600;font-size:14px;display:flex;justify-content:space-between;gap:8px}
+.mini-grid figcaption small{font-family:var(--font-body);font-weight:400}
+.ax{fill:var(--muted);font-size:11px;font-family:var(--font-body)}
+.gl{fill:var(--ink);font:600 13px var(--font-display);paint-order:stroke;stroke:var(--surface);stroke-width:5px;stroke-linejoin:round}
+.vl{fill:var(--ink-2);font-size:11.5px;font-weight:600;font-family:var(--font-body)}
+.grid{stroke:var(--grid);stroke-width:1}
+.axis0{stroke:var(--ink-2);stroke-width:1}
+.refl{stroke:var(--muted);stroke-width:1}
+.band{fill:var(--band)}
+.ln{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.l-irr{stroke:var(--s-irr)} .l-gen{stroke:var(--s-gen)} .l-pm{stroke:var(--s-pm)} .l-oct{stroke:var(--s-oct)} .l-nov{stroke:var(--s-nov)}
+.b-irr{fill:var(--s-irr)} .b-gen{fill:var(--s-gen)} .b-pm{fill:var(--s-pm)}
+.d-irr{fill:var(--s-irr)} .d-gen{fill:var(--s-gen)} .d-pm{fill:var(--s-pm)} .d-oct{fill:var(--s-oct)} .d-nov{fill:var(--s-nov)}
+.dot{stroke:var(--surface);stroke-width:2}
+.xh{stroke:var(--muted);stroke-width:1}
+.tip{position:absolute;z-index:5;pointer-events:none;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;line-height:1.45;box-shadow:0 4px 14px rgba(0,0,0,.14);max-width:290px}
+.tip b{font-weight:600} .tip .tv{font-variant-numeric:tabular-nums}
+
+.findings{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:14px;margin-top:16px}
+.finding{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;min-width:0}
+.finding h3{display:flex;flex-direction:column;align-items:flex-start;gap:8px;font-size:16.5px}
+.finding dl{margin:14px 0 0;display:grid;gap:10px}
+.finding dt{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.finding dd{margin:2px 0 0;font-size:14px}
+
+.scroll{overflow-x:auto;margin-top:10px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table.data{border-collapse:collapse;width:100%;font-size:13px;min-width:560px}
+table.data.wide{min-width:980px}
+table.data th,table.data td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top;font-variant-numeric:tabular-nums}
+table.data tbody tr:last-child th,table.data tbody tr:last-child td{border-bottom:0}
+table.data thead th{font-size:12px;font-weight:600;color:var(--ink-2);background:var(--surface-2);vertical-align:bottom;white-space:normal}
+table.data th:first-child,table.data td:first-child{text-align:left}
+table.data tbody th{font-weight:600;text-align:left}
+table.data tbody th small,table.data th small{display:block;font-weight:400}
+table.data td.strong{font-weight:600}
+table.data td.neg{color:var(--neg);font-weight:600} table.data td.pos{color:var(--pos);font-weight:600}
+table.data.text td,table.data.text th{text-align:left}
+table.data td .pill{margin:0 4px 4px 0}
+
+ul.meters{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:10px}
+ul.meters li{display:grid;grid-template-columns:110px 1fr 48px;grid-template-areas:"n t v" ". r r";align-items:center;gap:2px 12px}
+.mn{grid-area:n;font-weight:600} .mt{grid-area:t;position:relative;height:10px;background:var(--surface-2);border-radius:5px} .mt i{display:block;height:100%;background:var(--s-gen);border-radius:5px}
+.mt .ref{position:absolute;top:-4px;width:2px;height:18px;background:var(--ink-2)}
+.mv{grid-area:v;font-weight:600;font-variant-numeric:tabular-nums;text-align:right} .mr{grid-area:r;font-size:12px;color:var(--muted)}
+
+details.city{background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-top:12px;padding:0 16px 14px}
+details.city>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 0;font-family:var(--font-display);font-weight:600;font-size:17px}
+details.city>summary::-webkit-details-marker{display:none}
+details.city>summary::before{content:"▸";margin-right:8px;color:var(--muted)}
+details.city[open]>summary::before{content:"▾"}
+details.city>summary span{flex:1}
+.conclusion{background:var(--surface-2);border-radius:12px;padding:20px clamp(16px,3vw,26px);margin-top:16px;max-width:80ch}
+.conclusion p+p{margin-top:8px}
+.method ul{margin:10px 0 0;padding-left:20px;display:grid;gap:6px;max-width:80ch}
+footer{margin-top:48px;font-size:12px;color:var(--muted);max-width:80ch}
+@media (max-width:520px){
+  ul.meters li{grid-template-columns:92px 1fr 44px}
+  .card .big{font-size:32px}
+}
+@media (prefers-reduced-motion:no-preference){ .tip{transition:opacity .08s} }
+</style>
+
+<main class="wrap">
+<header>
+  <p class="eyebrow">Proyecto Sunny · Reporte de generación</p>
+  <h1>Generación por ciudad en las últimas 6 semanas</h1>
+  <p class="meta">28 sep – 8 nov 2026 en Cali, Barranquilla, Cartagena y Turbaco. El panel de comparación tiene 43 casas con serie completa, de 52 con inversor activo. Cálculo del 10 nov 2026 desde telemetría cruda de Metrum.</p>
+  <nav class="jump" aria-label="Secciones">
+    <a href="#respuesta">Respuesta</a><a href="#hallazgos">Hallazgos</a><a href="#irradiacion">Irradiación</a><a href="#semanas">Semanas</a><a href="#mediodia">Mediodía</a><a href="#casas">Casas a revisar</a><a href="#detalle">Detalle por casa</a><a href="#metodo">Método</a>
+  </nav>
+</header>
+
+<section id="respuesta" class="answer" aria-labelledby="t-resp">
+  <p class="eyebrow">Respuesta corta</p>
+  <h2 id="t-resp" style="margin-top:6px">El aumento de irradiación mejoró la generación solo en Cali, y menos de lo que subió el sol.</h2>
+  <ul>
+    <li><b>Generación.</b> En Cali la irradiación diaria subió +11 % y la generación por casa subió +4,7 %: por cada 1 % más de irradiación hubo cerca de 0,4 % más de energía. En Barranquilla bajó, en Turbaco quedó plana y Cartagena tiene una sola casa.</li>
+    <li><b>Potencia al mediodía.</b> En Cali la potencia entre 11 y 13 h subió +4,2 % mientras la irradiancia de esas horas subió cerca de 17 %. En Turbaco subió 21 %, pero por un cambio en la forma del día y sin más energía diaria.</li>
+    <li><b>Causa probable.</b> Los 18 equipos DEYE del proyecto están en exportación cero con batería primero. Cuando la batería se llena, la casa solo produce lo que consume y el sol extra se pierde. Los 33 Livoltek no se pudieron verificar.</li>
+  </ul>
+</section>
+
+<section aria-labelledby="t-ciudades">
+  <h2 id="t-ciudades">Octubre contra noviembre, por ciudad</h2>
+  <p class="sec-lead">Noviembre cubre solo del 1 al 8. Cada casa se compara con ella misma, así que el tamaño del sistema no afecta el cambio. Los kWh entre ciudades no se pueden comparar porque el kWp instalado no está en Metrum.</p>
+  <div class="cards">
+<article class="card">
+  <header><h3>Cali</h3><span class="pill good">▲ Mejora</span></header>
+  <p class="big">+4,7 %</p>
+  <p class="cap">generación diaria por casa, octubre → noviembre (1–8)</p>
+  <dl>
+    <div><dt>Irradiación diaria</dt><dd>+11,3 %</dd></div>
+    <div><dt>Irradiación 11–13 h</dt><dd>+16,8 %</dd></div>
+    <div><dt>Potencia FV 11–13 h</dt><dd>+4,2 %</dd></div>
+    <div><dt>Energía diaria (kWh por casa)</dt><dd>13,5 → 14,1</dd></div>
+    <div><dt>Panel</dt><dd>26 casas</dd></div>
+  </dl>
+</article>
+<article class="card">
+  <header><h3>Barranquilla</h3><span class="pill bad">▼ Baja</span></header>
+  <p class="big">−11,1 %</p>
+  <p class="cap">generación diaria por casa, octubre → noviembre (1–8)</p>
+  <dl>
+    <div><dt>Irradiación diaria</dt><dd>−9,0 %</dd></div>
+    <div><dt>Irradiación 11–13 h</dt><dd>−9,0 %</dd></div>
+    <div><dt>Potencia FV 11–13 h</dt><dd>−12,9 %</dd></div>
+    <div><dt>Energía diaria (kWh por casa)</dt><dd>26,1 → 23,2</dd></div>
+    <div><dt>Panel</dt><dd>4 casas</dd></div>
+  </dl>
+</article>
+<article class="card">
+  <header><h3>Cartagena</h3><span class="pill neutral">● No concluyente · pocas casas</span></header>
+  <p class="big">+2,8 %</p>
+  <p class="cap">generación diaria por casa, octubre → noviembre (1–8)</p>
+  <dl>
+    <div><dt>Irradiación diaria</dt><dd>−8,5 %</dd></div>
+    <div><dt>Irradiación 11–13 h</dt><dd>−15,6 %</dd></div>
+    <div><dt>Potencia FV 11–13 h</dt><dd>+8,6 %</dd></div>
+    <div><dt>Energía diaria (kWh por casa)</dt><dd>36,3 → 37,3</dd></div>
+    <div><dt>Panel</dt><dd>1 casa</dd></div>
+  </dl>
+</article>
+<article class="card">
+  <header><h3>Turbaco</h3><span class="pill neutral">● Sin cambio</span></header>
+  <p class="big">−0,8 %</p>
+  <p class="cap">generación diaria por casa, octubre → noviembre (1–8)</p>
+  <dl>
+    <div><dt>Irradiación diaria</dt><dd>−6,3 %</dd></div>
+    <div><dt>Irradiación 11–13 h</dt><dd>−10,7 %</dd></div>
+    <div><dt>Potencia FV 11–13 h</dt><dd>+21,3 %</dd></div>
+    <div><dt>Energía diaria (kWh por casa)</dt><dd>7,8 → 7,7</dd></div>
+    <div><dt>Panel</dt><dd>12 casas</dd></div>
+  </dl>
+</article>
+  </div>
+  <p class="src">Barranquilla tiene 4 casas con serie completa y Cartagena 1. Sus cifras no representan a la ciudad. Fuente: Metrum (generación y potencia), Open-Meteo satelital (irradiación).</p>
+
+  <h3 style="margin-top:28px">Cambio de octubre a noviembre (1–8)</h3>
+  <div class="legend" aria-label="Leyenda"><span><i class="sq i-irr"></i>Irradiación diaria</span><span><i class="sq i-gen"></i>Generación por casa</span><span><i class="sq i-pm"></i>Potencia FV de 11 a 13 h por casa</span></div>
+  <div class="panel"><div class="chart" id="chDelta" role="img" aria-label="Cambio porcentual entre octubre y noviembre de irradiación, generación y potencia al mediodía en cada ciudad"></div></div>
+</section>
+
+<section id="hallazgos" aria-labelledby="t-hall">
+  <h2 id="t-hall">Hallazgos</h2>
+  <div class="findings">
+
+<article class="finding"><h3><span class="pill good">▲ Mejora parcial</span> Cali: la irradiación subió más que la generación</h3>
+<dl><div><dt>Situación</dt><dd>Entre octubre y el 1–8 de noviembre la irradiación diaria subió +11,3 % (+16,8 % entre 11 y 13 h). La generación por casa subió +4,7 % y la potencia entre 11 y 13 h subió +4,2 %.</dd></div>
+<div><dt>Impacto</dt><dd>Las 26 casas del panel pasaron de 349 a 367 kWh/día (+5,2 %). 12 casas subieron más de 5 % y 3 bajaron más de 5 %.</dd></div>
+<div><dt>Causa</dt><dd>Los 18 equipos DEYE del proyecto operan en <code>ZERO_EXPORT_TO_LOAD</code> con batería primero. En Cali la batería está llena al mediodía en 31 % de los casa-días y en 22 % hay recorte probable. Con la batería llena, la casa solo produce lo que consume. No se verificó el modo de los Livoltek.</dd></div></dl></article>
+
+<article class="finding"><h3><span class="pill bad">▼ Baja</span> Caribe: noviembre llegó con menos irradiación que octubre</h3>
+<dl><div><dt>Situación</dt><dd>La irradiación diaria bajó 9,0 % en Barranquilla, 8,5 % en Cartagena y 6,3 % en Turbaco. Las 4 casas del panel de Barranquilla generaron entre 7 % y 15 % menos.</dd></div>
+<div><dt>Impacto</dt><dd>El panel del Caribe (17 casas) pasó de 231 a 221 kWh/día (−4,2 %). Turbaco quedó plano (−0,8 %) y Cartagena, con una sola casa, subió +2,8 %.</dd></div>
+<div><dt>Causa</dt><dd>En Barranquilla la generación siguió a la irradiación (elasticidad 0,82). En Turbaco la potencia de 11 a 13 h subió +21 % con la energía diaria igual: la producción se movió hacia el mediodía y cayó en la mañana y en la tarde. Es una hipótesis de nubosidad que los datos no confirman.</dd></div></dl></article>
+
+<article class="finding"><h3><span class="pill warn">● Parcial</span> La premisa de irradiación alta solo se sostiene en Cali</h3>
+<dl><div><dt>Situación</dt><dd>Del 1 al 9 de noviembre Cali recibió 5,82 kWh/m²/día, el valor más alto desde 2023 (+11 % sobre el mejor año anterior). Barranquilla, Cartagena y Turbaco quedaron entre 4,74 y 4,94, parecidos a 2023 y 2025 y por debajo de su propio octubre.</dd></div>
+<div><dt>Impacto</dt><dd>Fuera de Cali no hay un aumento de irradiación que pueda convertirse en más generación. Son 8 a 9 días de noviembre.</dd></div>
+<div><dt>Causa</dt><dd>La lectura viene de un producto satelital sin sensor en sitio. NASA POWER discrepa en Cali (−16 % frente a 2022–2025 en los 3 días que tiene). La generación de Cali subió, en línea con Open-Meteo. En las otras tres ciudades ambas fuentes siguen la generación diaria con una correlación parecida (0,6 a 0,8).</dd></div></dl></article>
+
+<article class="finding"><h3><span class="pill bad">▼ Revisar</span> Casas con generación baja o recorte</h3>
+<dl><div><dt>Situación</dt><dd>8 casas generan menos de 4 kWh/día: 3 en Cali y 5 en Turbaco, todas DEYE. La Casa 73 cayó 44 % entre octubre y noviembre. La Casa 300 nunca se ha conectado a Metrum.</dd></div>
+<div><dt>Impacto</dt><dd>Cinco casas DEYE de Turbaco generan 1,4–2,0 kWh/día contra 10–11 kWh/día de las Livoltek de la misma ciudad. Sin el kWp real no se puede medir la pérdida en kWh.</dd></div>
+<div><dt>Causa</dt><dd>Con los datos de Metrum se descartan fallas del inversor en la Casa 73 y se ve recorte por batería llena. En las demás casas puede ser arreglo pequeño, strings desconectados o consumo bajo. Requiere diagnóstico.</dd></div></dl></article>
+
+  </div>
+</section>
+
+<section id="irradiacion" aria-labelledby="t-irr">
+  <h2 id="t-irr">¿Estuvo alta la irradiación en noviembre?</h2>
+  <p class="sec-lead">Se comparan los primeros 9 días de noviembre con los mismos días de 2023 a 2025. En el Caribe el valor de 2026 queda en el rango normal y por debajo del propio octubre. Solo Cali sale por encima de los tres años.</p>
+  <div class="scroll"><table class="data"><thead><tr><th>Ciudad</th><th>1–9 nov 2023</th><th>1–9 nov 2024</th><th>1–9 nov 2025</th><th>1–9 nov 2026</th><th>Octubre 2026</th><th>NASA 1–3 nov frente a 2022–25</th><th>Lectura</th></tr></thead><tbody><tr><th scope="row">Cali</th><td>4,79</td><td>4,37</td><td>5,22</td><td class="strong">5,82</td><td>5,08</td><td>−16 %</td><td><span class="pill good">▲ Alta: máximo de 4 años</span></td></tr><tr><th scope="row">Barranquilla</th><td>4,93</td><td>3,36</td><td>5,56</td><td class="strong">4,94</td><td>5,26</td><td>+18 %</td><td><span class="pill neutral">● Normal: bajo octubre</span></td></tr><tr><th scope="row">Cartagena</th><td>4,66</td><td>3,29</td><td>5,00</td><td class="strong">4,74</td><td>5,03</td><td>+18 %</td><td><span class="pill neutral">● Normal: bajo octubre</span></td></tr><tr><th scope="row">Turbaco</th><td>4,67</td><td>3,37</td><td>4,78</td><td class="strong">4,80</td><td>4,99</td><td>+18 %</td><td><span class="pill neutral">● Normal: bajo octubre</span></td></tr></tbody></table></div>
+  <p class="src">Irradiación global horizontal en kWh/m²/día. Open-Meteo satelital, salvo la columna NASA POWER. Nov 2024 fue muy nublado en el Caribe (3,3 kWh/m²/día), lo que rebaja cualquier promedio de años anteriores. NASA cubre solo hasta el 3 nov y contradice a Open-Meteo en Cali, por eso se muestran las dos fuentes.</p>
+
+  <h3 style="margin-top:28px">Cuánta irradiación se convierte en energía</h3>
+  <p class="sec-lead">Cambio porcentual de la generación diaria por cada 1 % de cambio en la irradiación diaria, en 42 días. Un valor de 1,0 significa respuesta proporcional (marca vertical).</p>
+  <div class="panel"><ul class="meters" aria-label="Elasticidad de la generación a la irradiación"><li><span class="mn">Cali</span><span class="mt"><i style="width:35.9%"></i><b class="ref" style="left:83.3%"></b></span><span class="mv">0,43</span><span class="mr">r = 0,57 · 26 casas</span></li><li><span class="mn">Barranquilla</span><span class="mt"><i style="width:68.3%"></i><b class="ref" style="left:83.3%"></b></span><span class="mv">0,82</span><span class="mr">r = 0,71 · 4 casas</span></li><li><span class="mn">Cartagena</span><span class="mt"><i style="width:86.6%"></i><b class="ref" style="left:83.3%"></b></span><span class="mv">1,04</span><span class="mr">r = 0,71 · 1 casa</span></li><li><span class="mn">Turbaco</span><span class="mt"><i style="width:54.6%"></i><b class="ref" style="left:83.3%"></b></span><span class="mv">0,66</span><span class="mr">r = 0,69 · 12 casas</span></li></ul></div>
+  <p class="src">El ruido de la irradiación satelital baja estos valores, sobre todo en Cali. La lectura útil es el orden entre ciudades: Cartagena (sin recorte) sigue la irradiación casi 1 a 1, Cali la sigue mucho menos.</p>
+</section>
+
+<section id="semanas" aria-labelledby="t-sem">
+  <h2 id="t-sem">Cómo se comportaron las 6 semanas</h2>
+  <p class="sec-lead">Cada línea está en índice 100 con el promedio de las semanas S40 a S43 como base. Si la generación acompañara a la irradiación, las dos líneas se moverían juntas.</p>
+  <div class="legend"><span><i class="i-irr"></i>Irradiación diaria</span><span><i class="i-gen"></i>Generación por casa</span><span><i class="i-pm"></i>Potencia FV de 11 a 13 h por casa</span></div>
+  <div class="mini-grid" id="wkGrid">
+    <figure><figcaption>Cali <small>26 casas</small></figcaption><div class="chart" data-city="CALI" data-kind="week" role="img" aria-label="Índice semanal en Cali"></div></figure>
+    <figure><figcaption>Barranquilla <small>4 casas</small></figcaption><div class="chart" data-city="BARRANQUILLA" data-kind="week" role="img" aria-label="Índice semanal en Barranquilla"></div></figure>
+    <figure><figcaption>Cartagena <small>1 casa</small></figcaption><div class="chart" data-city="CARTAGENA" data-kind="week" role="img" aria-label="Índice semanal en Cartagena"></div></figure>
+    <figure><figcaption>Turbaco <small>12 casas</small></figcaption><div class="chart" data-city="TURBACO" data-kind="week" role="img" aria-label="Índice semanal en Turbaco"></div></figure>
+  </div>
+  <p class="src">Las tablas semanales con todos los valores están en el detalle por ciudad. En Turbaco, S40 incluye la puesta en marcha de tres casas; los días en 0 kWh no entran al promedio.</p>
+</section>
+
+<section id="mediodia" aria-labelledby="t-med">
+  <h2 id="t-med">Potencia de producción al mediodía</h2>
+  <p class="sec-lead">Potencia FV promedio por casa en cada hora, octubre contra noviembre (1–8). La franja marca la ventana de 11 a 13 h. En Cali la irradiancia entre 10 y 13 h subió entre 15 % y 19 %, pero la potencia FV de 10 a 12 h no subió.</p>
+  <div class="legend"><span><i class="i-oct"></i>Octubre</span><span><i class="i-nov"></i>Noviembre 1–8</span><span><i class="sq i-band"></i>Ventana 11–13 h</span></div>
+  <div class="mini-grid" id="hrGrid">
+    <figure><figcaption>Cali <small>kW por casa</small></figcaption><div class="chart" data-city="CALI" data-kind="hour" role="img" aria-label="Perfil horario de potencia FV en Cali"></div></figure>
+    <figure><figcaption>Barranquilla <small>kW por casa</small></figcaption><div class="chart" data-city="BARRANQUILLA" data-kind="hour" role="img" aria-label="Perfil horario de potencia FV en Barranquilla"></div></figure>
+    <figure><figcaption>Cartagena <small>kW, 1 casa</small></figcaption><div class="chart" data-city="CARTAGENA" data-kind="hour" role="img" aria-label="Perfil horario de potencia FV en Cartagena"></div></figure>
+    <figure><figcaption>Turbaco <small>kW por casa</small></figcaption><div class="chart" data-city="TURBACO" data-kind="hour" role="img" aria-label="Perfil horario de potencia FV en Turbaco"></div></figure>
+  </div>
+  <h3 style="margin-top:26px">Cali hora por hora</h3>
+  <div class="scroll"><table class="data"><thead><tr><th>Hora</th><th>Irradiancia oct → nov<br><small>W/m², Open-Meteo</small></th><th>Cambio</th><th>Potencia FV oct → nov<br><small>kW por casa, Metrum</small></th><th>Cambio</th></tr></thead><tbody><tr><th scope="row">6–7 h</th><td>70 → 67</td><td class="">−3 %</td><td>0,05 → 0,09</td><td class="pos">+58 %</td></tr><tr><th scope="row">7–8 h</th><td>238 → 242</td><td class="">+2 %</td><td>0,59 → 0,70</td><td class="pos">+17 %</td></tr><tr><th scope="row">8–9 h</th><td>433 → 480</td><td class="pos">+11 %</td><td>1,39 → 1,60</td><td class="pos">+15 %</td></tr><tr><th scope="row">9–10 h</th><td>604 → 665</td><td class="pos">+10 %</td><td>2,08 → 2,11</td><td class="">+1 %</td></tr><tr><th scope="row">10–11 h</th><td>715 → 821</td><td class="pos">+15 %</td><td>2,42 → 2,24</td><td class="neg">−8 %</td></tr><tr><th scope="row">11–12 h<small>ventana 11–13 h</small></th><td>750 → 862</td><td class="pos">+15 %</td><td>2,16 → 2,16</td><td class="">0 %</td></tr><tr><th scope="row">12–13 h<small>ventana 11–13 h</small></th><td>676 → 802</td><td class="pos">+19 %</td><td>1,62 → 1,78</td><td class="pos">+10 %</td></tr><tr><th scope="row">13–14 h</th><td>601 → 626</td><td class="">+4 %</td><td>1,17 → 1,38</td><td class="pos">+18 %</td></tr><tr><th scope="row">14–15 h</th><td>488 → 514</td><td class="pos">+5 %</td><td>1,01 → 0,98</td><td class="">−4 %</td></tr><tr><th scope="row">15–16 h</th><td>316 → 362</td><td class="pos">+15 %</td><td>0,55 → 0,70</td><td class="pos">+27 %</td></tr><tr><th scope="row">16–17 h</th><td>155 → 178</td><td class="pos">+15 %</td><td>0,32 → 0,33</td><td class="">+2 %</td></tr><tr><th scope="row">17–18 h</th><td>32 → 31</td><td class="">−5 %</td><td>0,10 → 0,04</td><td class="neg">−63 %</td></tr></tbody></table></div>
+  <p class="src">Interpretación. La potencia FV de las casas con exportación cero depende del consumo y del estado de la batería, no solo del sol. En Cali, la batería estaba llena al mediodía en 31 % de los casa-días de noviembre (36 % en octubre) y se estima recorte en 22 % (25 % en octubre). Recorte probable: batería con SOC medio ≥ 97 % entre 11 y 13 h y potencia menor a la mitad de la referencia de esa misma casa.</p>
+</section>
+
+<section id="casas" aria-labelledby="t-casas">
+  <h2 id="t-casas">Casas a revisar</h2>
+  <p class="sec-lead">Prioridad según la pérdida de visibilidad o de generación frente a casas comparables. Todas son candidatas a diagnóstico, no fallas confirmadas.</p>
+  <div class="scroll"><table class="data text"><thead><tr><th>Casa</th><th>Ciudad</th><th>Equipo</th><th>Señal y dato</th><th>Próxima acción</th><th>Prioridad</th></tr></thead><tbody><tr><th scope="row">Casa 99</th><td>Cali</td><td>DEYE 15 kW</td><td><b>Generación baja persistente</b><br>1,4 kWh/día en promedio contra 12,8 de mediana en Cali. Batería ≥ 97 % al mediodía en 55 % de los días. Modo <code>ZERO_EXPORT_TO_LOAD</code>.</td><td>Revisar tamaño del arreglo y consumo de la casa.</td><td><span class="pill bad">Alta</span></td></tr><tr><th scope="row">Casas 111 y 48PC</th><td>Cali</td><td>DEYE 15 kW</td><td><b>Generación baja persistente</b><br>2,2 y 3,6 kWh/día. Batería llena al mediodía en 63 % y 31 % de los días.</td><td>Confirmar kWp instalado y consumo.</td><td><span class="pill bad">Alta</span></td></tr><tr><th scope="row">Casas 55p, 86p, 93p, 412p y 425p</th><td>Turbaco</td><td>DEYE 15 kW</td><td><b>Generación baja persistente</b><br>1,4–2,0 kWh/día. Las casas Livoltek de Turbaco generan 10–11 kWh/día (mediana de la ciudad: 10,6).</td><td>Revisar conexión de strings y MPPT; confirmar kWp.</td><td><span class="pill bad">Alta</span></td></tr><tr><th scope="row">Casa 73</th><td>Cali</td><td>Livoltek 15 kW</td><td><b>Recorte por batería llena</b><br>Del 2 al 6 nov produjo 4,4–4,6 kWh/día con la batería al 100 % y 0,1 kW entre 11 y 13 h. Volvió a 10 kWh/día el 7 y 8 nov. Octubre → noviembre: −44 %.</td><td>Confirmar si hubo ausencia de consumo y revisar el modo de exportación.</td><td><span class="pill warn">Media</span></td></tr><tr><th scope="row">Casa 104</th><td>Cali</td><td>Livoltek 10 kW</td><td><b>Batería llena frecuente</b><br>Batería ≥ 97 % al mediodía en 88 % de los días. Genera 5–6 kWh/día.</td><td>Revisar capacidad de batería frente al consumo.</td><td><span class="pill warn">Media</span></td></tr><tr><th scope="row">Casa 300</th><td>Barranquilla</td><td>Livoltek 15 kW</td><td><b>Sin telemetría de generación</b><br>El inversor está creado en Metrum pero nunca se ha conectado. No tiene ningún dato desde el 1 sep.</td><td>Confirmar si el equipo está instalado y en servicio.</td><td><span class="pill bad">Alta</span></td></tr><tr><th scope="row">Casa 382p</th><td>Turbaco</td><td>DEYE 15 kW</td><td><b>Cierre diario desfasado</b><br>El cierre pasó de las 00:00 a las 19:00 desde el 4 nov. Sin datos del 12 al 18 oct.</td><td>Corregir la zona horaria o el reloj del equipo.</td><td><span class="pill warn">Media</span></td></tr><tr><th scope="row">Casas 101, 205, 6 y 121 CR</th><td>Barranquilla</td><td>Livoltek / Huawei</td><td><b>Series parciales</b><br>Entraron a Metrum el 3, 20, 27 y 28 oct. No entran al panel de comparación.</td><td>Confirmar fecha de puesta en servicio.</td><td><span class="pill neutral">Baja</span></td></tr></tbody></table></div>
+
+  <h2 style="margin-top:44px">Acciones recomendadas</h2>
+  <div class="scroll"><table class="data text"><thead><tr><th>Acción</th><th>Responsable propuesto</th><th>Plazo</th></tr></thead><tbody><tr><td><b>Confirmar</b> el modo de exportación y el límite de venta de las 33 casas Livoltek. Hoy solo se verificaron los DEYE.</td><td>Diagnóstico de fallas</td><td>7 días</td></tr>
+<tr><td><b>Revisar</b> las 8 casas de generación baja y las Casas 73 y 104 (tabla anterior). <b>Confirmar</b> el estado de la Casa 300, que nunca se conectó.</td><td>Diagnóstico de fallas</td><td>14 días</td></tr>
+<tr><td><b>Solicitar</b> el kWp instalado por casa al CRM y <b>recalcular</b> rendimiento específico y PR frente a la irradiación.</td><td>Reportes y disponibilidad</td><td>14 días</td></tr>
+<tr><td><b>Evaluar</b> con el operador de red y el cliente si conviene subir el límite de venta en casas con recorte frecuente. Es un cambio de nivel 1: requiere confirmación por equipo.</td><td>Gerencia O&amp;M</td><td>Tras la acción 1</td></tr>
+<tr><td><b>Corregir</b> la telemetría: cierre de las 19:00 en la Casa 382p y 7 inversores antiguos que Metrum no eliminó.</td><td>Soporte de plataforma</td><td>7 días</td></tr></tbody></table></div>
+  <p class="src">Responsables y plazos son propuestas. Ninguna acción escribe en los equipos sin confirmación por casa (política de comandos del skill O&amp;M).</p>
+
+  <div class="conclusion">
+    <h3 style="margin-bottom:8px">Conclusión</h3>
+    <p>La mayor irradiación de noviembre mejoró la generación solo en Cali, con +4,7 % frente a +11,3 % de irradiación. En el Caribe noviembre empezó con menos sol que octubre y la generación no mejoró.</p>
+    <p>El riesgo es estructural: la exportación cero con batería primero recorta el exceso solar en cerca de 22 % de los casa-días de Cali, y 9 casas de Cali tienen recorte probable en al menos 35 % de los días.</p>
+    <p>Decisión pendiente: confirmar el modo de los Livoltek y decidir si se acepta el recorte o se evalúa subir el límite de venta. Conviene repetir este reporte cuando noviembre tenga 3 semanas completas.</p>
+  </div>
+</section>
+
+<section id="detalle" aria-labelledby="t-det">
+  <h2 id="t-det">Detalle por ciudad y por casa</h2>
+  <p class="sec-lead">Cada tabla semanal y cada casa del panel. Δ en rojo o verde cuando el cambio supera 5 %.</p>
+<details class="city" open><summary><span>Cali</span><small>26 casas con serie completa</small></summary>
+<h4>Por semana</h4><div class="scroll"><table class="data"><thead><tr><th>Semana</th><th>Irradiación<br><small>Open-Meteo, kWh/m²/día</small></th><th>Irradiación<br><small>NASA, kWh/m²/día</small></th><th>Irradiancia 11–13 h<br><small>W/m²</small></th><th>Generación<br><small>kWh/casa/día</small></th><th>Potencia 11–13 h<br><small>kW/casa</small></th><th>Pico horario<br><small>kW/casa</small></th><th>Batería llena al mediodía<br><small>% casa-días</small></th><th>Casa-días sin producción</th></tr></thead><tbody><tr><th scope="row">S40<small>28 sep–4 oct</small></th><td>5,08</td><td>4,40</td><td>723</td><td class="strong">14,1</td><td>2,29</td><td>3,56</td><td>22</td><td>0</td></tr><tr><th scope="row">S41<small>5–11 oct</small></th><td>4,84</td><td>3,89</td><td>661</td><td class="strong">12,1</td><td>1,78</td><td>3,09</td><td>45</td><td>0</td></tr><tr><th scope="row">S42<small>12–18 oct</small></th><td>5,15</td><td>3,71</td><td>721</td><td class="strong">14,4</td><td>1,88</td><td>3,51</td><td>31</td><td>0</td></tr><tr><th scope="row">S43<small>19–25 oct</small></th><td>5,14</td><td>4,07</td><td>715</td><td class="strong">13,8</td><td>1,99</td><td>3,32</td><td>33</td><td>0</td></tr><tr><th scope="row">S44<small>26 oct–1 nov</small></th><td>5,38</td><td>3,63</td><td>779</td><td class="strong">13,6</td><td>1,85</td><td>3,13</td><td>38</td><td>0</td></tr><tr><th scope="row">S45<small>2–8 nov</small></th><td>5,62</td><td>3,19 <small>(2 d)</small></td><td>823</td><td class="strong">13,9</td><td>1,97</td><td>3,09</td><td>29</td><td>0</td></tr></tbody></table></div>
+<h4>Por casa, octubre contra noviembre (1–8)</h4><div class="scroll"><table class="data wide"><thead><tr><th>Casa</th><th>Equipo</th><th>Gen. oct<br><small>kWh/día</small></th><th>Gen. nov<br><small>kWh/día</small></th><th>Δ gen.</th><th>Potencia 11–13 h<br><small>kW, oct → nov</small></th><th>Δ pot.</th><th>Batería llena<br><small>% días</small></th><th>Recorte probable<br><small>% días</small></th><th>Señales</th></tr></thead><tbody><tr><th scope="row">Casa 73<small>Reservas De Pance</small></th><td>Livoltek 15 kW</td><td>10,7</td><td>6,0</td><td class="neg">−44 %</td><td>1,47 → 0,67</td><td class="neg">−54 %</td><td>36</td><td>36</td><td><span class="pill bad">Caída</span></td></tr><tr><th scope="row">Casa 99<small>Reservas De Pance</small></th><td>Deye 15 kW</td><td>1,4</td><td>1,2</td><td class="neg">−14 %</td><td>0,19 → 0,11</td><td class="neg">−43 %</td><td>55</td><td>52</td><td><span class="pill bad">Generación baja</span> <span class="pill warn">Batería llena frecuente</span></td></tr><tr><th scope="row">Casa 63<small>Reservas De Pance</small></th><td>Deye 6 kW</td><td>12,3</td><td>11,6</td><td class="neg">−6 %</td><td>2,00 → 1,69</td><td class="neg">−15 %</td><td>12</td><td>12</td><td></td></tr><tr><th scope="row">Casa 30<small>Reservas De Pance</small></th><td>Livoltek 10 kW</td><td>12,3</td><td>11,7</td><td class="">−5 %</td><td>1,72 → 1,56</td><td class="neg">−9 %</td><td>24</td><td>20</td><td></td></tr><tr><th scope="row">Casa 48PC<small>Pance Campestre</small></th><td>Deye 15 kW</td><td>3,7</td><td>3,6</td><td class="">−3 %</td><td>0,56 → 0,48</td><td class="neg">−16 %</td><td>31</td><td>12</td><td><span class="pill bad">Generación baja</span></td></tr><tr><th scope="row">Casa 2<small>Reservas De Pance</small></th><td>Deye 15 kW</td><td>23,7</td><td>23,4</td><td class="">−1 %</td><td>3,43 → 2,82</td><td class="neg">−18 %</td><td>34</td><td>17</td><td></td></tr><tr><th scope="row">Casa 76<small>Reservas De Pance</small></th><td>Livoltek 15 kW</td><td>21,2</td><td>21,1</td><td class="">−1 %</td><td>2,75 → 3,04</td><td class="pos">+11 %</td><td>24</td><td>24</td><td></td></tr><tr><th scope="row">Casa 56<small>Reservas De Pance</small></th><td>Livoltek 10 kW</td><td>14,2</td><td>14,2</td><td class="">0 %</td><td>2,48 → 2,31</td><td class="neg">−7 %</td><td>0</td><td>0</td><td></td></tr><tr><th scope="row">Casa 77<small>Reservas De Pance</small></th><td>Livoltek 10 kW</td><td>14,2</td><td>14,2</td><td class="">0 %</td><td>2,18 → 2,06</td><td class="neg">−6 %</td><td>10</td><td>7</td><td></td></tr><tr><th scope="row">Casa 108<small>Reservas De Pance</small></th><td>Livoltek 10 kW</td><td>10,6</td><td>10,7</td><td class="">+1 %</td><td>1,37 → 1,42</td><td class="">+3 %</td><td>45</td><td>37</td><td></td></tr><tr><th scope="row">Casa 42<small>Reservas De Pance</small></th><td>Livoltek 10 kW</td><td>12,8</td><td>13,2</td><td class="">+3 %</td><td>2,22 → 2,07</td><td class="neg">−7 %</td><td>0</td><td>0</td><td></td></tr><tr><th scope="row">Casa 15<small>Reservas De Pance</small></th><td>Livoltek 15 kW</td><td>21,0</td><td>21,8</td><td class="">+4 %</td><td>2,52 → 2,60</td><td class="">+3 %</td><td>60</td><td>48</td><td><span class="pill warn">Batería llena frecuente</span></td></tr><tr><th scope="row">Casa 74<small>Reservas De Pance</small></th><td>Deye 15 kW</td><td>13,5</td><td>14,1</td><td class="">+5 %</td><td>1,59 → 1,67</td><td class="">+5 %</td><td>54</td><td>46</td><td><span class="pill warn">Batería llena frecuente</span></td></tr><tr><th scope="row">Casa 18PR<small>Porton De La Rivera</small></th><td>Deye 15 kW</td><td>12,5</td><td>13,0</td><td class="">+5 %</td><td>1,59 → 1,64</td><td class="">+4 %</td><td>48</td><td>38</td><td></td></tr><tr><th scope="row">Casa 18<small>Reservas De Pance</small></th><td>Livoltek 10 kW</td><td>13,0</td><td>13,7</td><td class="pos">+5 %</td><td>2,00 → 2,10</td><td class="">+5 %</td><td>19</td><td>15</td><td></td></tr><tr><th scope="row">Casa 23<small>Reservas De Pance</small></th><td>Livoltek 10 kW</td><td>19,6</td><td>20,7</td><td class="pos">+6 %</td><td>3,10 → 3,36</td><td class="pos">+9 %</td><td>5</td><td>5</td><td></td></tr><tr><th scope="row">Casa 11<small>Reservas De Pance</small></th><td>Livoltek 15 kW</td><td>13,3</td><td>14,2</td><td class="pos">+7 %</td><td>1,43 → 2,10</td><td class="pos">+47 %</td><td>26</td><td>21</td><td></td></tr><tr><th scope="row">Casa 70<small>Reservas De Pance</small></th><td>Deye 15 kW</td><td>15,8</td><td>17,0</td><td class="pos">+7 %</td><td>2,32 → 2,42</td><td class="">+4 %</td><td>31</td><td>14</td><td></td></tr><tr><th scope="row">Casa 111<small>Reservas De Pance</small></th><td>Deye 15 kW</td><td>2,1</td><td>2,4</td><td class="pos">+12 %</td><td>0,20 → 0,23</td><td class="pos">+12 %</td><td>63</td><td>0</td><td><span class="pill bad">Generación baja</span> <span class="pill warn">Batería llena frecuente</span></td></tr><tr><th scope="row">Casa 29<small>Reservas De Pance</small></th><td>Livoltek 10 kW</td><td>14,5</td><td>16,4</td><td class="pos">+13 %</td><td>2,08 → 2,56</td><td class="pos">+23 %</td><td>17</td><td>17</td><td></td></tr><tr><th scope="row">Casa 12<small>Condominio Los Abedules</small></th><td>Livoltek 15 kW</td><td>35,9</td><td>40,5</td><td class="pos">+13 %</td><td>5,40 → 6,39</td><td class="pos">+18 %</td><td>17</td><td>14</td><td></td></tr><tr><th scope="row">Casa 104<small>Reservas De Pance</small></th><td>Livoltek 10 kW</td><td>4,9</td><td>5,7</td><td class="pos">+17 %</td><td>0,32 → 0,63</td><td class="pos">+97 %</td><td>88</td><td>0</td><td><span class="pill warn">Batería llena frecuente</span></td></tr><tr><th scope="row">Casa 35<small>Reservas De Pance</small></th><td>Livoltek 10 kW</td><td>9,9</td><td>11,6</td><td class="pos">+17 %</td><td>1,43 → 1,55</td><td class="pos">+9 %</td><td>33</td><td>32</td><td></td></tr><tr><th scope="row">Casa 48<small>Reservas De Pance</small></th><td>Livoltek 10 kW</td><td>9,3</td><td>11,0</td><td class="pos">+19 %</td><td>1,18 → 1,62</td><td class="pos">+37 %</td><td>40</td><td>39</td><td></td></tr><tr><th scope="row">Casa 10<small>Reservas De Pance</small></th><td>Deye 15 kW</td><td>17,1</td><td>21,3</td><td class="pos">+25 %</td><td>2,05 → 2,33</td><td class="pos">+14 %</td><td>52</td><td>43</td><td><span class="pill warn">Batería llena frecuente</span></td></tr><tr><th scope="row">Casa 57<small>Reservas De Pance</small></th><td>Livoltek 10 kW</td><td>9,9</td><td>12,9</td><td class="pos">+30 %</td><td>1,39 → 1,89</td><td class="pos">+36 %</td><td>36</td><td>36</td><td></td></tr></tbody></table></div>
+</details>
+<details class="city" ><summary><span>Barranquilla</span><small>4 casas con serie completa</small></summary>
+<h4>Por semana</h4><div class="scroll"><table class="data"><thead><tr><th>Semana</th><th>Irradiación<br><small>Open-Meteo, kWh/m²/día</small></th><th>Irradiación<br><small>NASA, kWh/m²/día</small></th><th>Irradiancia 11–13 h<br><small>W/m²</small></th><th>Generación<br><small>kWh/casa/día</small></th><th>Potencia 11–13 h<br><small>kW/casa</small></th><th>Pico horario<br><small>kW/casa</small></th><th>Batería llena al mediodía<br><small>% casa-días</small></th><th>Casa-días sin producción</th></tr></thead><tbody><tr><th scope="row">S40<small>28 sep–4 oct</small></th><td>5,72</td><td>5,70</td><td>848</td><td class="strong">27,0</td><td>3,78</td><td>5,75</td><td>14</td><td>0</td></tr><tr><th scope="row">S41<small>5–11 oct</small></th><td>5,01</td><td>4,60</td><td>689</td><td class="strong">29,2</td><td>4,24</td><td>5,72</td><td>12</td><td>0</td></tr><tr><th scope="row">S42<small>12–18 oct</small></th><td>5,43</td><td>5,49</td><td>773</td><td class="strong">25,7</td><td>3,63</td><td>5,89</td><td>18</td><td>0</td></tr><tr><th scope="row">S43<small>19–25 oct</small></th><td>4,80</td><td>4,13</td><td>692</td><td class="strong">23,3</td><td>3,01</td><td>4,96</td><td>18</td><td>0</td></tr><tr><th scope="row">S44<small>26 oct–1 nov</small></th><td>5,47</td><td>5,47</td><td>774</td><td class="strong">25,7</td><td>3,65</td><td>5,68</td><td>33</td><td>1</td></tr><tr><th scope="row">S45<small>2–8 nov</small></th><td>4,73</td><td>4,67 <small>(2 d)</small></td><td>672</td><td class="strong">22,7</td><td>2,91</td><td>5,26</td><td>11</td><td>0</td></tr></tbody></table></div>
+<h4>Por casa, octubre contra noviembre (1–8)</h4><div class="scroll"><table class="data wide"><thead><tr><th>Casa</th><th>Equipo</th><th>Gen. oct<br><small>kWh/día</small></th><th>Gen. nov<br><small>kWh/día</small></th><th>Δ gen.</th><th>Potencia 11–13 h<br><small>kW, oct → nov</small></th><th>Δ pot.</th><th>Batería llena<br><small>% días</small></th><th>Recorte probable<br><small>% días</small></th><th>Señales</th></tr></thead><tbody><tr><th scope="row">Casa 24<small>Terra By Kaia</small></th><td>Livoltek 15 kW</td><td>36,0</td><td>30,6</td><td class="neg">−15 %</td><td>5,41 → 4,46</td><td class="neg">−18 %</td><td>0</td><td>0</td><td><span class="pill bad">Caída</span></td></tr><tr><th scope="row">Casa 9G<small>Gerona Club House</small></th><td>Deye 15 kW</td><td>38,8</td><td>35,0</td><td class="neg">−10 %</td><td>4,92 → 4,64</td><td class="neg">−6 %</td><td>31</td><td>17</td><td></td></tr><tr><th scope="row">Casa 287<small>Terra By Kaia</small></th><td>Livoltek 10 kW</td><td>10,0</td><td>9,0</td><td class="neg">−10 %</td><td>1,46 → 1,32</td><td class="neg">−10 %</td><td>12</td><td>12</td><td></td></tr><tr><th scope="row">Casa 155<small>Terra By Kaia</small></th><td>Livoltek 15 kW</td><td>19,6</td><td>18,2</td><td class="neg">−7 %</td><td>2,56 → 2,11</td><td class="neg">−18 %</td><td>26</td><td>28</td><td></td></tr></tbody></table></div>
+</details>
+<details class="city" ><summary><span>Cartagena</span><small>1 casa con serie completa</small></summary>
+<h4>Por semana</h4><div class="scroll"><table class="data"><thead><tr><th>Semana</th><th>Irradiación<br><small>Open-Meteo, kWh/m²/día</small></th><th>Irradiación<br><small>NASA, kWh/m²/día</small></th><th>Irradiancia 11–13 h<br><small>W/m²</small></th><th>Generación<br><small>kWh/casa/día</small></th><th>Potencia 11–13 h<br><small>kW/casa</small></th><th>Pico horario<br><small>kW/casa</small></th><th>Batería llena al mediodía<br><small>% casa-días</small></th><th>Casa-días sin producción</th></tr></thead><tbody><tr><th scope="row">S40<small>28 sep–4 oct</small></th><td>4,88</td><td>4,48</td><td>682</td><td class="strong">37,6</td><td>5,29</td><td>6,43</td><td>0</td><td>0</td></tr><tr><th scope="row">S41<small>5–11 oct</small></th><td>5,10</td><td>4,02</td><td>735</td><td class="strong">31,5</td><td>4,02</td><td>5,77</td><td>14</td><td>0</td></tr><tr><th scope="row">S42<small>12–18 oct</small></th><td>5,16</td><td>4,59</td><td>708</td><td class="strong">39,4</td><td>5,86</td><td>6,59</td><td>0</td><td>0</td></tr><tr><th scope="row">S43<small>19–25 oct</small></th><td>4,76</td><td>3,60</td><td>690</td><td class="strong">30,2</td><td>4,18</td><td>5,21</td><td>0</td><td>0</td></tr><tr><th scope="row">S44<small>26 oct–1 nov</small></th><td>5,21</td><td>5,10</td><td>682</td><td class="strong">41,6</td><td>5,84</td><td>6,99</td><td>0</td><td>0</td></tr><tr><th scope="row">S45<small>2–8 nov</small></th><td>4,66</td><td>4,70 <small>(2 d)</small></td><td>615</td><td class="strong">38,5</td><td>5,94</td><td>6,84</td><td>0</td><td>0</td></tr></tbody></table></div>
+<h4>Por casa, octubre contra noviembre (1–8)</h4><div class="scroll"><table class="data wide"><thead><tr><th>Casa</th><th>Equipo</th><th>Gen. oct<br><small>kWh/día</small></th><th>Gen. nov<br><small>kWh/día</small></th><th>Δ gen.</th><th>Potencia 11–13 h<br><small>kW, oct → nov</small></th><th>Δ pot.</th><th>Batería llena<br><small>% días</small></th><th>Recorte probable<br><small>% días</small></th><th>Señales</th></tr></thead><tbody><tr><th scope="row">Casa 78T<small>Condominio Terranova</small></th><td>Deye 15 kW</td><td>36,3</td><td>37,3</td><td class="">+3 %</td><td>5,14 → 5,58</td><td class="pos">+9 %</td><td>2</td><td>2</td><td></td></tr></tbody></table></div>
+</details>
+<details class="city" ><summary><span>Turbaco</span><small>12 casas con serie completa</small></summary>
+<h4>Por semana</h4><div class="scroll"><table class="data"><thead><tr><th>Semana</th><th>Irradiación<br><small>Open-Meteo, kWh/m²/día</small></th><th>Irradiación<br><small>NASA, kWh/m²/día</small></th><th>Irradiancia 11–13 h<br><small>W/m²</small></th><th>Generación<br><small>kWh/casa/día</small></th><th>Potencia 11–13 h<br><small>kW/casa</small></th><th>Pico horario<br><small>kW/casa</small></th><th>Batería llena al mediodía<br><small>% casa-días</small></th><th>Casa-días sin producción</th></tr></thead><tbody><tr><th scope="row">S40<small>28 sep–4 oct</small></th><td>4,72</td><td>4,48</td><td>655</td><td class="strong">8,6</td><td>1,25</td><td>1,60</td><td>14</td><td>13</td></tr><tr><th scope="row">S41<small>5–11 oct</small></th><td>5,07</td><td>4,02</td><td>723</td><td class="strong">7,5</td><td>0,88</td><td>1,45</td><td>6</td><td>0</td></tr><tr><th scope="row">S42<small>12–18 oct</small></th><td>5,11</td><td>4,59</td><td>706</td><td class="strong">8,5</td><td>1,18</td><td>1,64</td><td>11</td><td>0</td></tr><tr><th scope="row">S43<small>19–25 oct</small></th><td>4,76</td><td>3,60</td><td>680</td><td class="strong">6,7</td><td>0,90</td><td>1,39</td><td>7</td><td>1</td></tr><tr><th scope="row">S44<small>26 oct–1 nov</small></th><td>5,20</td><td>5,10</td><td>689</td><td class="strong">7,8</td><td>0,99</td><td>1,64</td><td>10</td><td>0</td></tr><tr><th scope="row">S45<small>2–8 nov</small></th><td>4,73</td><td>4,70 <small>(2 d)</small></td><td>637</td><td class="strong">7,9</td><td>1,33</td><td>1,74</td><td>10</td><td>0</td></tr></tbody></table></div>
+<h4>Por casa, octubre contra noviembre (1–8)</h4><div class="scroll"><table class="data wide"><thead><tr><th>Casa</th><th>Equipo</th><th>Gen. oct<br><small>kWh/día</small></th><th>Gen. nov<br><small>kWh/día</small></th><th>Δ gen.</th><th>Potencia 11–13 h<br><small>kW, oct → nov</small></th><th>Δ pot.</th><th>Batería llena<br><small>% días</small></th><th>Recorte probable<br><small>% días</small></th><th>Señales</th></tr></thead><tbody><tr><th scope="row">Casa 10p<small>Prado Verde Primavera</small></th><td>Livoltek 10 kW</td><td>10,8</td><td>9,8</td><td class="neg">−9 %</td><td>1,42 → 1,54</td><td class="pos">+9 %</td><td>12</td><td>7</td><td></td></tr><tr><th scope="row">Casa 435p<small>Prado Verde Primavera</small></th><td>Livoltek 10 kW</td><td>10,8</td><td>9,9</td><td class="neg">−8 %</td><td>1,50 → 1,59</td><td class="pos">+6 %</td><td>7</td><td>5</td><td></td></tr><tr><th scope="row">Casa 446p<small>Prado Verde Primavera</small></th><td>Deye 15 kW</td><td>12,0</td><td>11,4</td><td class="">−5 %</td><td>1,52 → 2,07</td><td class="pos">+36 %</td><td>29</td><td>12</td><td></td></tr><tr><th scope="row">Casa 93p<small>Prado Verde Primavera</small></th><td>Deye 15 kW</td><td>1,7</td><td>1,7</td><td class="">−1 %</td><td>0,23 → 0,26</td><td class="pos">+12 %</td><td>0</td><td>0</td><td><span class="pill bad">Generación baja</span></td></tr><tr><th scope="row">Casa 412p<small>Prado Verde Primavera</small></th><td>Deye 15 kW</td><td>1,7</td><td>1,7</td><td class="">0 %</td><td>0,23 → 0,27</td><td class="pos">+16 %</td><td>21</td><td>11</td><td><span class="pill bad">Generación baja</span></td></tr><tr><th scope="row">Casa 15p<small>Prado Verde Primavera</small></th><td>Livoltek 10 kW</td><td>10,5</td><td>10,7</td><td class="">+1 %</td><td>1,40 → 1,68</td><td class="pos">+20 %</td><td>0</td><td>0</td><td></td></tr><tr><th scope="row">Casa 23p<small>Prado Verde Primavera</small></th><td>Livoltek 10 kW</td><td>11,3</td><td>11,5</td><td class="">+2 %</td><td>1,51 → 1,81</td><td class="pos">+20 %</td><td>0</td><td>0</td><td></td></tr><tr><th scope="row">Casa 425p<small>Prado Verde Primavera</small></th><td>Deye 15 kW</td><td>2,0</td><td>2,1</td><td class="">+5 %</td><td>0,27 → 0,34</td><td class="pos">+28 %</td><td>10</td><td>3</td><td><span class="pill bad">Generación baja</span></td></tr><tr><th scope="row">Casa 415p<small>Prado Verde Primavera</small></th><td>Livoltek 10 kW</td><td>10,6</td><td>11,2</td><td class="pos">+6 %</td><td>1,36 → 1,84</td><td class="pos">+35 %</td><td>12</td><td>3</td><td></td></tr><tr><th scope="row">Casa 60p<small>Prado Verde Primavera</small></th><td>Livoltek 10 kW</td><td>10,0</td><td>10,7</td><td class="pos">+7 %</td><td>1,39 → 1,80</td><td class="pos">+30 %</td><td>5</td><td>2</td><td></td></tr><tr><th scope="row">Casa 102p<small>Prado Verde Primavera</small></th><td>Livoltek 10 kW</td><td>10,5</td><td>11,5</td><td class="pos">+10 %</td><td>1,38 → 1,72</td><td class="pos">+25 %</td><td>2</td><td>2</td><td></td></tr><tr><th scope="row">Casa 55p<small>Prado Verde Primavera</small></th><td>Deye 15 kW</td><td>1,4</td><td>1,5</td><td class="pos">+10 %</td><td>0,15 → 0,22</td><td class="pos">+53 %</td><td>43</td><td>29</td><td><span class="pill bad">Generación baja</span></td></tr></tbody></table></div>
+</details>
+</section>
+
+<section id="metodo" class="method" aria-labelledby="t-met">
+  <h2 id="t-met">Método y límites</h2>
+  <ul>
+    <li><b>Generación diaria.</b> Delta del cierre diario <code>CenergyAE</code> del inversor (corte 00:00 hora Colombia), no del medidor solar. Coincide con la producción diaria <code>energyPD</code> del inversor (mediana 1,000 del cociente).</li>
+    <li><b>Potencia de 11 a 13 h.</b> Variación del contador <code>energyPD</code> entre las 11:00 y las 13:00, dividida entre 2 h. Se validó contra la potencia DC instantánea de los Livoltek (<code>powerAEgdc_LV</code>, mediana 1,005). En DEYE <code>powerAEg</code> es potencia de carga, por eso no se usa.</li>
+    <li><b>Periodo.</b> 6 semanas completas de lunes a domingo, S40 (28 sep) a S45 (8 nov). Octubre es del 1 al 31 y noviembre del 1 al 8. El 9 y 10 nov quedan fuera para no mezclar semanas incompletas.</li>
+    <li><b>Panel.</b> Casas con al menos 38 de 42 días válidos y 5 días por semana. Los días con menos de 0,5 kWh no entran a los promedios. Se usó solo el inversor con datos vivos de cada casa (7 inversores antiguos o reemplazados ya no reportan) y se excluyeron las 2 oficinas piloto de Promigas.</li>
+    <li><b>Irradiación.</b> Radiación de onda corta global satelital de Open-Meteo, en las coordenadas medianas de los gateways de cada ciudad. NASA POWER (1° de resolución) se usó como contraste. En las 4 ciudades, Open-Meteo y NASA no coinciden en nivel (Cali: 5,2 contra 3,8 kWh/m²/día en promedio) y la correlación diaria entre ambas es de 0,6 a 0,8. No hay piranómetro en sitio.</li>
+    <li><b>Modo de exportación.</b> Leído en solo lectura desde DeyeCloud: los 18 DEYE están en <code>ZERO_EXPORT_TO_LOAD</code> y <code>BATTERY_FIRST</code>, con venta máxima entre 20 W y 15 kW (14 equipos en 1 kW). Livoltek y Huawei no tienen adaptador en el skill y no se verificaron.</li>
+    <li><b>Sin rendimiento específico ni PR.</b> El kWp instalado no sale de Metrum (<code>invcap</code> es la potencia nominal del inversor). Sin él no se puede calcular PR ni comparar ciudades en kWh/kWp. El equipo tampoco tiene metas definidas en <code>reglas-aprendidas.md</code>, por eso el reporte no incluye semáforo contra una meta.</li>
+    <li><b>Series parciales.</b> 8 casas con inversor activo no cumplen el criterio del panel y la Casa 300 no reporta generación. Se listan abajo.</li>
+  </ul>
+  <h3 style="margin-top:24px">Casas fuera del panel</h3>
+  <div class="scroll"><table class="data text"><thead><tr><th>Casa</th><th>Ciudad</th><th>Marca</th><th>Días válidos de 42</th><th>Motivo</th></tr></thead><tbody><tr><th scope="row">Casa 101</th><td>Barranquilla</td><td>Livoltek</td><td>17</td><td>Datos desde el 20 oct.</td></tr><tr><th scope="row">Casa 121 CR</th><td>Barranquilla</td><td>Livoltek</td><td>32</td><td>Inversor Livoltek vigente desde el 3 oct. Reemplazó dos DEYE que dejaron de reportar el 9 y el 27 sep.</td></tr><tr><th scope="row">Casa 205</th><td>Barranquilla</td><td>Livoltek</td><td>12</td><td>Datos desde el 28 oct.</td></tr><tr><th scope="row">Casa 6</th><td>Barranquilla</td><td>Huawei</td><td>13</td><td>Inversor Huawei con datos desde el 27 oct.</td></tr><tr><th scope="row">Casa 18Ap</th><td>Turbaco</td><td>Livoltek</td><td>36</td><td>Huecos de datos del 12 al 25 oct.</td></tr><tr><th scope="row">Casa 382p</th><td>Turbaco</td><td>Deye</td><td>22</td><td>Huecos del 12 al 18 oct y cierre diario desfasado a las 19:00 desde el 4 nov.</td></tr><tr><th scope="row">Casa 447p</th><td>Turbaco</td><td>Livoltek</td><td>34</td><td>10 días en 0 kWh entre el 28 sep y el 7 oct, y huecos del 15 al 23 oct. Desde el 26 oct genera 8–12 kWh/día.</td></tr><tr><th scope="row">Casa 86p</th><td>Turbaco</td><td>Deye</td><td>36</td><td>Huecos de datos y generación de 1,3–1,7 kWh/día.</td></tr><tr><th scope="row">Casa 300</th><td>Barranquilla</td><td>Livoltek</td><td>0</td><td>Creado en Metrum pero nunca se ha conectado. Sin ningún dato desde el 1 sep.</td></tr></tbody></table></div>
+</section>
+
+<footer>Fuentes: Metrum (ThingsBoard) para telemetría de inversores, DeyeCloud para configuración (solo lectura), Open-Meteo satelital y NASA POWER para irradiación. Todas las cifras de generación salen de telemetría cruda, sin tablas precalculadas.</footer>
+</main>
+
+<script>
+(function(){
+"use strict";
+var DATA = {"order": ["CALI", "BARRANQUILLA", "CARTAGENA", "TURBACO"], "weeks": ["S40", "S41", "S42", "S43", "S44", "S45"], "wk": ["28 sep–4 oct", "5–11 oct", "12–18 oct", "19–25 oct", "26 oct–1 nov", "2–8 nov"], "cities": {"CALI": {"nombre": "Cali", "n_panel": 26, "d": {"ghi": 11.271988637366114, "ghi_mid": 16.786708459693124, "gen": 4.680420976590605, "pmid": 4.186357019845821, "pk": -6.694717841152031, "gen_per_ghi": -5.923833789164457, "pm_per_ghi": -10.789199906422642}, "oct": {"ghi": 5.078584229390681, "ghi_na": 3.8976451612903227, "ghi_na_n": 31, "ghi_mid": 712.6774193548387, "gen": 13.489775561097257, "pmid": 1.894949494949495, "pk": 3.3456140350877193, "sat": 35.714285714285715, "sinprod": 0, "n": 802}, "nov": {"ghi": 5.651041666666666, "ghi_na": 3.2172, "ghi_na_n": 3, "ghi_mid": 832.3125, "gen": 14.121153846153845, "pmid": 1.974278846153846, "pk": 3.1216346153846155, "sat": 30.76923076923077, "sinprod": 0, "n": 208}, "weekly": [{"ghi": 5.076190476190476, "ghi_mid": 723.2857142857143, "gen": 14.114835164835165, "pmid": 2.2883720930232556, "pk": 3.56123595505618, "sat": 21.910112359550563}, {"ghi": 4.836507936507936, "ghi_mid": 661.3571428571429, "gen": 12.105, "pmid": 1.7769444444444444, "pk": 3.0905555555555555, "sat": 45.0}, {"ghi": 5.146825396825396, "ghi_mid": 720.5714285714286, "gen": 14.441758241758242, "pmid": 1.8802197802197802, "pk": 3.5076923076923077, "sat": 30.76923076923077}, {"ghi": 5.139285714285714, "ghi_mid": 714.6428571428571, "gen": 13.751648351648353, "pmid": 1.9945054945054945, "pk": 3.3214285714285716, "sat": 32.967032967032964}, {"ghi": 5.383333333333333, "ghi_mid": 778.6428571428571, "gen": 13.600555555555555, "pmid": 1.8469444444444445, "pk": 3.1266666666666665, "sat": 37.77777777777778}, {"ghi": 5.618650793650794, "ghi_mid": 822.6428571428571, "gen": 13.91043956043956, "pmid": 1.9684065934065933, "pk": 3.0901098901098902, "sat": 28.57142857142857}], "base": [5.049702380952381, 704.9642857142858, 13.60331043956044, 1.9850104530482438, 3.3702280974331535], "prof": {"pv_oct": [0.0, 0.054057428214731584, 0.5923371647509579, 1.3901660280970627, 2.081351689612015, 2.4246212121212123, 2.162247474747475, 1.6219298245614036, 1.1659466327827193, 1.0109114249037228, 0.5531370038412292, 0.3237074401008827, 0.10113780025284451, 0.0013924050632911392], "pv_nov": [0.0, 0.08557692307692308, 0.6956730769230769, 1.6014423076923077, 2.110576923076923, 2.2360576923076922, 2.1642512077294684, 1.7830917874396135, 1.3802884615384616, 0.9753623188405797, 0.7038647342995169, 0.3294685990338164, 0.037500000000000006, 0.0], "gh_oct": [0.3225806451612903, 69.51612903225806, 238.0, 433.19354838709677, 604.258064516129, 715.4193548387096, 749.7741935483871, 675.5806451612904, 601.258064516129, 487.8709677419355, 316.3225806451613, 154.74193548387098, 32.354838709677416, 0.0], "gh_nov": [0.125, 67.125, 242.0, 479.75, 664.875, 820.625, 862.25, 802.375, 626.375, 514.0, 362.375, 178.25, 30.75, 0.0]}}, "BARRANQUILLA": {"nombre": "Barranquilla", "n_panel": 4, "d": {"ghi": -9.007456207548136, "ghi_mid": -9.047598516857814, "gen": -11.113925653853462, "pmid": -12.874223513171511, "pk": -2.738910389997018, "gen_per_ghi": -2.3149912712738585, "pm_per_ghi": -4.207283077646884}, "oct": {"ghi": 5.263709677419355, "ghi_na": 4.964177419354838, "ghi_na_n": 31, "ghi_mid": 748.1935483870968, "gen": 26.10082644628099, "pmid": 3.5921487603305784, "pk": 5.5520661157024795, "sat": 19.00826446280992, "sinprod": 1, "n": 121}, "nov": {"ghi": 4.789583333333333, "ghi_na": 4.961766666666667, "ghi_na_n": 3, "ghi_mid": 680.5, "gen": 23.2, "pmid": 3.1296875, "pk": 5.4, "sat": 12.5, "sinprod": 0, "n": 32}, "weekly": [{"ghi": 5.723015873015873, "ghi_mid": 848.5, "gen": 27.0, "pmid": 3.7785714285714285, "pk": 5.75, "sat": 14.285714285714285}, {"ghi": 5.011111111111111, "ghi_mid": 688.5714285714286, "gen": 29.21153846153846, "pmid": 4.236538461538461, "pk": 5.719230769230769, "sat": 11.538461538461538}, {"ghi": 5.429761904761905, "ghi_mid": 773.0, "gen": 25.675, "pmid": 3.6285714285714286, "pk": 5.889285714285714, "sat": 17.857142857142858}, {"ghi": 4.800396825396825, "ghi_mid": 691.5714285714286, "gen": 23.339285714285715, "pmid": 3.0142857142857142, "pk": 4.964285714285714, "sat": 17.857142857142858}, {"ghi": 5.465476190476191, "ghi_mid": 774.2857142857143, "gen": 25.711111111111112, "pmid": 3.6537037037037035, "pk": 5.677777777777778, "sat": 33.33333333333333}, {"ghi": 4.733333333333333, "ghi_mid": 672.1428571428571, "gen": 22.725, "pmid": 2.9089285714285715, "pk": 5.264285714285714, "sat": 10.714285714285714}], "base": [5.241071428571429, 750.4107142857142, 26.306456043956043, 3.664491758241758, 5.580700549450549], "prof": {"pv_oct": [0.0, 0.14545454545454545, 1.2074380165289256, 2.690082644628099, 4.017355371900827, 4.804132231404958, 4.206611570247934, 2.977685950413223, 2.090909090909091, 1.58099173553719, 1.2619834710743802, 0.915702479338843, 0.19173553719008266, 0.0], "pv_nov": [0.0, 0.209375, 1.2375, 2.80625, 3.45, 4.403125, 3.640625, 2.61875, 1.696875, 1.26875, 1.090625, 0.68125, 0.084375, 0.0], "gh_oct": [0.8709677419354839, 81.19354838709677, 260.741935483871, 443.7741935483871, 598.0967741935484, 743.0967741935484, 776.8387096774194, 719.5483870967741, 641.3870967741935, 481.51612903225805, 333.83870967741933, 159.6451612903226, 22.93548387096774, 0.0], "gh_nov": [0.0, 68.5, 249.25, 428.125, 581.625, 684.25, 723.75, 637.25, 538.375, 424.375, 298.375, 142.25, 13.75, 0.0]}}, "CARTAGENA": {"nombre": "Cartagena", "n_panel": 1, "d": {"ghi": -8.498131007475962, "ghi_mid": -15.637243800249113, "gen": 2.8166666666666673, "pmid": 8.64599686028258, "pk": 5.736434108527133, "gen_per_ghi": 12.365646514900241, "pm_per_ghi": 28.784314020081037}, "oct": {"ghi": 5.034050179211469, "ghi_na": 4.351506451612903, "ghi_na_n": 31, "ghi_mid": 712.1774193548387, "gen": 36.29032258064516, "pmid": 5.137096774193548, "pk": 6.241935483870968, "sat": 3.225806451612903, "sinprod": 0, "n": 31}, "nov": {"ghi": 4.60625, "ghi_na": 4.312166666666666, "ghi_na_n": 3, "ghi_mid": 600.8125, "gen": 37.3125, "pmid": 5.58125, "pk": 6.6, "sat": 0, "sinprod": 0, "n": 8}, "weekly": [{"ghi": 4.879761904761905, "ghi_mid": 681.7142857142857, "gen": 37.55714285714286, "pmid": 5.285714285714286, "pk": 6.428571428571429, "sat": 0}, {"ghi": 5.099603174603175, "ghi_mid": 734.7142857142857, "gen": 31.514285714285716, "pmid": 4.021428571428571, "pk": 5.771428571428571, "sat": 14.285714285714285}, {"ghi": 5.161111111111111, "ghi_mid": 707.7142857142857, "gen": 39.44285714285714, "pmid": 5.864285714285714, "pk": 6.585714285714285, "sat": 0}, {"ghi": 4.761507936507936, "ghi_mid": 689.7142857142857, "gen": 30.242857142857144, "pmid": 4.178571428571429, "pk": 5.214285714285714, "sat": 0}, {"ghi": 5.213888888888889, "ghi_mid": 682.3571428571429, "gen": 41.57142857142857, "pmid": 5.8428571428571425, "pk": 6.985714285714286, "sat": 0}, {"ghi": 4.660714285714286, "ghi_mid": 614.9285714285714, "gen": 38.52857142857143, "pmid": 5.935714285714286, "pk": 6.8428571428571425, "sat": 0}], "base": [4.975496031746031, 703.4642857142857, 34.68928571428572, 4.8375, 6.0], "prof": {"pv_oct": [0.0, 0.1903225806451613, 1.1, 2.3483870967741933, 3.92258064516129, 4.458064516129032, 5.035483870967742, 5.2387096774193544, 5.019354838709678, 4.254838709677419, 2.7161290322580647, 1.5354838709677419, 0.4, 0.00967741935483871], "pv_nov": [0.0, 0.1125, 0.85, 2.0625, 3.7375, 4.9625, 5.3875, 5.775, 5.225, 4.4625, 2.75, 1.5250000000000001, 0.4, 0.0], "gh_oct": [0.06451612903225806, 70.7741935483871, 234.16129032258064, 427.258064516129, 593.7741935483871, 695.0967741935484, 734.2903225806451, 690.0645161290323, 564.9354838709677, 501.7096774193548, 332.6774193548387, 163.67741935483872, 25.451612903225808, 0.0], "gh_nov": [0.0, 69.125, 262.125, 416.625, 575.0, 613.625, 618.125, 583.5, 513.875, 469.5, 325.625, 143.625, 16.0, 0.0]}}, "TURBACO": {"nombre": "Turbaco", "n_panel": 12, "d": {"ghi": -6.276835599949704, "ghi_mid": -10.733870596891382, "gen": -0.7586007782690363, "pmid": 21.322151956220626, "pk": 9.086700540968362, "gen_per_ghi": 5.88780250539398, "pm_per_ghi": 35.910622279087725}, "oct": {"ghi": 4.9877240143369175, "ghi_na": 4.351506451612903, "ghi_na_n": 31, "ghi_mid": 701.483870967742, "gen": 7.789945652173913, "pmid": 1.0325068870523415, "pk": 1.548641304347826, "sat": 9.239130434782608, "sinprod": 4, "n": 368}, "nov": {"ghi": 4.674652777777777, "ghi_na": 4.312166666666666, "ghi_na_n": 3, "ghi_mid": 626.1875, "gen": 7.730851063829787, "pmid": 1.252659574468085, "pk": 1.6893617021276595, "sat": 8.51063829787234, "sinprod": 0, "n": 94}, "weekly": [{"ghi": 4.725, "ghi_mid": 655.4285714285714, "gen": 8.550704225352113, "pmid": 1.2464788732394365, "pk": 1.6042253521126761, "sat": 14.084507042253522}, {"ghi": 5.06547619047619, "ghi_mid": 722.7857142857143, "gen": 7.515476190476191, "pmid": 0.8827380952380952, "pk": 1.4535714285714285, "sat": 5.952380952380952}, {"ghi": 5.108730158730158, "ghi_mid": 706.3571428571429, "gen": 8.479761904761904, "pmid": 1.1819277108433734, "pk": 1.6428571428571428, "sat": 10.714285714285714}, {"ghi": 4.764285714285714, "ghi_mid": 680.0, "gen": 6.708433734939759, "pmid": 0.8975, "pk": 1.389156626506024, "sat": 7.228915662650602}, {"ghi": 5.196031746031746, "ghi_mid": 688.7857142857143, "gen": 7.828571428571428, "pmid": 0.9855421686746988, "pk": 1.6369047619047619, "sat": 9.523809523809524}, {"ghi": 4.729365079365079, "ghi_mid": 637.3571428571429, "gen": 7.885365853658537, "pmid": 1.329268292682927, "pk": 1.7378048780487805, "sat": 9.75609756097561}], "base": [4.915873015873015, 691.1428571428571, 7.813594013882492, 1.0521611698302262, 1.522452637511818], "prof": {"pv_oct": [0.0, 0.01657608695652174, 0.3269021739130435, 0.7334239130434783, 1.0736986301369864, 1.2016528925619834, 1.1354395604395604, 0.9310439560439561, 0.8046448087431693, 0.7352617079889807, 0.49526462395543175, 0.27625698324022346, 0.05359116022099448, 0.0], "pv_nov": [0.0, 0.02340425531914894, 0.31382978723404253, 0.6457446808510638, 0.9212765957446809, 1.1829787234042553, 1.3106382978723405, 1.1946808510638298, 0.8414893617021276, 0.6021739130434782, 0.38241758241758245, 0.24505494505494504, 0.029347826086956522, 0.0], "gh_oct": [0.0, 69.09677419354838, 238.90322580645162, 420.48387096774195, 591.3225806451613, 682.6774193548387, 719.516129032258, 683.4516129032259, 556.7741935483871, 499.35483870967744, 336.741935483871, 164.0, 25.580645161290324, 0.0], "gh_nov": [0.0, 68.75, 254.5, 412.75, 566.5, 626.625, 652.875, 599.5, 529.625, 483.5, 317.875, 145.25, 16.875, 0.0]}}}};
+var NS = "http://www.w3.org/2000/svg";
+function NF(v,d){ if(v==null||isNaN(v)) return "–"; d=d==null?1:d; return v.toLocaleString("es-CO",{minimumFractionDigits:d,maximumFractionDigits:d}); }
+function SG(v,d){ if(v==null||isNaN(v)) return "–"; d=d==null?1:d; var r=Math.round(Math.abs(v)*Math.pow(10,d))/Math.pow(10,d); return (r===0?"":(v>0?"+":"−"))+NF(Math.abs(v),d); }
+function el(tag,attrs,parent){ var n=document.createElementNS(NS,tag); for(var k in attrs) n.setAttribute(k,attrs[k]); if(parent) parent.appendChild(n); return n; }
+function mean(a){ var v=a.filter(function(x){return x!=null;}); return v.length? v.reduce(function(s,x){return s+x;},0)/v.length : null; }
+
+function tipFor(host){
+  var t=document.createElement("div"); t.className="tip"; t.hidden=true; host.appendChild(t);
+  return {
+    show:function(html,x,y){ t.innerHTML=html; t.hidden=false; var w=t.offsetWidth,h=t.offsetHeight,W=host.clientWidth;
+      var left=x+14; if(left+w>W) left=Math.max(0,x-w-14); var top=Math.max(0,Math.min(y-h/2,host.clientHeight-h)); t.style.left=left+"px"; t.style.top=top+"px"; },
+    hide:function(){ t.hidden=true; }
+  };
+}
+function barPath(xz,xv,y,h,r){
+  var dir=xv>=xz?1:-1, len=Math.abs(xv-xz); r=Math.min(r,len,h/2);
+  if(len<0.8) return "M"+xz+","+y+"h"+(0.8*dir)+"v"+h+"h"+(-0.8*dir)+"z";
+  return "M"+xz+","+y+" H"+(xv-dir*r)+" Q"+xv+","+y+" "+xv+","+(y+r)+" V"+(y+h-r)+" Q"+xv+","+(y+h)+" "+(xv-dir*r)+","+(y+h)+" H"+xz+" Z";
+}
+
+/* ---------- grafico 1: cambio octubre -> noviembre ---------- */
+function deltaChart(host){
+  host.innerHTML="";
+  var W=Math.max(host.clientWidth,280), M=[["ghi","Irradiación diaria","irr"],["gen","Generación por casa","gen"],["pmid","Potencia 11–13 h","pm"]];
+  var dom=[-20,30], pl=14, pr=62, pw=W-pl-pr, barH=16, gap=4, head=26, gg=18, top=4, axisH=26, order=DATA.order;
+  var gh=head+M.length*barH+(M.length-1)*gap+gg, H=top+order.length*gh+axisH-gg;
+  var svg=el("svg",{viewBox:"0 0 "+W+" "+H,width:W,height:H,"aria-hidden":"true"},host);
+  var X=function(v){ return pl+(v-dom[0])/(dom[1]-dom[0])*pw; };
+  var tip=tipFor(host);
+  for(var t=dom[0];t<=dom[1];t+=10){
+    el("line",{x1:X(t),x2:X(t),y1:top,y2:H-axisH+4,"class":t===0?"axis0":"grid"},svg);
+    var lb=el("text",{x:X(t),y:H-8,"text-anchor":"middle","class":"ax"},svg); lb.textContent=(t>0?"+":t<0?"−":"")+Math.abs(t)+" %";
+  }
+  order.forEach(function(c,gi){
+    var C=DATA.cities[c], y0=top+gi*gh;
+    var g=el("text",{x:pl,y:y0+16,"class":"gl"},svg); g.textContent=C.nombre+" · "+C.n_panel+(C.n_panel===1?" casa":" casas");
+    M.forEach(function(m,mi){
+      var v=C.d[m[0]], y=y0+head+mi*(barH+gap), xz=X(0), xv=X(v);
+      el("path",{d:barPath(xz,xv,y,barH,4),"class":"b-"+m[2]},svg);
+      var tx=el("text",{x:v>=0?xv+6:xv-6,y:y+barH/2+4,"text-anchor":v>=0?"start":"end","class":"vl"},svg); tx.textContent=SG(v,1)+" %";
+    });
+    var hit=el("rect",{x:0,y:y0,width:W,height:gh-gg+4,fill:"transparent"},svg);
+    var html="<b>"+C.nombre+"</b><br>Irradiación diaria: <span class='tv'>"+NF(C.oct.ghi,2)+" → "+NF(C.nov.ghi,2)+"</span> kWh/m² ("+SG(C.d.ghi)+" %)<br>Irradiancia 11–13 h: <span class='tv'>"+NF(C.oct.ghi_mid,0)+" → "+NF(C.nov.ghi_mid,0)+"</span> W/m² ("+SG(C.d.ghi_mid)+" %)<br>Generación: <span class='tv'>"+NF(C.oct.gen,1)+" → "+NF(C.nov.gen,1)+"</span> kWh/casa/día ("+SG(C.d.gen)+" %)<br>Potencia 11–13 h: <span class='tv'>"+NF(C.oct.pmid,2)+" → "+NF(C.nov.pmid,2)+"</span> kW ("+SG(C.d.pmid)+" %)";
+    function mv(ev){ var r=host.getBoundingClientRect(); tip.show(html,ev.clientX-r.left,ev.clientY-r.top); }
+    hit.addEventListener("pointermove",mv); hit.addEventListener("pointerdown",mv); hit.addEventListener("pointerleave",tip.hide);
+  });
+}
+
+/* ---------- grafico generico de lineas ---------- */
+function niceStep(raw){ var p=Math.pow(10,Math.floor(Math.log10(raw))), f=raw/p; return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*p; }
+function lineChart(host,cfg){
+  host.innerHTML="";
+  var W=Math.max(host.clientWidth,240), H=cfg.h||200, pad={l:cfg.padL||38,r:16,t:10,b:28};
+  var pw=W-pad.l-pad.r, ph=H-pad.t-pad.b;
+  var X=function(v){ return pad.l+(v-cfg.xd[0])/(cfg.xd[1]-cfg.xd[0])*pw; };
+  var Y=function(v){ return pad.t+ph-(v-cfg.yd[0])/(cfg.yd[1]-cfg.yd[0])*ph; };
+  var svg=el("svg",{viewBox:"0 0 "+W+" "+H,width:W,height:H,"aria-hidden":"true"},host);
+  var tip=tipFor(host);
+  if(cfg.band) el("rect",{x:X(cfg.band[0]),y:pad.t,width:X(cfg.band[1])-X(cfg.band[0]),height:ph,"class":"band"},svg);
+  cfg.yt.forEach(function(t){
+    el("line",{x1:pad.l,x2:W-pad.r,y1:Y(t),y2:Y(t),"class":(cfg.ref!=null&&t===cfg.ref)?"refl":"grid"},svg);
+    var l=el("text",{x:pad.l-6,y:Y(t)+4,"text-anchor":"end","class":"ax"},svg); l.textContent=cfg.yfmt?cfg.yfmt(t):t;
+  });
+  cfg.xt.forEach(function(t){ var l=el("text",{x:X(t[0]),y:H-8,"text-anchor":"middle","class":"ax"},svg); l.textContent=t[1]; });
+  cfg.series.forEach(function(s){
+    var d="", pen=false;
+    s.pts.forEach(function(p){ if(p[1]==null){pen=false;return;} d+=(pen?"L":"M")+X(p[0]).toFixed(1)+","+Y(p[1]).toFixed(1)+" "; pen=true; });
+    el("path",{d:d,"class":"ln l-"+s.cls},svg);
+    var last=null; s.pts.forEach(function(p){ if(p[1]!=null) last=p; });
+    if(last && cfg.endDot!==false) el("circle",{cx:X(last[0]),cy:Y(last[1]),r:4,"class":"dot d-"+s.cls},svg);
+  });
+  var xh=el("line",{y1:pad.t,y2:pad.t+ph,"class":"xh",visibility:"hidden"},svg);
+  var hov=cfg.series.map(function(s){ return el("circle",{r:4,"class":"dot d-"+s.cls,visibility:"hidden"},svg); });
+  var ov=el("rect",{x:pad.l,y:pad.t,width:pw,height:ph,fill:"transparent"},svg);
+  function move(ev){
+    var r=svg.getBoundingClientRect(), px=(ev.clientX-r.left)*(W/r.width), best=0, bd=1e9, xs=cfg.series[0].pts;
+    xs.forEach(function(p,i){ var dd=Math.abs(X(p[0])-px); if(dd<bd){bd=dd;best=i;} });
+    var x=X(xs[best][0]); xh.setAttribute("x1",x); xh.setAttribute("x2",x); xh.setAttribute("visibility","visible");
+    cfg.series.forEach(function(s,i){ var v=s.pts[best][1]; if(v==null){hov[i].setAttribute("visibility","hidden");return;} hov[i].setAttribute("cx",x); hov[i].setAttribute("cy",Y(v)); hov[i].setAttribute("visibility","visible"); });
+    var hr=host.getBoundingClientRect(); tip.show(cfg.tip(best),(x/W)*hr.width,(ev.clientY-hr.top));
+  }
+  function out(){ xh.setAttribute("visibility","hidden"); hov.forEach(function(h){h.setAttribute("visibility","hidden");}); tip.hide(); }
+  ov.addEventListener("pointermove",move); ov.addEventListener("pointerdown",move); ov.addEventListener("pointerleave",out);
+}
+
+/* ---------- semanas (indice) ---------- */
+function weekChart(host){
+  var c=host.getAttribute("data-city"), C=DATA.cities[c], b=C.base; // b = [ghi, ghi_mid, gen, pmid, pk]
+  var idx=function(k,bi){ return C.weekly.map(function(w,i){ return [i, w[k]==null?null:w[k]/b[bi]*100]; }); };
+  lineChart(host,{
+    xd:[-0.3,5.3], yd:[70,140], yt:[80,100,120,140], ref:100, xt:DATA.weeks.map(function(w,i){return [i,w];}),
+    series:[{name:"Irradiación",cls:"irr",pts:idx("ghi",0)},{name:"Generación",cls:"gen",pts:idx("gen",2)},{name:"Potencia",cls:"pm",pts:idx("pmid",3)}],
+    tip:function(i){ var w=C.weekly[i];
+      return "<b>"+DATA.weeks[i]+" · "+DATA.wk[i]+"</b><br>Irradiación: <span class='tv'>"+NF(w.ghi,2)+"</span> kWh/m² (índice "+NF(w.ghi/b[0]*100,0)+")<br>Generación: <span class='tv'>"+NF(w.gen,1)+"</span> kWh/casa (índice "+NF(w.gen/b[2]*100,0)+")<br>Potencia 11–13 h: <span class='tv'>"+NF(w.pmid,2)+"</span> kW (índice "+NF(w.pmid/b[3]*100,0)+")"; }
+  });
+}
+
+/* ---------- perfil horario ---------- */
+function hourChart(host){
+  var c=host.getAttribute("data-city"), C=DATA.cities[c], P=C.prof, pts=function(arr){ var o=[]; for(var h=6;h<=17;h++) o.push([h+0.5, arr[h-5]]); return o; };
+  var mx=0; [P.pv_oct,P.pv_nov].forEach(function(a){ for(var h=6;h<=17;h++) if(a[h-5]!=null&&a[h-5]>mx) mx=a[h-5]; });
+  var step=niceStep(mx*1.08/4), ymax=Math.ceil(mx*1.05/step)*step, yt=[]; for(var v=0;v<=ymax+1e-9;v+=step) yt.push(Math.round(v*100)/100);
+  lineChart(host,{
+    xd:[6,18], yd:[0,ymax], yt:yt, yfmt:function(v){ var dd=Math.abs(step-Math.round(step))<1e-9?0:(Math.abs(step*10-Math.round(step*10))<1e-9?1:2); return NF(v,dd);}, padL:34, band:[11,13],
+    xt:[[6,"6 h"],[8,"8 h"],[10,"10 h"],[12,"12 h"],[14,"14 h"],[16,"16 h"],[18,"18 h"]],
+    series:[{name:"Octubre",cls:"oct",pts:pts(P.pv_oct)},{name:"Noviembre",cls:"nov",pts:pts(P.pv_nov)}],
+    tip:function(i){ var h=6+i, k=h-5;
+      return "<b>"+h+"–"+(h+1)+" h</b><br>Potencia FV: <span class='tv'>"+NF(P.pv_oct[k],2)+" → "+NF(P.pv_nov[k],2)+"</span> kW por casa<br>Irradiancia: <span class='tv'>"+NF(P.gh_oct[k],0)+" → "+NF(P.gh_nov[k],0)+"</span> W/m²"; }
+  });
+}
+
+function renderAll(){
+  deltaChart(document.getElementById("chDelta"));
+  document.querySelectorAll("[data-kind=week]").forEach(weekChart);
+  document.querySelectorAll("[data-kind=hour]").forEach(hourChart);
+}
+var lastW = 0, timer = null;
+function onSize(){ var w=document.getElementById("chDelta").clientWidth; if(Math.abs(w-lastW)>4){ lastW=w; renderAll(); } }
+renderAll(); lastW=document.getElementById("chDelta").clientWidth;
+if(window.ResizeObserver){ new ResizeObserver(function(){ clearTimeout(timer); timer=setTimeout(onSize,120); }).observe(document.querySelector(".wrap")); }
+else window.addEventListener("resize",function(){ clearTimeout(timer); timer=setTimeout(onSize,120); });
+})();
+</script>
