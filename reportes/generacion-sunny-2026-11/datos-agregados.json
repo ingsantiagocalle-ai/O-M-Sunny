@@ -2716,14 +2716,6 @@
   },
   {
    "city": "BARRANQUILLA",
-   "casa": "Casa 205",
-   "marca": "LIVOLTEK",
-   "dias_validos": 12,
-   "dias_sin_prod": 0,
-   "primer_dia": "2026-10-28"
-  },
-  {
-   "city": "BARRANQUILLA",
    "casa": "Casa 121 CR",
    "marca": "LIVOLTEK",
    "dias_validos": 32,
@@ -2737,14 +2729,6 @@
    "dias_validos": 34,
    "dias_sin_prod": 10,
    "primer_dia": "2026-09-28"
-  },
-  {
-   "city": "BARRANQUILLA",
-   "casa": "Casa 6",
-   "marca": "HUAWEI",
-   "dias_validos": 13,
-   "dias_sin_prod": 0,
-   "primer_dia": "2026-10-27"
   }
  ],
  "premise": {
@@ -2796,5 +2780,21 @@
  "deye": {
   "total": 18,
   "zero": 18
+ },
+ "alcance": {
+  "fuente": "casas del reporte de operacion 9-10 nov indicado por el usuario",
+  "por_ciudad": {
+   "CALI": 26,
+   "TURBACO": 16,
+   "BARRANQUILLA": 6,
+   "CARTAGENA": 1
+  },
+  "total": 49,
+  "excluidas": [
+   "Barranquilla Casa 205",
+   "Barranquilla Casa 6",
+   "Barranquilla Casa 300",
+   "Oficinas piloto Promigas"
+  ]
  }
 }
