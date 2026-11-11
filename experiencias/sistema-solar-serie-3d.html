@@ -52,6 +52,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:1
 .brand{grid-column:1;grid-row:1;align-self:start;overflow:hidden}
 .brand-head{background:var(--navy);color:var(--navy-fg);padding:10px 14px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .brand-head h1{margin:0;font:700 18px/1.2 var(--font-ui);letter-spacing:.01em;text-wrap:balance}
+.zx{margin-left:auto;font:700 10.5px/1 var(--font-ui);font-style:normal;letter-spacing:.08em;text-transform:uppercase;padding:4px 7px;border-radius:5px;background:var(--ongrid);color:#1c2b4f}
 .brand-head span{font:italic 500 13px/1.2 var(--font-ui);opacity:.85}
 .brand-body{padding:9px 14px 11px;display:flex;flex-direction:column;gap:7px}
 .brand-body p{margin:0;color:var(--muted);font-size:12.5px}
@@ -191,7 +192,7 @@ button.sw[aria-pressed="false"] i::after{left:2px}
 
   <div class="hud">
     <div class="brand panel">
-      <div class="brand-head"><h1>EN SERIE (In-Line)</h1><span>Deye · Livoltek · Solis</span></div>
+      <div class="brand-head"><h1>EN SERIE (In-Line)</h1><span>Deye · Livoltek · Solis</span><em class="zx">Exportación cero</em></div>
       <div class="brand-body">
         <p>Toda la energía pasa por el inversor. Arrastra para girar, rueda o pellizco para acercar, toca un equipo para ver cómo trabaja.</p>
         <div class="cfg"><span id="cfgSum">—</span><button class="lnk" id="cfgEdit">Editar datos</button></div>
@@ -211,12 +212,12 @@ button.sw[aria-pressed="false"] i::after{left:2px}
         <div class="m" style="--c:var(--offgrid)"><b></b><div class="lbl"><strong>Batería</strong><span id="vBattTxt">reposo</span></div><div class="val" id="vBatt">0.0<small>kW</small></div><div class="soc"><div id="socBar" style="width:60%"></div></div></div>
         <div class="m" style="--c:var(--ongrid)"><b></b><div class="lbl"><strong>Red</strong><span id="vGridTxt">reposo</span></div><div class="val" id="vGrid">0.0<small>kW</small></div></div>
       </div>
-      <div class="today"><span>FV hoy <b id="eFv">0.0</b> kWh</span><span>Red <b id="eImp">0.0</b> / <b id="eExp">0.0</b> kWh</span></div>
+      <div class="today"><span>FV hoy <b id="eFv">0.0</b> kWh</span><span>Red <b id="eImp">0.0</b> kWh</span><span>Recorte <b id="eExp">0.0</b> kWh</span></div>
     </aside>
     <section class="balance panel" id="balance">
       <h3>Balance de un día típico</h3>
       <div class="kpis" id="kpis"></div>
-      <div class="chart-legend"><span><i style="--c:var(--offgrid)"></i>Generación FV</span><span><i style="--c:var(--ongrid)"></i>Consumo</span><span id="lgSoc"><i class="dash" style="--c:var(--fg)"></i>Batería (SOC)</span></div>
+      <div class="chart-legend"><span><i style="--c:var(--offgrid)"></i>FV aprovechada</span><span id="lgCut"><i class="dash" style="--c:var(--offgrid)"></i>FV disponible</span><span><i style="--c:var(--ongrid)"></i>Consumo</span><span id="lgSoc"><i class="dash" style="--c:var(--fg)"></i>Batería (SOC)</span></div>
       <canvas id="chart" role="img" aria-label="Curvas de generación solar, consumo y estado de carga de la batería a lo largo de 24 horas"></canvas>
       <ul class="notes" id="notes"></ul>
     </section>
@@ -267,7 +268,7 @@ button.sw[aria-pressed="false"] i::after{left:2px}
     <form class="panel" id="setupForm" novalidate role="dialog" aria-modal="true" aria-labelledby="setupTitle">
       <header><h2 id="setupTitle">Datos del sistema y de la vivienda</h2><button type="button" class="x" id="setupClose" aria-label="Cerrar">×</button></header>
       <div class="form-body">
-        <p class="lead">Ingresa la capacidad del sistema y el consumo de la casa. Con estos datos se ajustan los módulos de la escena, el inversor, el ciclo de 24 horas y el balance de energía.</p>
+        <p class="lead">Ingresa la capacidad del sistema y el consumo de la casa. Con estos datos se ajustan los módulos de la escena, el inversor, el ciclo de 24 horas y el balance de energía. El sistema opera con exportación cero: nada se inyecta a la red y el excedente se recorta.</p>
         <div class="fields">
           <label class="f" for="fKwp">Capacidad de paneles<div class="inp"><input id="fKwp" type="number" inputmode="decimal" min="1" max="30" step="0.05"><em>kWp</em></div><small id="hKwp"></small></label>
           <label class="f" for="fBat">Capacidad de baterías<div class="inp"><input id="fBat" type="number" inputmode="decimal" min="0" max="60" step="0.5"><em>kWh</em></div><small id="hBat"></small></label>
@@ -531,30 +532,30 @@ function derive(c){const daily=c.month/30,peak=LOAD_PEAK_SHAPE*daily/LOAD_INT;co
 function compute(h,st){const L=loadAt(h),P=pvAt(h);const r={pvAvail:P,load:L,pv:0,batt:0,grid:0,supplied:L,mode:"on"};
   if(!st.invOK){if(st.gridOK){r.grid=L;r.mode="bypass";}else{r.supplied=0;r.mode="black";}return r;}
   const hasB=BAT_KWH>0,socMin=st.gridOK?.2:.1;const net=P-L;r.pv=P;
-  if(net>=0){const ch=hasB&&st.soc<.995?Math.min(net,BAT_KW):0;r.batt=-ch;const rest=net-ch;if(st.gridOK)r.grid=-rest;else r.pv=P-rest;}
+  if(net>=0){const ch=hasB&&st.soc<.995?Math.min(net,BAT_KW):0;r.batt=-ch;const rest=net-ch;r.pv=P-rest;}/* exportación cero: el excedente se recorta, nunca va a la red */
   else{const need=-net;const d=hasB&&st.soc>socMin?Math.min(need,BAT_KW):0;r.batt=d;const rem=need-d;
     if(st.gridOK)r.grid=rem;else if(rem>.01){if(P<.05&&d===0){r.supplied=0;r.pv=0;r.batt=0;r.mode="black";return r;}r.supplied=P+d;r.mode="shed";}}
-  if(!st.gridOK&&r.mode==="on")r.mode="island";return r;}
+  if(!st.gridOK&&r.mode==="on")r.mode="island";r.cut=Math.max(0,P-r.pv);return r;}
 const DT=.05,STEPS=480;
 function simulateDay(){let soc=.5;const rows=[];
   for(let d=0;d<4;d++)for(let i=0;i<STEPS;i++){const h=i*DT;const r=compute(h,{soc,gridOK:true,invOK:true});
-    if(d===3)rows.push({h,pv:r.pv,load:r.load,grid:r.grid,batt:r.batt,soc});
+    if(d===3)rows.push({h,pv:r.pv,av:r.pvAvail,load:r.load,grid:r.grid,batt:r.batt,soc});
     if(BAT_KWH>0)soc=Math.min(1,Math.max(.05,soc-r.batt*DT/BAT_KWH));}
-  const t={pv:0,load:0,imp:0,exp:0,nightLoad:0,nightH:0,emptyAt:null};
-  rows.forEach(r=>{t.pv+=r.pv*DT;t.load+=r.load*DT;if(r.grid>0)t.imp+=r.grid*DT;else t.exp-=r.grid*DT;
+  const t={pv:0,av:0,cut:0,load:0,imp:0,nightLoad:0,nightH:0,emptyAt:null};
+  rows.forEach(r=>{t.pv+=r.pv*DT;t.av+=r.av*DT;t.cut+=(r.av-r.pv)*DT;t.load+=r.load*DT;if(r.grid>0)t.imp+=r.grid*DT;
     if(r.h>=18||r.h<6){t.nightLoad+=r.load*DT;t.nightH+=DT;}
     if(BAT_KWH>0&&t.emptyAt===null&&r.h>=16&&r.soc<=.205&&r.grid>.05)t.emptyAt=r.h;});
   if(BAT_KWH>0&&t.emptyAt===null){for(const r of rows){if(r.h<9&&r.soc<=.205&&r.grid>.05){t.emptyAt=r.h;break;}}}
   t.maxSoc=Math.max(...rows.map(r=>r.soc));t.rows=rows;return t;}
 const rowAt=h=>DAY.rows[Math.min(STEPS-1,Math.max(0,Math.floor(h/DT)))];
 function syncToDay(){S.soc=BAT_KWH>0?rowAt(S.hour).soc:0;S.eFv=S.eImp=S.eExp=0;
-  for(const r of DAY.rows){if(r.h>=S.hour)break;S.eFv+=r.pv*DT;if(r.grid>0)S.eImp+=r.grid*DT;else S.eExp-=r.grid*DT;}}
+  for(const r of DAY.rows){if(r.h>=S.hour)break;S.eFv+=r.pv*DT;if(r.grid>0)S.eImp+=r.grid*DT;S.eExp+=(r.av-r.pv)*DT;}}
 function applyCfg(c,startHour){Object.assign(CFG,c);const d=derive(CFG);
   PV_KWP=CFG.kwp;BAT_KWH=CFG.bat;BAT_KW=d.batKw;INV_KW=d.inv;NMOD=d.n;PEAK_LOAD=d.peak;
   pvScale=CFG.kwp*CFG.hsp*PR/PV_INT;loadScale=d.daily/LOAD_INT;
   buildPv(NMOD);const hasB=BAT_KWH>0;battParts.forEach(m=>m.visible=hasB);flows.batt.cable.visible=hasB;HS.batt.hidden=!hasB;
   DAY=simulateDay();if(startHour!=null)S.hour=startHour;syncToDay();renderBalance();
-  $("#cfgSum").textContent=`${nf(PV_KWP,2)} kWp · ${BAT_KWH>0?nf(BAT_KWH,1)+" kWh":"sin baterías"} · ${nf(CFG.month,0)} kWh/mes`;
+  $("#lgCut").hidden=!(DAY.cut>.05);$("#cfgSum").textContent=`${nf(PV_KWP,2)} kWp · ${BAT_KWH>0?nf(BAT_KWH,1)+" kWh":"sin baterías"} · ${nf(CFG.month,0)} kWh/mes`;
   $("#vPvSub").textContent=`${nf(PV_KWP,2)} kWp`;$("#lgSoc").hidden=!hasB;}
 const nf=(v,d)=>Number(v).toLocaleString("es-CO",{maximumFractionDigits:d,minimumFractionDigits:0});
 const pct=v=>Math.round(Math.max(0,Math.min(1,v))*100)+" %";
@@ -591,30 +592,30 @@ function drawScreens(r){const fmt=v=>Math.abs(v).toFixed(1);
 const HS={
   pv:{name:"Módulos FV",c:"var(--offgrid)",kick:"Generación · lado DC (off-grid)",anchor:[.4,6.3,0],tgt:[.4,4.8,.2],cam:[8,13.5,15],
     title:"Módulos fotovoltaicos",body:()=>`${NMOD} módulos de 550 Wp (${nf(PV_KWP,2)} kWp) sobre la cubierta metálica${NMOD>33?" (la escena muestra 33)":""}. Con ${nf(CFG.hsp,1)} horas sol pico producen unos ${nf(DAY.pv,1)} kWh en un día típico. Convierten la radiación solar en corriente continua que baja por la fachada hasta los MPPT del inversor. Su producción sigue la curva del sol: cero de noche y máxima cerca del mediodía.`,
-    live:r=>[`Producción ${r.pv.toFixed(2)} kW`,`Disponible ${r.pvAvail.toFixed(2)} kW`,r.pvAvail-r.pv>.05?"Limitada: no hay a dónde enviar el excedente":`Hoy ${S.eFv.toFixed(1)} kWh`]},
+    live:r=>[`Producción ${r.pv.toFixed(2)} kW`,`Disponible ${r.pvAvail.toFixed(2)} kW`,r.pvAvail-r.pv>.05?`Recortada ${(r.pvAvail-r.pv).toFixed(2)} kW por exportación cero`:`Hoy ${S.eFv.toFixed(1)} kWh`]},
   inv:{name:"Inversor",c:"var(--offgrid)",kick:"Corazón del sistema",anchor:[-4.6,2.55,5.2],tgt:[-4.4,1.8,5.1],cam:[-2.3,3.0,10.6],
-    title:()=>`Inversor híbrido ${INV_KW} kW`,body:"En la conexión en serie toda la energía de la casa pasa por aquí. Hace el seguimiento MPPT de los módulos, carga y descarga las baterías, se sincroniza con la red por su puerto GRID y entrega la energía regulada por su puerto LOAD. Si la red cae, abre su relé interno y forma la isla en menos de 10 ms, como una UPS.",
+    title:()=>`Inversor híbrido ${INV_KW} kW`,body:"En la conexión en serie toda la energía de la casa pasa por aquí. Hace el seguimiento MPPT de los módulos, carga y descarga las baterías, se sincroniza con la red por su puerto GRID y entrega la energía regulada por su puerto LOAD. Si la red cae, abre su relé interno y forma la isla en menos de 10 ms, como una UPS. Con exportación cero, cuando la casa y la batería no pueden usar más energía, reduce la producción de los módulos para no inyectar nada a la red.",
     live:r=>[S.invOK?`Estado: ${modeName(r)}`:"Fuera de servicio",`Salida ${(S.invOK?r.supplied:0).toFixed(2)} kW`,`Carga ${Math.round((S.invOK?r.supplied:0)/INV_KW*100)} % de la nominal`]},
   batt:{name:"Baterías",c:"var(--offgrid)",kick:"Almacenamiento · off-grid",anchor:[-6.1,1.95,5.3],tgt:[-5.8,1.0,5.2],cam:[-3.6,2.5,10.2],
     title:()=>`Banco de baterías LFP ${nf(BAT_KWH,1)} kWh`,body:"Litio ferrofosfato con BMS propio. Guarda el excedente solar del día y lo entrega en la noche o durante un corte. El inversor limita la descarga al 20 % de carga con red disponible y al 10 % en modo isla para proteger las celdas.",
     live:r=>[`SOC ${Math.round(S.soc*100)} %`,r.batt>.03?`Descargando ${r.batt.toFixed(2)} kW`:r.batt<-.03?`Cargando ${(-r.batt).toFixed(2)} kW`:"En reposo",`Energía útil ≈ ${(BAT_KWH*Math.max(0,S.soc-(S.gridOK?.2:.1))).toFixed(1)} kWh`]},
   m2:{name:"Smart Meter",c:"var(--ongrid)",kick:"Medición del inversor",anchor:[-3.25,2.25,5.2],tgt:[-3.0,1.85,5.1],cam:[-1.7,2.7,9.0],
-    title:"Smart Meter del inversor",body:"Mide la potencia que el inversor toma o entrega a la red. Con esa lectura el inversor aplica la prioridad de fuentes (sol, batería, red) y el control de exportación cero o limitada que exija el operador.",
-    live:r=>[S.invOK?gridTxt(r.grid):"Sin lectura (inversor fuera)",`Tensión ${S.gridOK?"120/240 V":"0 V"}`]},
+    title:"Smart Meter del inversor",body:"Mide la potencia que el inversor toma o entrega a la red. Es la pieza clave de la exportación cero: varias veces por segundo informa al inversor cuánta potencia cruza el punto de conexión y este ajusta su salida para que la potencia activa hacia la red sea siempre cero.",
+    live:r=>[S.invOK?gridTxt(r.grid):"Sin lectura (inversor fuera)","Exportación 0,00 kW (límite)",`Tensión ${S.gridOK?"120/240 V":"0 V"}`]},
   ats:{name:"ATS",c:"var(--ongrid)",kick:"Transferencia automática",anchor:[-2.0,2.5,5.2],tgt:[-2.0,1.9,5.1],cam:[-.4,2.7,9.2],
     title:"ATS · conmutador de transferencia",body:"En operación normal envía la red al puerto GRID del inversor y la salida LOAD del inversor al tablero de la casa. Si el inversor falla o se apaga para mantenimiento, conmuta a bypass y conecta la red directamente a la vivienda. Así se mitiga el punto único de falla.",
     live:r=>[`Posición ${S.invOK?"INV (normal)":"BYPASS"}`,S.gridOK?"Red presente":"Red ausente"]},
   m1:{name:"Smart Meter",c:"var(--ongrid)",kick:"Frontera con el operador",anchor:[-12,2.35,9.3],tgt:[-12,1.3,9.3],cam:[-9.6,2.6,13.8],
-    title:"Medidor bidireccional de frontera",body:"Medidor del operador de red. Registra la energía importada y los excedentes exportados por el autogenerador (AGPE). Es la base de la facturación neta.",
-    live:r=>[gridTxt(r.grid),`Importado hoy ${S.eImp.toFixed(1)} kWh`,`Exportado hoy ${S.eExp.toFixed(1)} kWh`]},
+    title:"Medidor bidireccional de frontera",body:"Medidor del operador de red en la frontera. Registra la energía que la casa compra. Como el sistema está limitado a exportación cero, el registro de energía entregada a la red debe permanecer en cero.",
+    live:r=>[gridTxt(r.grid),`Importado hoy ${S.eImp.toFixed(1)} kWh`,"Exportado hoy 0,0 kWh (limitado)"]},
   grid:{name:"Red",c:"var(--ongrid)",kick:"Operador de red · on-grid",anchor:[-20,10,11],tgt:[-17,5,10],cam:[-6,7,27],
-    title:"Red de distribución",body:"Acometida desde la red del operador. En el esquema en serie la red no llega directo a la casa: entra al inversor, que decide cuánto tomar. Si la red se cae, el inversor se desconecta (protección anti-isla) para no energizar la línea mientras trabajan los técnicos.",
+    title:"Red de distribución",body:"Acometida desde la red del operador. En el esquema en serie la red no llega directo a la casa: entra al inversor, que decide cuánto tomar. Además, el sistema está limitado a exportación cero: nunca le entrega energía activa. Si la red se cae, el inversor se desconecta (protección anti-isla) para no energizar la línea mientras trabajan los técnicos.",
     live:r=>[S.gridOK?"Disponible":"Caída",gridTxt(r.grid)]},
   user:{name:"Usuario",c:"var(--ongrid)",kick:"Cargas de la vivienda",anchor:[2.4,3.6,5.3],tgt:[2.5,2,5],cam:[6.5,4.5,15],
     title:"Vivienda y tablero de cargas",body:()=>`Consumo promedio de ${nf(CFG.month,0)} kWh/mes (${nf(CFG.month/30,1)} kWh/día, pico cercano a ${nf(PEAK_LOAD,1)} kW). Iluminación, aires acondicionados y electrodomésticos. Reciben energía ya filtrada y regulada por el inversor. El consumo sube en la mañana, con los aires al mediodía y alcanza su pico en la noche.`,
     live:r=>[`Demanda ${r.load.toFixed(2)} kW`,r.supplied<r.load-.02?`Atendida ${r.supplied.toFixed(2)} kW`:"Suministro continuo",`Fuente: ${srcTxt(r)}`]}
 };
-function gridTxt(v){return !S.gridOK?"Red caída":v>.03?`Importando ${v.toFixed(2)} kW`:v<-.03?`Exportando ${(-v).toFixed(2)} kW`:"Sin intercambio";}
+function gridTxt(v){return !S.gridOK?"Red caída":v>.03?`Importando ${v.toFixed(2)} kW`:"Sin intercambio (exportación 0)";}
 function srcTxt(r){if(r.mode==="black")return"ninguna";if(r.mode==="bypass")return"red directa";const a=[];if(r.pv>.05)a.push("sol");if(r.batt>.05)a.push("batería");if(r.grid>.05)a.push("red");return a.join(" + ")||"—";}
 function modeName(r){return{on:"On-grid",island:"Modo isla",shed:"Isla · deslastre",bypass:"Bypass ATS",black:"Sin suministro"}[r.mode];}
 
@@ -632,7 +633,7 @@ const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
 
 /* ---------- Ficha y recorrido ---------- */
 let sel=null,tour=-1;
-const TOUR=[{ov:true,kick:"Recorrido · inicio",title:"Así funciona un sistema en serie",body:"El sol, las baterías y la red se combinan dentro del inversor, y de ahí sale una sola alimentación hacia la casa. Las líneas amarillas son el lado de red (AC) y las azules el lado de generación y respaldo. Los puntos que viajan por los cables muestran hacia dónde fluye la energía y su tamaño indica la potencia."},
+const TOUR=[{ov:true,kick:"Recorrido · inicio",title:"Así funciona un sistema en serie",body:"El sol, las baterías y la red se combinan dentro del inversor, y de ahí sale una sola alimentación hacia la casa. Las líneas amarillas son el lado de red (AC) y las azules el lado de generación y respaldo. Los puntos que viajan por los cables muestran hacia dónde fluye la energía y su tamaño indica la potencia. Este sistema está limitado a exportación cero: la energía solo entra desde la red, nunca sale."},
   {hs:"pv"},{hs:"inv"},{hs:"batt"},{hs:"m2"},{hs:"ats"},{hs:"m1"},{hs:"grid"},{hs:"user"},
   {ov:true,kick:"Recorrido · pruébalo",title:"Simula un día completo y las fallas",body:"Mueve la hora para ver cómo cambian las fuentes. Apaga la «Red» para ver el modo isla tipo UPS y apaga el «Inversor» para ver al ATS pasar a bypass. Si apagas los dos, la casa queda sin servicio: ese es el punto único de falla del esquema."}];
 function showInfo(o){$("#info").hidden=false;$("#iKick").textContent=o.kick;$("#iKick").style.setProperty("--c",o.c||"var(--muted)");const val=x=>typeof x==="function"?x():x;$("#iTitle").textContent=val(o.title);$("#iBody").textContent=val(o.body);liveFill();}
@@ -685,7 +686,7 @@ const kw=v=>`${Math.abs(v).toFixed(1)}<small>kW</small>`;
 const MODE_COL={on:"var(--ok)",island:"var(--offgrid)",shed:"var(--warn)",bypass:"var(--warn)",black:"var(--bad)"};
 function updateHud(r){$("#vPv").innerHTML=kw(r.pv);$("#vLoad").innerHTML=kw(r.supplied);$("#vBatt").innerHTML=kw(r.batt);$("#vGrid").innerHTML=kw(r.grid);
   $("#vBattTxt").textContent=r.batt>.03?"descarga":r.batt<-.03?"carga":"reposo";
-  $("#vGridTxt").textContent=!S.gridOK?"caída":r.grid>.03?"importa":r.grid<-.03?"exporta":"reposo";
+  $("#vGridTxt").textContent=!S.gridOK?"caída":r.grid>.03?"importa":"exporta 0";
   $("#socBar").style.width=(S.soc*100).toFixed(0)+"%";$("#socBar").style.background=S.soc<.2?"var(--bad)":"var(--offgrid)";
   const ch=$("#modeChip");ch.textContent=modeName(r);ch.style.setProperty("--c",MODE_COL[r.mode]);
   $("#clock").textContent=hhmm(S.hour);hourOut.textContent=hhmm(S.hour);if(document.activeElement!==hourIn)hourIn.value=S.hour.toFixed(2);
@@ -698,7 +699,7 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;resize();
   if(S.playing){S.hour+=dt*HOURS_PER_SEC;if(S.hour>=24){S.hour-=24;S.eFv=S.eImp=S.eExp=0;}}
   const r=compute(S.hour,S);S.r=r;
   const dtH=S.playing?dt*HOURS_PER_SEC:0;
-  if(BAT_KWH>0)S.soc=Math.min(1,Math.max(.05,S.soc-r.batt*dtH/BAT_KWH));S.eFv+=r.pv*dtH;if(r.grid>0)S.eImp+=r.grid*dtH;else S.eExp+=-r.grid*dtH;
+  if(BAT_KWH>0)S.soc=Math.min(1,Math.max(.05,S.soc-r.batt*dtH/BAT_KWH));S.eFv+=r.pv*dtH;if(r.grid>0)S.eImp+=r.grid*dtH;S.eExp+=(r.cut||0)*dtH;
   // flujos
   const inv=S.invOK;
   flows.grid.v=r.grid;flows.m1ats.v=r.grid;
@@ -728,20 +729,21 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;resize();
   renderer.render(scene,camera);requestAnimationFrame(frame);}
 /* ---------- Balance diario ---------- */
 function niceStep(x){const p=Math.pow(10,Math.floor(Math.log10(x||1)));const n=x/p;return(n<=1?1:n<=2?2:n<=5?5:10)*p;}
-function renderBalance(){const t=DAY;const cover=t.load>0?1-t.imp/t.load:0,self=t.pv>0?(t.pv-t.exp)/t.pv:0;
+function renderBalance(){const t=DAY;const cover=t.load>0?1-t.imp/t.load:0,use=t.av>0?t.pv/t.av:0;
   const saving=(t.load-t.imp)*30*CFG.tarifa;
-  const K=[["Cobertura solar",pct(cover)+"<small>del consumo</small>"],["Autoconsumo FV",pct(self)+"<small>de lo generado</small>"],["Generación FV",nf(t.pv*30,0)+"<small>kWh/mes</small>"],
-    ["Compra a la red",nf(t.imp*30,0)+"<small>kWh/mes</small>"],["Excedentes",nf(t.exp*30,0)+"<small>kWh/mes</small>"],["Ahorro estimado",CFG.tarifa>0?cop(saving)+"<small>COP/mes</small>":"—"]];
+  const K=[["Cobertura solar",pct(cover)+"<small>del consumo</small>"],["Aprovechamiento FV",pct(use)+"<small>de lo disponible</small>"],["FV aprovechada",nf(t.pv*30,0)+"<small>kWh/mes</small>"],
+    ["Compra a la red",nf(t.imp*30,0)+"<small>kWh/mes</small>"],["Energía recortada",nf(t.cut*30,0)+"<small>kWh/mes</small>"],["Ahorro estimado",CFG.tarifa>0?cop(saving)+"<small>COP/mes</small>":"—"]];
   $("#kpis").innerHTML=K.map(([a,b])=>`<div class="kpi"><span>${a}</span><b>${b}</b></div>`).join("");
   const notes=[];const nightAvg=t.nightH?t.nightLoad/t.nightH:CFG.month/720;const hhmm2=h=>String(Math.floor(h)).padStart(2,"0")+":"+String(Math.floor((h%1)*60)).padStart(2,"0");
   if(t.pv<t.load*.4)notes.push(`La generación solar cubre ${pct(t.pv/t.load)} del consumo diario. Para cubrirlo todo se necesitarían cerca de ${nf(t.load/(CFG.hsp*PR),1)} kWp.`);
-  else if(t.pv>t.load*1.25)notes.push(`El sistema genera el ${Math.round(t.pv/t.load*100)} % del consumo de la casa: hay energía de sobra para exportar o crecer en cargas.`);
+  if(t.av>0&&t.cut>t.av*.12)notes.push(`Por la exportación cero se pierde el ${pct(t.cut/t.av)} de la energía solar disponible (${nf(t.cut*30,0)} kWh/mes). Para aprovecharla: más batería o mover cargas como lavadora, bomba o aire al mediodía.`);
+  else if(t.av>0)notes.push(`La exportación cero casi no limita este sistema: se aprovecha el ${pct(use)} de la energía solar disponible.`);
   if(BAT_KWH>0){notes.push(`Respaldo ante un corte nocturno con batería llena: cerca de ${nf(BAT_KWH*.9/nightAvg,1)} h con el consumo promedio de la noche (${nf(nightAvg,2)} kW).`);
     if(t.emptyAt!==null)notes.push(`En un día típico la batería llega a su reserva (20 %) hacia las ${hhmm2(t.emptyAt)} y desde ahí la casa compra a la red.`);
     else notes.push("La batería alcanza a cubrir toda la noche sin bajar de su reserva.");
     if(t.maxSoc<.95)notes.push(`El sol no alcanza a llenar la batería (máximo ${pct(t.maxSoc)}): el banco está sobredimensionado para estos paneles.`);
-    else if(t.exp>t.pv*.25)notes.push(`Se exporta el ${pct(t.exp/t.pv)} de lo generado: más capacidad de batería subiría el autoconsumo.`);}
-  else notes.push("Sin baterías: el excedente del día se exporta y, si la red cae de noche, la casa queda sin energía.");
+    }
+  else notes.push("Sin baterías y con exportación cero: todo lo que la casa no consume en el momento se recorta, y si la red cae de noche la casa queda sin energía.");
   notes.push(`Inversor híbrido seleccionado: ${INV_KW} kW (pico de consumo ≈ ${nf(PEAK_LOAD,1)} kW, FV ${nf(PV_KWP,2)} kWp).`);
   $("#notes").innerHTML=notes.map(n=>`<li>${n}</li>`).join("");drawChart();}
 function drawChart(){const cv=$("#chart");if(!DAY||!cv||cv.offsetParent===null)return;const dpr=Math.min(2,devicePixelRatio||1);
@@ -749,7 +751,7 @@ function drawChart(){const cv=$("#chart");if(!DAY||!cv||cv.offsetParent===null)r
   const g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
   const cs=getComputedStyle(document.documentElement),col=n=>cs.getPropertyValue(n).trim();const hasB=BAT_KWH>0;
   const L=34,Rm=hasB?34:8,T=8,B=18,pw=W-L-Rm,ph=H-T-B;const rows=DAY.rows;
-  let mx=0;rows.forEach(r=>{mx=Math.max(mx,r.pv,r.load);});const step=niceStep(mx/3);const top=Math.max(step,Math.ceil(mx*1.05/step)*step);
+  let mx=0;rows.forEach(r=>{mx=Math.max(mx,r.av,r.load);});const step=niceStep(mx/3);const top=Math.max(step,Math.ceil(mx*1.05/step)*step);
   const X=h=>L+h/24*pw,Y=v=>T+ph-v/top*ph,Ys=s=>T+ph-s*ph;
   g.font="500 10px 'IBM Plex Mono',ui-monospace,monospace";g.lineWidth=1;g.strokeStyle=col("--line");g.fillStyle=col("--muted");
   g.textAlign="right";for(let v=0;v<=top+1e-9;v+=step){const y=Math.round(Y(v))+.5;g.beginPath();g.moveTo(L,y);g.lineTo(L+pw,y);g.stroke();g.fillText(nf(v,1),L-5,y+3);}
@@ -758,7 +760,7 @@ function drawChart(){const cv=$("#chart");if(!DAY||!cv||cv.offsetParent===null)r
   const off=col("--offgrid"),on=col("--ongrid"),fg=col("--fg");
   g.beginPath();g.moveTo(X(0),Y(0));rows.forEach(r=>g.lineTo(X(r.h),Y(r.pv)));g.lineTo(X(24),Y(0));g.closePath();g.globalAlpha=.2;g.fillStyle=off;g.fill();g.globalAlpha=1;
   const line=(f,c,w,dash,sc)=>{g.beginPath();rows.forEach((r,i)=>{const y=sc?Ys(f(r)):Y(f(r));i?g.lineTo(X(r.h),y):g.moveTo(X(r.h),y);});g.strokeStyle=c;g.lineWidth=w;g.setLineDash(dash||[]);g.stroke();g.setLineDash([]);};
-  line(r=>r.pv,off,2);line(r=>r.load,on,2);if(hasB){g.globalAlpha=.6;line(r=>r.soc,fg,1.5,[4,3],true);g.globalAlpha=1;}
+  if(DAY.cut>.05){g.globalAlpha=.85;line(r=>r.av,off,1.5,[2,3]);g.globalAlpha=1;}line(r=>r.pv,off,2);line(r=>r.load,on,2);if(hasB){g.globalAlpha=.6;line(r=>r.soc,fg,1.5,[4,3],true);g.globalAlpha=1;}
   const x=X(S.hour),r=rowAt(S.hour);g.strokeStyle=fg;g.globalAlpha=.45;g.lineWidth=1;g.beginPath();g.moveTo(x,T);g.lineTo(x,T+ph);g.stroke();g.globalAlpha=1;
   [[Y(r.pv),off],[Y(r.load),on]].concat(hasB?[[Ys(r.soc),fg]]:[]).forEach(([y,c])=>{g.beginPath();g.arc(x,y,3.5,0,Math.PI*2);g.fillStyle=c;g.fill();});}
 const balEl=$("#balance"),balBtn=$("#balBtn");
@@ -774,7 +776,7 @@ function readForm(mark){const c={},bad=[];for(const k in F){const raw=String(F[k
   if(raw===""&&(k==="hsp"||k==="tarifa"))v=DEFAULTS[k];const ok=isFinite(v)&&v>=LIM[k][0]&&v<=LIM[k][1];
   if(mark)F[k].closest(".f").classList.toggle("bad",!ok);if(ok)c[k]=v;else bad.push(k);}return{c,bad};}
 function hints(){const{c}=readForm(false);const full=Object.assign({},DEFAULTS,c);const d=derive(full);
-  $("#hKwp").textContent=c.kwp!=null?`≈ ${d.n} módulos de 550 Wp · ${nf(d.pvDay*30,0)} kWh/mes estimados`:LIM.kwp[2];
+  $("#hKwp").textContent=c.kwp!=null?`≈ ${d.n} módulos de 550 Wp · ${nf(d.pvDay*30,0)} kWh/mes disponibles`+(c.month!=null&&d.pvDay>d.daily?". Supera el consumo: con exportación cero parte se recortará.":""):LIM.kwp[2];
   $("#hBat").textContent=c.bat==null?LIM.bat[2]:c.bat===0?"Sin baterías: no habrá respaldo ante cortes.":`≈ ${nf(c.bat*.8,1)} kWh útiles · descarga hasta ${nf(d.batKw,1)} kW`;
   $("#hMonth").textContent=c.month!=null?`≈ ${nf(d.daily,1)} kWh/día · pico ≈ ${nf(d.peak,1)} kW`:LIM.month[2];
   $("#derived").innerHTML=c.kwp!=null&&c.month!=null?[`Inversor sugerido ${d.inv} kW`,`FV cubre ≈ ${Math.round(d.pvDay/d.daily*100)} % del consumo`].map(t=>`<span>${t}</span>`).join(""):"";}
