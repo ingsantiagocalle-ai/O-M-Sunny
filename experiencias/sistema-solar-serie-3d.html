@@ -42,7 +42,7 @@ body{background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:1
 
 /* HUD */
 .hud{position:absolute;inset:0;pointer-events:none;display:grid;gap:12px;
-  grid-template-columns:minmax(0,350px) 1fr minmax(0,300px);grid-template-rows:auto 1fr auto;
+  grid-template-columns:minmax(0,350px) 1fr minmax(0,340px);grid-template-rows:auto 1fr auto;
   padding-block:calc(12px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-bottom,0px));
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 .hud>*{pointer-events:auto;min-width:0}
@@ -127,7 +127,42 @@ button.sw[aria-pressed="false"] i::after{left:2px}
 
 .fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:var(--fg)}
 
+.rcol{grid-column:3;grid-row:1 / span 2;align-self:start;display:flex;flex-direction:column;gap:10px;max-height:100%;overflow:auto;min-height:0;pointer-events:auto}
+.balance{padding:12px 14px;display:flex;flex-direction:column;gap:9px}
+.balance h3{margin:0;font:700 11.5px/1.2 var(--font-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.kpi{background:var(--surface-2);border-radius:8px;padding:6px 8px;min-width:0}
+.kpi span{display:block;font-size:10.5px;color:var(--muted);line-height:1.25}
+.kpi b{display:block;font:600 15px/1.35 var(--font-data);font-variant-numeric:tabular-nums}
+.kpi b small{display:block;font:500 10.5px/1.2 var(--font-ui);color:var(--muted)}
+.chart-legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+.chart-legend i{display:inline-block;width:14px;height:3px;margin-right:4px;vertical-align:middle;background:var(--c);border-radius:2px}
+.chart-legend i.dash{background:none;border-top:2px dashed var(--c);height:0;border-radius:0}
+#chart{width:100%;height:150px;display:block}
+.notes{margin:0;padding-left:16px;font-size:12px;display:grid;gap:4px}
+.cfg{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;font:600 12px/1.3 var(--font-data);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-variant-numeric:tabular-nums}
+.lnk{background:none;border:0;padding:2px 0;color:var(--offgrid);font:700 12px/1 var(--font-ui);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.lnk:focus-visible{outline:2px solid var(--offgrid);outline-offset:2px}
+.form-body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px}
+.lead{margin:0;font-size:13px;color:var(--muted);max-width:62ch}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+.f{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:600;min-width:0}
+.f .opt{font-weight:400;color:var(--muted)}
+.inp{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;background:var(--surface);overflow:hidden}
+.inp:focus-within{outline:2px solid var(--offgrid);outline-offset:1px}
+.inp input{flex:1;min-width:0;border:0;background:transparent;color:var(--fg);font:600 16px/1 var(--font-data);padding:10px;outline:none}
+.inp em{font-style:normal;font-size:12px;color:var(--muted);padding:0 10px;white-space:nowrap}
+.f small{font-weight:400;color:var(--muted);font-size:11.5px;line-height:1.35}
+.f.bad .inp{border-color:var(--bad)}
+.f.bad small{color:var(--bad)}
+.err{margin:0;color:var(--bad);font-size:12.5px;font-weight:600}
+.actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 @media (max-width:760px){
+  .rcol{grid-column:1;grid-row:2;max-height:44vh}
+  .fields{grid-template-columns:minmax(0,1fr)}
+  .kpi b{font-size:12.5px}
+  #chart{height:120px}
+
   .hud{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto 1fr auto auto;gap:8px}
   .brand{grid-column:1;grid-row:1}
   .brand-body p{display:none}
@@ -159,6 +194,7 @@ button.sw[aria-pressed="false"] i::after{left:2px}
       <div class="brand-head"><h1>EN SERIE (In-Line)</h1><span>Deye · Livoltek · Solis</span></div>
       <div class="brand-body">
         <p>Toda la energía pasa por el inversor. Arrastra para girar, rueda o pellizco para acercar, toca un equipo para ver cómo trabaja.</p>
+        <div class="cfg"><span id="cfgSum">—</span><button class="lnk" id="cfgEdit">Editar datos</button></div>
         <div class="legend">
           <span style="--c:var(--ongrid)"><i></i>On-grid · lado red (AC)</span>
           <span style="--c:var(--offgrid)"><i></i>Off-grid · FV, baterías</span>
@@ -166,16 +202,25 @@ button.sw[aria-pressed="false"] i::after{left:2px}
       </div>
     </div>
 
+    <div class="rcol">
     <aside class="stats panel" aria-live="polite">
       <div class="stats-top"><span class="chip" id="modeChip" style="--c:var(--ok)">On-grid</span><span class="clock" id="clock">10:00</span></div>
       <div class="metrics">
-        <div class="m" style="--c:var(--offgrid)"><b></b><div class="lbl"><strong>Solar FV</strong><span>12,1 kWp</span></div><div class="val" id="vPv">0.0<small>kW</small></div></div>
+        <div class="m" style="--c:var(--offgrid)"><b></b><div class="lbl"><strong>Solar FV</strong><span id="vPvSub">—</span></div><div class="val" id="vPv">0.0<small>kW</small></div></div>
         <div class="m" style="--c:var(--ongrid)"><b></b><div class="lbl"><strong>Vivienda</strong><span>consumo</span></div><div class="val" id="vLoad">0.0<small>kW</small></div></div>
         <div class="m" style="--c:var(--offgrid)"><b></b><div class="lbl"><strong>Batería</strong><span id="vBattTxt">reposo</span></div><div class="val" id="vBatt">0.0<small>kW</small></div><div class="soc"><div id="socBar" style="width:60%"></div></div></div>
         <div class="m" style="--c:var(--ongrid)"><b></b><div class="lbl"><strong>Red</strong><span id="vGridTxt">reposo</span></div><div class="val" id="vGrid">0.0<small>kW</small></div></div>
       </div>
       <div class="today"><span>FV hoy <b id="eFv">0.0</b> kWh</span><span>Red <b id="eImp">0.0</b> / <b id="eExp">0.0</b> kWh</span></div>
     </aside>
+    <section class="balance panel" id="balance">
+      <h3>Balance de un día típico</h3>
+      <div class="kpis" id="kpis"></div>
+      <div class="chart-legend"><span><i style="--c:var(--offgrid)"></i>Generación FV</span><span><i style="--c:var(--ongrid)"></i>Consumo</span><span id="lgSoc"><i class="dash" style="--c:var(--fg)"></i>Batería (SOC)</span></div>
+      <canvas id="chart" role="img" aria-label="Curvas de generación solar, consumo y estado de carga de la batería a lo largo de 24 horas"></canvas>
+      <ul class="notes" id="notes"></ul>
+    </section>
+    </div>
 
     <section class="info panel" id="info" hidden>
       <div class="info-top"><span class="kicker" id="iKick">Equipo</span><button class="x" id="iClose" aria-label="Cerrar ficha">×</button></div>
@@ -207,7 +252,9 @@ button.sw[aria-pressed="false"] i::after{left:2px}
       </div>
       <span class="sep"></span>
       <div class="grp">
-        <button class="btn primary" id="tourBtn">Recorrido guiado</button>
+        <button class="btn primary" id="setupBtn">Datos del sistema</button>
+        <button class="btn" id="balBtn" aria-pressed="true">Balance del día</button>
+        <button class="btn" id="tourBtn">Recorrido guiado</button>
         <button class="btn" id="prosBtn">Ventajas y desventajas</button>
         <button class="btn" id="homeBtn">Vista general</button>
       </div>
@@ -215,6 +262,25 @@ button.sw[aria-pressed="false"] i::after{left:2px}
   </div>
 
   <div class="toast" id="toast" data-hide></div>
+
+  <div class="pros" id="setup" hidden>
+    <form class="panel" id="setupForm" novalidate role="dialog" aria-modal="true" aria-labelledby="setupTitle">
+      <header><h2 id="setupTitle">Datos del sistema y de la vivienda</h2><button type="button" class="x" id="setupClose" aria-label="Cerrar">×</button></header>
+      <div class="form-body">
+        <p class="lead">Ingresa la capacidad del sistema y el consumo de la casa. Con estos datos se ajustan los módulos de la escena, el inversor, el ciclo de 24 horas y el balance de energía.</p>
+        <div class="fields">
+          <label class="f" for="fKwp">Capacidad de paneles<div class="inp"><input id="fKwp" type="number" inputmode="decimal" min="1" max="30" step="0.05"><em>kWp</em></div><small id="hKwp"></small></label>
+          <label class="f" for="fBat">Capacidad de baterías<div class="inp"><input id="fBat" type="number" inputmode="decimal" min="0" max="60" step="0.5"><em>kWh</em></div><small id="hBat"></small></label>
+          <label class="f" for="fMonth">Consumo promedio de la vivienda<div class="inp"><input id="fMonth" type="number" inputmode="decimal" min="50" max="3000" step="1"><em>kWh/mes</em></div><small id="hMonth"></small></label>
+          <label class="f" for="fHsp"><span>Horas sol pico del sitio <span class="opt">(opcional)</span></span><div class="inp"><input id="fHsp" type="number" inputmode="decimal" min="3" max="6.5" step="0.1"><em>h/día</em></div><small id="hHsp">En Colombia va de 3,5 a 5,5 según la región.</small></label>
+          <label class="f" for="fTar"><span>Tarifa de energía <span class="opt">(opcional)</span></span><div class="inp"><input id="fTar" type="number" inputmode="decimal" min="0" max="3000" step="1"><em>COP/kWh</em></div><small id="hTar">Solo para estimar el ahorro mensual.</small></label>
+        </div>
+        <div class="live" id="derived"></div>
+        <p class="err" id="fErr" hidden></p>
+        <div class="actions"><button type="button" class="btn" id="fReset">Valores de ejemplo</button><button type="submit" class="btn primary">Iniciar simulación</button></div>
+      </div>
+    </form>
+  </div>
 
   <div class="pros" id="pros" hidden>
     <div class="panel" role="dialog" aria-modal="true" aria-labelledby="prosTitle">
@@ -339,21 +405,27 @@ box(3,2.2,.08,glassM,3,4.5,-12.45,nb);box(1.4,4,.08,glassM,9,2.4,-12.45,nb);
 /* ---------- Módulos fotovoltaicos ---------- */
 const modM=std(0xffffff,{map:cellTex,metalness:.35,roughness:.28,emissive:0x0b2d66,emissiveIntensity:0});
 const rackM=std(0x9aa1ab,{metalness:.6,roughness:.4});
-function pvArray(cols,rows,cx,cz){const g=new THREE.Group();g.position.set(cx,TOP+.42,cz);g.rotation.x=.17;house.add(g);
-  const mw=1.13,md=2.24,gap=.03;const W=cols*(mw+gap),D=rows*(md+gap);
-  for(let i=0;i<cols;i++)for(let j=0;j<rows;j++){const m=box(mw,.04,md,modM,-W/2+mw/2+i*(mw+gap),0,-D/2+md/2+j*(md+gap),g,"pv");}
-  [-D/2+.4,D/2-.4,0].forEach(z=>box(W,.06,.06,rackM,0,-.06,z,g));
-  [-W/2+.3,W/2-.3].forEach(x=>{box(.06,.5,.06,rackM,x,-.32,D/2-.3,g);box(.06,.2,.06,rackM,x,-.2,-D/2+.3,g);});
+const pvGroups=[];
+function pvArray(cols,count,cx,frontZ){const mw=1.13,md=2.24,gap=.03,tilt=.17;const rows=Math.ceil(count/cols);
+  const W=cols*(mw+gap),D=rows*(md+gap);const g=new THREE.Group();g.position.set(cx,TOP+.28+Math.sin(tilt)*D/2,frontZ-D/2);g.rotation.x=tilt;house.add(g);pvGroups.push(g);
+  for(let k=0;k<count;k++){const i=k%cols,row=Math.floor(k/cols);box(mw,.04,md,modM,-W/2+mw/2+i*(mw+gap),0,D/2-md/2-row*(md+gap),g,"pv");}
+  for(let row=0;row<rows;row++){const zc=D/2-md/2-row*(md+gap);[zc-.6,zc+.6].forEach(z=>box(W,.06,.06,rackM,0,-.06,z,g));}
+  [-W/2+.3,W/2-.3].forEach(x=>{box(.06,.32,.06,rackM,x,-.22,D/2-.3,g);box(.06,.32,.06,rackM,x,-.22,-D/2+.3,g);});
   return g;}
-pvArray(6,2,-2.95,-.5);pvArray(5,2,3.75,-.3);
+let nA=0,nB=0,NMOD=0;
+function buildPv(n){pvGroups.splice(0).forEach(g=>{house.remove(g);g.traverse(o=>{if(o.geometry)o.geometry.dispose();});});
+  for(let i=pickables.length-1;i>=0;i--)if(pickables[i].userData.hs==="pv"&&!pickables[i].parent.parent)pickables.splice(i,1);
+  const vis=Math.min(n,33);nA=Math.min(18,Math.ceil(vis*6/11));nB=Math.min(15,vis-nA);
+  if(nA)pvArray(6,nA,-2.95,1.95);if(nB)pvArray(5,nB,3.75,1.95);
+  if(flows.pvB){flows.pvB.cable.visible=nB>0;}}
 
 /* ---------- Equipos en fachada ---------- */
 const whiteM=std(0xf7f8fa,{roughness:.5});
 const greyM=std(0xb9bec6,{roughness:.55,metalness:.2});
 // Batería LFP
-box(.75,1.5,.4,whiteM,-6.1,.81,5.2,null,"batt");
-box(.04,1.2,.02,std(0x12a6e6,{emissive:0x12a6e6,emissiveIntensity:.8}),-5.78,.85,5.41);
-const scrBatt=screen(.5,.22,200,88,-6.15,1.3,5.405);
+const battParts=[box(.75,1.5,.4,whiteM,-6.1,.81,5.2,null,"batt")];
+battParts.push(box(.04,1.2,.02,std(0x12a6e6,{emissive:0x12a6e6,emissiveIntensity:.8}),-5.78,.85,5.41));
+const scrBatt=screen(.5,.22,200,88,-6.15,1.3,5.405);battParts.push(scrBatt.mesh);
 // Inversor híbrido
 box(.62,.85,.24,whiteM,-4.6,1.75,5.12,null,"inv");
 [-4.95,-4.25].forEach(x=>box(.06,.7,.2,greyM,x,1.75,5.1));
@@ -435,23 +507,58 @@ new Flow("m2inv",[[-3.25,1.56,Z],[-3.25,1.45,Z],[-4.29,1.45,Z]],COL.ongrid);
 new Flow("invats",[[-4.45,2.175,Z],[-4.45,2.66,Z],[-1.85,2.66,Z],[-1.85,2.225,Z]],COL.ongrid);
 new Flow("atsload",[[-1.725,1.8,Z],[0,1.8,Z]],COL.ongrid);
 new Flow("dist",[[.6,1.9,Z],[.9,1.9,Z],[.9,3.85,Z],[6.7,3.85,Z],[6.7,.98,Z],[6.7,.98,5.42],[3.7,.98,5.42]],COL.ongrid);
-new Flow("pvA",[[-2.95,4.72,1.75],[-2.95,4.6,4.4],[-4.7,4.6,4.4],[-4.7,5.25,4.4],[-4.7,5.25,Z],[-4.7,2.175,Z]],COL.offgrid);
-new Flow("pvB",[[3.75,4.72,1.95],[3.75,4.62,4.25],[-4.84,4.62,4.25],[-4.84,5.32,4.25],[-4.84,5.32,Z+.05],[-4.84,2.175,Z+.05]],COL.offgrid);
+new Flow("pvA",[[-2.95,4.62,1.95],[-2.95,4.6,4.4],[-4.7,4.6,4.4],[-4.7,5.25,4.4],[-4.7,5.25,Z],[-4.7,2.175,Z]],COL.offgrid);
+new Flow("pvB",[[3.75,4.62,1.95],[3.75,4.62,4.25],[-4.84,4.62,4.25],[-4.84,5.32,4.25],[-4.84,5.32,Z+.05],[-4.84,2.175,Z+.05]],COL.offgrid);
 new Flow("batt",[[-5.9,1.56,5.2],[-5.9,1.75,Z],[-4.91,1.75,Z]],COL.offgrid);
 
-/* ---------- Modelo energético ---------- */
-const PV_KWP=12.1,BAT_KWH=15,BAT_KW=5,INV_KW=10;
-const S={hour:10,playing:!reduceMotion,soc:.6,gridOK:true,invOK:true,eFv:0,eImp:0,eExp:0,r:null};
+/* ---------- Modelo energético (configurable) ---------- */
+const PANEL_WP=550,PR=.8,INV_SIZES=[3,5,6,8,10,12,15,20,25,30];
+const DEFAULTS={kwp:6.6,bat:10,month:450,hsp:4.5,tarifa:900};
+const CFG=Object.assign({},DEFAULTS);
+let PV_KWP=6.6,BAT_KWH=10,BAT_KW=5,INV_KW=8,pvScale=1,loadScale=1,PEAK_LOAD=0,DAY=null;
+const S={hour:10,playing:false,soc:.6,gridOK:true,invOK:true,eFv:0,eImp:0,eExp:0,r:null};
 const gauss=(x,m,s)=>Math.exp(-((x-m)**2)/(2*s*s));
-function pvAt(h){const s=Math.sin(Math.PI*(h-6)/12);if(s<=0)return 0;return Math.min(INV_KW,PV_KWP*.82*Math.pow(s,1.25)*(1-.05*Math.max(0,Math.sin(h*9.7))));}
-function loadAt(h){return .55+1.0*gauss(h,7,.8)+1.5*gauss(h,13.5,2.2)+2.3*gauss(h,19.6,1.5)+.6*gauss(h,22.3,.9);}
-function compute(h){const L=loadAt(h),P=pvAt(h);const r={pvAvail:P,load:L,pv:0,batt:0,grid:0,supplied:L,mode:"on"};
-  if(!S.invOK){if(S.gridOK){r.grid=L;r.mode="bypass";}else{r.supplied=0;r.mode="black";}return r;}
-  const socMin=S.gridOK?.2:.1;const net=P-L;r.pv=P;
-  if(net>=0){const ch=S.soc<.995?Math.min(net,BAT_KW):0;r.batt=-ch;const rest=net-ch;if(S.gridOK)r.grid=-rest;else r.pv=P-rest;}
-  else{const need=-net;const d=S.soc>socMin?Math.min(need,BAT_KW):0;r.batt=d;const rem=need-d;
-    if(S.gridOK)r.grid=rem;else if(rem>.01){if(P<.05&&d===0){r.supplied=0;r.pv=0;r.batt=0;r.mode="black";return r;}r.supplied=P+d;r.mode="shed";}}
-  if(!S.gridOK&&r.mode==="on")r.mode="island";return r;}
+const shapePv=h=>{const s=Math.sin(Math.PI*(h-6)/12);return s>0?s*s:0;};
+const shapeLoad=h=>.55+1.0*gauss(h,7,.8)+1.5*gauss(h,13.5,2.2)+2.3*gauss(h,19.6,1.5)+.6*gauss(h,22.3,.9);
+const integ=f=>{let a=0;for(let i=0;i<2400;i++)a+=f((i+.5)/100)*.01;return a;};
+const PV_INT=integ(shapePv),LOAD_INT=integ(shapeLoad);
+let LOAD_PEAK_SHAPE=0;for(let i=0;i<=240;i++)LOAD_PEAK_SHAPE=Math.max(LOAD_PEAK_SHAPE,shapeLoad(i/10));
+function pvAt(h){return Math.min(INV_KW,pvScale*shapePv(h));}
+function loadAt(h){return loadScale*shapeLoad(h);}
+function derive(c){const daily=c.month/30,peak=LOAD_PEAK_SHAPE*daily/LOAD_INT;const need=Math.max(c.kwp/1.3,peak*1.15);
+  const inv=INV_SIZES.find(x=>x>=need)||30;return{daily,peak,inv,n:Math.max(1,Math.round(c.kwp*1000/PANEL_WP)),
+  batKw:c.bat>0?Math.min(inv,Math.max(2.5,c.bat*.5)):0,pvDay:c.kwp*c.hsp*PR};}
+function compute(h,st){const L=loadAt(h),P=pvAt(h);const r={pvAvail:P,load:L,pv:0,batt:0,grid:0,supplied:L,mode:"on"};
+  if(!st.invOK){if(st.gridOK){r.grid=L;r.mode="bypass";}else{r.supplied=0;r.mode="black";}return r;}
+  const hasB=BAT_KWH>0,socMin=st.gridOK?.2:.1;const net=P-L;r.pv=P;
+  if(net>=0){const ch=hasB&&st.soc<.995?Math.min(net,BAT_KW):0;r.batt=-ch;const rest=net-ch;if(st.gridOK)r.grid=-rest;else r.pv=P-rest;}
+  else{const need=-net;const d=hasB&&st.soc>socMin?Math.min(need,BAT_KW):0;r.batt=d;const rem=need-d;
+    if(st.gridOK)r.grid=rem;else if(rem>.01){if(P<.05&&d===0){r.supplied=0;r.pv=0;r.batt=0;r.mode="black";return r;}r.supplied=P+d;r.mode="shed";}}
+  if(!st.gridOK&&r.mode==="on")r.mode="island";return r;}
+const DT=.05,STEPS=480;
+function simulateDay(){let soc=.5;const rows=[];
+  for(let d=0;d<4;d++)for(let i=0;i<STEPS;i++){const h=i*DT;const r=compute(h,{soc,gridOK:true,invOK:true});
+    if(d===3)rows.push({h,pv:r.pv,load:r.load,grid:r.grid,batt:r.batt,soc});
+    if(BAT_KWH>0)soc=Math.min(1,Math.max(.05,soc-r.batt*DT/BAT_KWH));}
+  const t={pv:0,load:0,imp:0,exp:0,nightLoad:0,nightH:0,emptyAt:null};
+  rows.forEach(r=>{t.pv+=r.pv*DT;t.load+=r.load*DT;if(r.grid>0)t.imp+=r.grid*DT;else t.exp-=r.grid*DT;
+    if(r.h>=18||r.h<6){t.nightLoad+=r.load*DT;t.nightH+=DT;}
+    if(BAT_KWH>0&&t.emptyAt===null&&r.h>=16&&r.soc<=.205&&r.grid>.05)t.emptyAt=r.h;});
+  if(BAT_KWH>0&&t.emptyAt===null){for(const r of rows){if(r.h<9&&r.soc<=.205&&r.grid>.05){t.emptyAt=r.h;break;}}}
+  t.maxSoc=Math.max(...rows.map(r=>r.soc));t.rows=rows;return t;}
+const rowAt=h=>DAY.rows[Math.min(STEPS-1,Math.max(0,Math.floor(h/DT)))];
+function syncToDay(){S.soc=BAT_KWH>0?rowAt(S.hour).soc:0;S.eFv=S.eImp=S.eExp=0;
+  for(const r of DAY.rows){if(r.h>=S.hour)break;S.eFv+=r.pv*DT;if(r.grid>0)S.eImp+=r.grid*DT;else S.eExp-=r.grid*DT;}}
+function applyCfg(c,startHour){Object.assign(CFG,c);const d=derive(CFG);
+  PV_KWP=CFG.kwp;BAT_KWH=CFG.bat;BAT_KW=d.batKw;INV_KW=d.inv;NMOD=d.n;PEAK_LOAD=d.peak;
+  pvScale=CFG.kwp*CFG.hsp*PR/PV_INT;loadScale=d.daily/LOAD_INT;
+  buildPv(NMOD);const hasB=BAT_KWH>0;battParts.forEach(m=>m.visible=hasB);flows.batt.cable.visible=hasB;HS.batt.hidden=!hasB;
+  DAY=simulateDay();if(startHour!=null)S.hour=startHour;syncToDay();renderBalance();
+  $("#cfgSum").textContent=`${nf(PV_KWP,2)} kWp · ${BAT_KWH>0?nf(BAT_KWH,1)+" kWh":"sin baterías"} · ${nf(CFG.month,0)} kWh/mes`;
+  $("#vPvSub").textContent=`${nf(PV_KWP,2)} kWp`;$("#lgSoc").hidden=!hasB;}
+const nf=(v,d)=>Number(v).toLocaleString("es-CO",{maximumFractionDigits:d,minimumFractionDigits:0});
+const pct=v=>Math.round(Math.max(0,Math.min(1,v))*100)+" %";
+const cop=v=>"$"+Math.round(v/1000).toLocaleString("es-CO")+" mil";
 
 /* ---------- Tiempo, cielo ---------- */
 const cNight=new THREE.Color(0x0a1430),cDusk=new THREE.Color(0xf09a6a),cDay=new THREE.Color(0x8fc4f2),cSky=new THREE.Color();
@@ -483,13 +590,13 @@ function drawScreens(r){const fmt=v=>Math.abs(v).toFixed(1);
 /* ---------- Puntos de interés ---------- */
 const HS={
   pv:{name:"Módulos FV",c:"var(--offgrid)",kick:"Generación · lado DC (off-grid)",anchor:[.4,6.3,0],tgt:[.4,4.8,.2],cam:[8,13.5,15],
-    title:"Módulos fotovoltaicos",body:"22 módulos de 550 Wp (12,1 kWp) en dos arreglos sobre la cubierta metálica. Convierten la radiación solar en corriente continua que baja por la fachada hasta los MPPT del inversor. Su producción sigue la curva del sol: cero de noche y máxima cerca del mediodía.",
+    title:"Módulos fotovoltaicos",body:()=>`${NMOD} módulos de 550 Wp (${nf(PV_KWP,2)} kWp) sobre la cubierta metálica${NMOD>33?" (la escena muestra 33)":""}. Con ${nf(CFG.hsp,1)} horas sol pico producen unos ${nf(DAY.pv,1)} kWh en un día típico. Convierten la radiación solar en corriente continua que baja por la fachada hasta los MPPT del inversor. Su producción sigue la curva del sol: cero de noche y máxima cerca del mediodía.`,
     live:r=>[`Producción ${r.pv.toFixed(2)} kW`,`Disponible ${r.pvAvail.toFixed(2)} kW`,r.pvAvail-r.pv>.05?"Limitada: no hay a dónde enviar el excedente":`Hoy ${S.eFv.toFixed(1)} kWh`]},
   inv:{name:"Inversor",c:"var(--offgrid)",kick:"Corazón del sistema",anchor:[-4.6,2.55,5.2],tgt:[-4.4,1.8,5.1],cam:[-2.3,3.0,10.6],
-    title:"Inversor híbrido 10 kW",body:"En la conexión en serie toda la energía de la casa pasa por aquí. Hace el seguimiento MPPT de los módulos, carga y descarga las baterías, se sincroniza con la red por su puerto GRID y entrega la energía regulada por su puerto LOAD. Si la red cae, abre su relé interno y forma la isla en menos de 10 ms, como una UPS.",
+    title:()=>`Inversor híbrido ${INV_KW} kW`,body:"En la conexión en serie toda la energía de la casa pasa por aquí. Hace el seguimiento MPPT de los módulos, carga y descarga las baterías, se sincroniza con la red por su puerto GRID y entrega la energía regulada por su puerto LOAD. Si la red cae, abre su relé interno y forma la isla en menos de 10 ms, como una UPS.",
     live:r=>[S.invOK?`Estado: ${modeName(r)}`:"Fuera de servicio",`Salida ${(S.invOK?r.supplied:0).toFixed(2)} kW`,`Carga ${Math.round((S.invOK?r.supplied:0)/INV_KW*100)} % de la nominal`]},
   batt:{name:"Baterías",c:"var(--offgrid)",kick:"Almacenamiento · off-grid",anchor:[-6.1,1.95,5.3],tgt:[-5.8,1.0,5.2],cam:[-3.6,2.5,10.2],
-    title:"Banco de baterías LFP 15 kWh",body:"Litio ferrofosfato con BMS propio. Guarda el excedente solar del día y lo entrega en la noche o durante un corte. El inversor limita la descarga al 20 % de carga con red disponible y al 10 % en modo isla para proteger las celdas.",
+    title:()=>`Banco de baterías LFP ${nf(BAT_KWH,1)} kWh`,body:"Litio ferrofosfato con BMS propio. Guarda el excedente solar del día y lo entrega en la noche o durante un corte. El inversor limita la descarga al 20 % de carga con red disponible y al 10 % en modo isla para proteger las celdas.",
     live:r=>[`SOC ${Math.round(S.soc*100)} %`,r.batt>.03?`Descargando ${r.batt.toFixed(2)} kW`:r.batt<-.03?`Cargando ${(-r.batt).toFixed(2)} kW`:"En reposo",`Energía útil ≈ ${(BAT_KWH*Math.max(0,S.soc-(S.gridOK?.2:.1))).toFixed(1)} kWh`]},
   m2:{name:"Smart Meter",c:"var(--ongrid)",kick:"Medición del inversor",anchor:[-3.25,2.25,5.2],tgt:[-3.0,1.85,5.1],cam:[-1.7,2.7,9.0],
     title:"Smart Meter del inversor",body:"Mide la potencia que el inversor toma o entrega a la red. Con esa lectura el inversor aplica la prioridad de fuentes (sol, batería, red) y el control de exportación cero o limitada que exija el operador.",
@@ -504,7 +611,7 @@ const HS={
     title:"Red de distribución",body:"Acometida desde la red del operador. En el esquema en serie la red no llega directo a la casa: entra al inversor, que decide cuánto tomar. Si la red se cae, el inversor se desconecta (protección anti-isla) para no energizar la línea mientras trabajan los técnicos.",
     live:r=>[S.gridOK?"Disponible":"Caída",gridTxt(r.grid)]},
   user:{name:"Usuario",c:"var(--ongrid)",kick:"Cargas de la vivienda",anchor:[2.4,3.6,5.3],tgt:[2.5,2,5],cam:[6.5,4.5,15],
-    title:"Vivienda y tablero de cargas",body:"Iluminación, aires acondicionados y electrodomésticos. Reciben energía ya filtrada y regulada por el inversor. El consumo sube en la mañana, con los aires al mediodía y alcanza su pico en la noche.",
+    title:"Vivienda y tablero de cargas",body:()=>`Consumo promedio de ${nf(CFG.month,0)} kWh/mes (${nf(CFG.month/30,1)} kWh/día, pico cercano a ${nf(PEAK_LOAD,1)} kW). Iluminación, aires acondicionados y electrodomésticos. Reciben energía ya filtrada y regulada por el inversor. El consumo sube en la mañana, con los aires al mediodía y alcanza su pico en la noche.`,
     live:r=>[`Demanda ${r.load.toFixed(2)} kW`,r.supplied<r.load-.02?`Atendida ${r.supplied.toFixed(2)} kW`:"Suministro continuo",`Fuente: ${srcTxt(r)}`]}
 };
 function gridTxt(v){return !S.gridOK?"Red caída":v>.03?`Importando ${v.toFixed(2)} kW`:v<-.03?`Exportando ${(-v).toFixed(2)} kW`:"Sin intercambio";}
@@ -528,7 +635,7 @@ let sel=null,tour=-1;
 const TOUR=[{ov:true,kick:"Recorrido · inicio",title:"Así funciona un sistema en serie",body:"El sol, las baterías y la red se combinan dentro del inversor, y de ahí sale una sola alimentación hacia la casa. Las líneas amarillas son el lado de red (AC) y las azules el lado de generación y respaldo. Los puntos que viajan por los cables muestran hacia dónde fluye la energía y su tamaño indica la potencia."},
   {hs:"pv"},{hs:"inv"},{hs:"batt"},{hs:"m2"},{hs:"ats"},{hs:"m1"},{hs:"grid"},{hs:"user"},
   {ov:true,kick:"Recorrido · pruébalo",title:"Simula un día completo y las fallas",body:"Mueve la hora para ver cómo cambian las fuentes. Apaga la «Red» para ver el modo isla tipo UPS y apaga el «Inversor» para ver al ATS pasar a bypass. Si apagas los dos, la casa queda sin servicio: ese es el punto único de falla del esquema."}];
-function showInfo(o){$("#info").hidden=false;$("#iKick").textContent=o.kick;$("#iKick").style.setProperty("--c",o.c||"var(--muted)");$("#iTitle").textContent=o.title;$("#iBody").textContent=o.body;liveFill();}
+function showInfo(o){$("#info").hidden=false;$("#iKick").textContent=o.kick;$("#iKick").style.setProperty("--c",o.c||"var(--muted)");const val=x=>typeof x==="function"?x():x;$("#iTitle").textContent=val(o.title);$("#iBody").textContent=val(o.body);liveFill();}
 function select(k){sel=k;const h=HS[k];if(tour<0)$("#tourNav").hidden=true;showInfo(h);flyTo(h.cam,h.tgt);
   ORDER.forEach(j=>HS[j].el.classList.toggle("sel",j===k));}
 function clearSel(){sel=null;ORDER.forEach(j=>HS[j].el.classList.remove("sel"));}
@@ -550,7 +657,7 @@ hourIn.addEventListener("input",()=>{S.hour=+hourIn.value;});
 const playBtn=$("#play");
 function setPlay(p){S.playing=p;playBtn.textContent=p?"❚❚":"▶";playBtn.setAttribute("aria-label",p?"Pausar el ciclo de 24 horas":"Reproducir el ciclo de 24 horas");}
 playBtn.onclick=()=>setPlay(!S.playing);setPlay(S.playing);
-document.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{S.hour=+b.dataset.h;if(S.hour>=20&&S.soc<.55)S.soc=.8;setPlay(false);toastMsg(`Escena: ${b.textContent.toLowerCase()} (${hhmm(S.hour)}). Pulsa ▶ para que avance el reloj.`,"var(--ongrid)");});
+document.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{S.hour=+b.dataset.h;syncToDay();setPlay(false);toastMsg(`Escena: ${b.textContent.toLowerCase()} (${hhmm(S.hour)}). Pulsa ▶ para que avance el reloj.`,"var(--ongrid)");});
 const swGrid=$("#swGrid"),swInv=$("#swInv");
 function failMsg(){if(!S.gridOK&&!S.invOK)return["Sin red y con el inversor fuera de servicio la vivienda queda sin energía. Este es el punto único de falla del esquema en serie.","var(--bad)"];return null;}
 swGrid.onclick=()=>{S.gridOK=!S.gridOK;swGrid.setAttribute("aria-pressed",S.gridOK);const f=failMsg();
@@ -563,14 +670,14 @@ let toastT;function toastMsg(t,c){const el=$("#toast");el.textContent=t;el.style
 $("#prosBtn").onclick=()=>{$("#pros").hidden=false;$("#prosClose").focus();};
 $("#prosClose").onclick=()=>{$("#pros").hidden=true;};
 $("#pros").addEventListener("click",e=>{if(e.target.id==="pros")$("#pros").hidden=true;});
-addEventListener("keydown",e=>{if(e.key==="Escape"){$("#pros").hidden=true;}});
+addEventListener("keydown",e=>{if(e.key==="Escape"){$("#pros").hidden=true;if(started)$("#setup").hidden=true;}});
 
 // Selección por clic en la escena
 const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();let down=null;
 canvas.addEventListener("pointerdown",e=>{down=[e.clientX,e.clientY];});
 canvas.addEventListener("pointerup",e=>{if(!down)return;const dx=e.clientX-down[0],dy=e.clientY-down[1];down=null;if(dx*dx+dy*dy>25)return;
   const r=canvas.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,camera);
-  const hit=ray.intersectObjects(pickables,false)[0];if(hit){if(tour>=0){tour=-1;$("#tourNav").hidden=true;}select(hit.object.userData.hs);}});
+  const hit=ray.intersectObjects(pickables,false).find(x=>x.object.visible);if(hit){if(tour>=0){tour=-1;$("#tourNav").hidden=true;}select(hit.object.userData.hs);}});
 controls.addEventListener("start",()=>{fly=null;});
 
 /* ---------- UI de lecturas ---------- */
@@ -589,15 +696,15 @@ const HOURS_PER_SEC=1/3;let last=performance.now(),acc=0,tick=0;const pv3=new TH
 function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(canvas.width!==Math.floor(w*renderer.getPixelRatio())||canvas.height!==Math.floor(h*renderer.getPixelRatio())){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}}
 function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;resize();
   if(S.playing){S.hour+=dt*HOURS_PER_SEC;if(S.hour>=24){S.hour-=24;S.eFv=S.eImp=S.eExp=0;}}
-  const r=compute(S.hour);S.r=r;
+  const r=compute(S.hour,S);S.r=r;
   const dtH=S.playing?dt*HOURS_PER_SEC:0;
-  S.soc=Math.min(1,Math.max(.05,S.soc-r.batt*dtH/BAT_KWH));S.eFv+=r.pv*dtH;if(r.grid>0)S.eImp+=r.grid*dtH;else S.eExp+=-r.grid*dtH;
+  if(BAT_KWH>0)S.soc=Math.min(1,Math.max(.05,S.soc-r.batt*dtH/BAT_KWH));S.eFv+=r.pv*dtH;if(r.grid>0)S.eImp+=r.grid*dtH;else S.eExp+=-r.grid*dtH;
   // flujos
   const inv=S.invOK;
   flows.grid.v=r.grid;flows.m1ats.v=r.grid;
   flows.atsm2.v=inv?r.grid:0;flows.m2inv.v=inv?r.grid:0;flows.invats.v=inv?r.supplied:0;
   flows.atsload.v=r.supplied;flows.dist.v=r.supplied;
-  flows.pvA.v=r.pv*12/22;flows.pvB.v=r.pv*10/22;flows.batt.v=r.batt;
+  flows.pvA.v=r.pv*nA/Math.max(1,nA+nB);flows.pvB.v=r.pv*nB/Math.max(1,nA+nB);flows.batt.v=r.batt;
   const isl=r.mode==="island"||r.mode==="shed";
   ["invats","atsload","dist"].forEach(k=>flows[k].pm.color.setHex(isl?COL.offgrid:COL.ongrid));
   Object.values(flows).forEach(f=>f.update(dt));
@@ -611,15 +718,84 @@ function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;resize();
   // cámara
   if(fly){fly.t+=dt/fly.d;const k=ease(Math.min(1,fly.t));camera.position.lerpVectors(fly.p0,fly.p1,k);controls.target.lerpVectors(fly.t0,fly.t1,k);if(fly.t>=1)fly=null;}
   controls.update();
-  acc+=dt;if(acc>.2){acc=0;updateHud(r);drawScreens(r);}
+  acc+=dt;if(acc>.2){acc=0;updateHud(r);drawScreens(r);drawChart();}
   // etiquetas con anticolisión
   const W=canvas.clientWidth,H=canvas.clientHeight,boxes=[];const pri=sel?[sel,...ORDER.filter(k=>k!==sel)]:ORDER;
-  pri.forEach(k=>{const h=HS[k];pv3.copy(h.v).project(camera);let vis=pv3.z<1&&Math.abs(pv3.x)<1.1&&Math.abs(pv3.y)<1.1;
+  pri.forEach(k=>{const h=HS[k];if(h.hidden){h.el.classList.add("off");return;}pv3.copy(h.v).project(camera);let vis=pv3.z<1&&Math.abs(pv3.x)<1.1&&Math.abs(pv3.y)<1.1;
     const x=(pv3.x*.5+.5)*W,y=(-pv3.y*.5+.5)*H;const w=h.el.offsetWidth||80,hh=h.el.offsetHeight||22;const rb=[x-w/2,y-hh,x+w/2,y];
     if(vis)for(const b of boxes){if(rb[0]<b[2]+4&&rb[2]>b[0]-4&&rb[1]<b[3]+3&&rb[3]>b[1]-3){vis=false;break;}}
     if(vis)boxes.push(rb);h.el.classList.toggle("off",!vis);h.el.style.transform=`translate(${(x-w/2).toFixed(1)}px,${(y-hh).toFixed(1)}px)`;});
   renderer.render(scene,camera);requestAnimationFrame(frame);}
-updateHud(compute(S.hour));S.r=compute(S.hour);drawScreens(S.r);
+/* ---------- Balance diario ---------- */
+function niceStep(x){const p=Math.pow(10,Math.floor(Math.log10(x||1)));const n=x/p;return(n<=1?1:n<=2?2:n<=5?5:10)*p;}
+function renderBalance(){const t=DAY;const cover=t.load>0?1-t.imp/t.load:0,self=t.pv>0?(t.pv-t.exp)/t.pv:0;
+  const saving=(t.load-t.imp)*30*CFG.tarifa;
+  const K=[["Cobertura solar",pct(cover)+"<small>del consumo</small>"],["Autoconsumo FV",pct(self)+"<small>de lo generado</small>"],["Generación FV",nf(t.pv*30,0)+"<small>kWh/mes</small>"],
+    ["Compra a la red",nf(t.imp*30,0)+"<small>kWh/mes</small>"],["Excedentes",nf(t.exp*30,0)+"<small>kWh/mes</small>"],["Ahorro estimado",CFG.tarifa>0?cop(saving)+"<small>COP/mes</small>":"—"]];
+  $("#kpis").innerHTML=K.map(([a,b])=>`<div class="kpi"><span>${a}</span><b>${b}</b></div>`).join("");
+  const notes=[];const nightAvg=t.nightH?t.nightLoad/t.nightH:CFG.month/720;const hhmm2=h=>String(Math.floor(h)).padStart(2,"0")+":"+String(Math.floor((h%1)*60)).padStart(2,"0");
+  if(t.pv<t.load*.4)notes.push(`La generación solar cubre ${pct(t.pv/t.load)} del consumo diario. Para cubrirlo todo se necesitarían cerca de ${nf(t.load/(CFG.hsp*PR),1)} kWp.`);
+  else if(t.pv>t.load*1.25)notes.push(`El sistema genera el ${Math.round(t.pv/t.load*100)} % del consumo de la casa: hay energía de sobra para exportar o crecer en cargas.`);
+  if(BAT_KWH>0){notes.push(`Respaldo ante un corte nocturno con batería llena: cerca de ${nf(BAT_KWH*.9/nightAvg,1)} h con el consumo promedio de la noche (${nf(nightAvg,2)} kW).`);
+    if(t.emptyAt!==null)notes.push(`En un día típico la batería llega a su reserva (20 %) hacia las ${hhmm2(t.emptyAt)} y desde ahí la casa compra a la red.`);
+    else notes.push("La batería alcanza a cubrir toda la noche sin bajar de su reserva.");
+    if(t.maxSoc<.95)notes.push(`El sol no alcanza a llenar la batería (máximo ${pct(t.maxSoc)}): el banco está sobredimensionado para estos paneles.`);
+    else if(t.exp>t.pv*.25)notes.push(`Se exporta el ${pct(t.exp/t.pv)} de lo generado: más capacidad de batería subiría el autoconsumo.`);}
+  else notes.push("Sin baterías: el excedente del día se exporta y, si la red cae de noche, la casa queda sin energía.");
+  notes.push(`Inversor híbrido seleccionado: ${INV_KW} kW (pico de consumo ≈ ${nf(PEAK_LOAD,1)} kW, FV ${nf(PV_KWP,2)} kWp).`);
+  $("#notes").innerHTML=notes.map(n=>`<li>${n}</li>`).join("");drawChart();}
+function drawChart(){const cv=$("#chart");if(!DAY||!cv||cv.offsetParent===null)return;const dpr=Math.min(2,devicePixelRatio||1);
+  const W=cv.clientWidth,H=cv.clientHeight;if(!W||!H)return;if(cv.width!==Math.round(W*dpr)||cv.height!==Math.round(H*dpr)){cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);}
+  const g=cv.getContext("2d");g.setTransform(dpr,0,0,dpr,0,0);g.clearRect(0,0,W,H);
+  const cs=getComputedStyle(document.documentElement),col=n=>cs.getPropertyValue(n).trim();const hasB=BAT_KWH>0;
+  const L=34,Rm=hasB?34:8,T=8,B=18,pw=W-L-Rm,ph=H-T-B;const rows=DAY.rows;
+  let mx=0;rows.forEach(r=>{mx=Math.max(mx,r.pv,r.load);});const step=niceStep(mx/3);const top=Math.max(step,Math.ceil(mx*1.05/step)*step);
+  const X=h=>L+h/24*pw,Y=v=>T+ph-v/top*ph,Ys=s=>T+ph-s*ph;
+  g.font="500 10px 'IBM Plex Mono',ui-monospace,monospace";g.lineWidth=1;g.strokeStyle=col("--line");g.fillStyle=col("--muted");
+  g.textAlign="right";for(let v=0;v<=top+1e-9;v+=step){const y=Math.round(Y(v))+.5;g.beginPath();g.moveTo(L,y);g.lineTo(L+pw,y);g.stroke();g.fillText(nf(v,1),L-5,y+3);}
+  g.fillText("kW",L-5,T+ph+14);g.textAlign="center";[0,6,12,18,24].forEach(h=>{if(h>0)g.fillText(h+"h",X(h),H-4);});
+  if(hasB){g.textAlign="left";g.fillText("100%",L+pw+4,Ys(1)+3);g.fillText("50%",L+pw+4,Ys(.5)+3);}
+  const off=col("--offgrid"),on=col("--ongrid"),fg=col("--fg");
+  g.beginPath();g.moveTo(X(0),Y(0));rows.forEach(r=>g.lineTo(X(r.h),Y(r.pv)));g.lineTo(X(24),Y(0));g.closePath();g.globalAlpha=.2;g.fillStyle=off;g.fill();g.globalAlpha=1;
+  const line=(f,c,w,dash,sc)=>{g.beginPath();rows.forEach((r,i)=>{const y=sc?Ys(f(r)):Y(f(r));i?g.lineTo(X(r.h),y):g.moveTo(X(r.h),y);});g.strokeStyle=c;g.lineWidth=w;g.setLineDash(dash||[]);g.stroke();g.setLineDash([]);};
+  line(r=>r.pv,off,2);line(r=>r.load,on,2);if(hasB){g.globalAlpha=.6;line(r=>r.soc,fg,1.5,[4,3],true);g.globalAlpha=1;}
+  const x=X(S.hour),r=rowAt(S.hour);g.strokeStyle=fg;g.globalAlpha=.45;g.lineWidth=1;g.beginPath();g.moveTo(x,T);g.lineTo(x,T+ph);g.stroke();g.globalAlpha=1;
+  [[Y(r.pv),off],[Y(r.load),on]].concat(hasB?[[Ys(r.soc),fg]]:[]).forEach(([y,c])=>{g.beginPath();g.arc(x,y,3.5,0,Math.PI*2);g.fillStyle=c;g.fill();});}
+const balEl=$("#balance"),balBtn=$("#balBtn");
+function setBal(on){balEl.hidden=!on;balBtn.setAttribute("aria-pressed",on);if(on)drawChart();}
+balBtn.onclick=()=>setBal(balEl.hidden);
+if(innerWidth<=760)setBal(false);
+
+/* ---------- Formulario de datos ---------- */
+const F={kwp:$("#fKwp"),bat:$("#fBat"),month:$("#fMonth"),hsp:$("#fHsp"),tarifa:$("#fTar")};
+const LIM={kwp:[1,30,"Capacidad de paneles: entre 1 y 30 kWp"],bat:[0,60,"Baterías: entre 0 y 60 kWh (0 = sin baterías)"],month:[50,3000,"Consumo: entre 50 y 3.000 kWh/mes"],hsp:[3,6.5,"Horas sol pico: entre 3 y 6,5"],tarifa:[0,3000,"Tarifa: entre 0 y 3.000 COP/kWh"]};
+let started=false;
+function readForm(mark){const c={},bad=[];for(const k in F){const raw=String(F[k].value).trim().replace(",",".");let v=parseFloat(raw);
+  if(raw===""&&(k==="hsp"||k==="tarifa"))v=DEFAULTS[k];const ok=isFinite(v)&&v>=LIM[k][0]&&v<=LIM[k][1];
+  if(mark)F[k].closest(".f").classList.toggle("bad",!ok);if(ok)c[k]=v;else bad.push(k);}return{c,bad};}
+function hints(){const{c}=readForm(false);const full=Object.assign({},DEFAULTS,c);const d=derive(full);
+  $("#hKwp").textContent=c.kwp!=null?`≈ ${d.n} módulos de 550 Wp · ${nf(d.pvDay*30,0)} kWh/mes estimados`:LIM.kwp[2];
+  $("#hBat").textContent=c.bat==null?LIM.bat[2]:c.bat===0?"Sin baterías: no habrá respaldo ante cortes.":`≈ ${nf(c.bat*.8,1)} kWh útiles · descarga hasta ${nf(d.batKw,1)} kW`;
+  $("#hMonth").textContent=c.month!=null?`≈ ${nf(d.daily,1)} kWh/día · pico ≈ ${nf(d.peak,1)} kW`:LIM.month[2];
+  $("#derived").innerHTML=c.kwp!=null&&c.month!=null?[`Inversor sugerido ${d.inv} kW`,`FV cubre ≈ ${Math.round(d.pvDay/d.daily*100)} % del consumo`].map(t=>`<span>${t}</span>`).join(""):"";}
+function fillForm(c){for(const k in F)F[k].value=c[k];F.kwp.closest(".fields").querySelectorAll(".f").forEach(f=>f.classList.remove("bad"));$("#fErr").hidden=true;hints();}
+function openSetup(){fillForm(CFG);$("#setup").hidden=false;$("#setupClose").hidden=!started;setTimeout(()=>F.kwp.focus(),50);}
+Object.values(F).forEach(i=>i.addEventListener("input",()=>{hints();if(!$("#fErr").hidden)readForm(true);}));
+$("#fReset").onclick=()=>fillForm(DEFAULTS);
+$("#setupClose").onclick=()=>{$("#setup").hidden=true;};
+$("#setupBtn").onclick=openSetup;$("#cfgEdit").onclick=openSetup;
+$("#setupForm").addEventListener("submit",e=>{e.preventDefault();const{c,bad}=readForm(true);
+  if(bad.length){const el=$("#fErr");el.textContent="Revisa: "+bad.map(k=>LIM[k][2]).join(" · ");el.hidden=false;F[bad[0]].focus();return;}
+  try{localStorage.setItem("ssfv-serie-cfg",JSON.stringify(c));}catch(_){}
+  S.gridOK=S.invOK=true;swGrid.setAttribute("aria-pressed",true);swInv.setAttribute("aria-pressed",true);
+  applyCfg(c,6);started=true;$("#setup").hidden=true;setPlay(!reduceMotion);
+  toastMsg(`Simulación iniciada: ${nf(c.kwp,2)} kWp, ${c.bat>0?nf(c.bat,1)+" kWh de baterías":"sin baterías"} y ${nf(c.month,0)} kWh/mes. El día arranca a las 06:00.`,"var(--ok)");});
+
+let saved=null;try{saved=JSON.parse(localStorage.getItem("ssfv-serie-cfg")||"null");}catch(_){}
+const init=Object.assign({},DEFAULTS);if(saved)for(const k in DEFAULTS){const v=+saved[k];if(isFinite(v)&&v>=LIM[k][0]&&v<=LIM[k][1])init[k]=v;}
+applyCfg(init,10);setPlay(false);
+updateHud(compute(S.hour,S));S.r=compute(S.hour,S);drawScreens(S.r);
+openSetup();
 flyTo(OV.pos,OV.tgt,2.6);
 requestAnimationFrame(frame);
 })();
