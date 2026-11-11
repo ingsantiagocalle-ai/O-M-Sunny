@@ -1,0 +1,626 @@
+<title>Sistema Solar en Serie</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: escena 3D a pantalla completa; HUD en rejilla (marca + ficha a la izquierda, lecturas a la derecha, consola de mando abajo). */
+:root{
+  --bg:#e9eef6; --surface:rgba(255,255,255,.88); --surface-2:rgba(236,241,249,.95);
+  --fg:#14213d; --muted:#56627d; --line:rgba(20,33,61,.13);
+  --navy:#1c2b4f; --navy-fg:#f4f7ff;
+  --ongrid:#d99a00; --offgrid:#0a8fc9; --ok:#1d8f4e; --bad:#cc3d3d; --warn:#c06a00;
+  --font-ui:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-data:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#070d1c; --surface:rgba(13,21,41,.84); --surface-2:rgba(22,33,60,.92);
+  --fg:#e7edfb; --muted:#9caac8; --line:rgba(255,255,255,.12);
+  --navy:#1a2a52; --navy-fg:#f4f7ff;
+  --ongrid:#ffc21a; --offgrid:#38bdf8; --ok:#4ade80; --bad:#f87171; --warn:#fbbf24; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#070d1c; --surface:rgba(13,21,41,.84); --surface-2:rgba(22,33,60,.92);
+  --fg:#e7edfb; --muted:#9caac8; --line:rgba(255,255,255,.12);
+  --navy:#1a2a52; --navy-fg:#f4f7ff;
+  --ongrid:#ffc21a; --offgrid:#38bdf8; --ok:#4ade80; --bad:#f87171; --warn:#fbbf24; color-scheme:dark}
+html,body{height:100%}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-ui);font-size:14px;line-height:1.45}
+.app{position:fixed;inset:0;overflow:hidden;background:var(--bg)}
+#scene{position:absolute;inset:0;display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#scene:active{cursor:grabbing}
+
+/* Etiquetas 3D */
+#labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.tag3d{position:absolute;left:0;top:0;display:flex;align-items:center;gap:6px;padding:4px 9px 4px 6px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--line);color:var(--fg);font:600 12px/1 var(--font-ui);white-space:nowrap;
+  pointer-events:auto;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.18);transition:opacity .2s;will-change:transform}
+.tag3d i{width:9px;height:9px;border-radius:50%;background:var(--c,var(--ongrid));box-shadow:0 0 0 3px color-mix(in srgb,var(--c,var(--ongrid)) 30%,transparent)}
+.tag3d.sel{background:var(--navy);color:var(--navy-fg);border-color:transparent}
+.tag3d.off{opacity:0;pointer-events:none}
+.tag3d:focus-visible{outline:2px solid var(--offgrid);outline-offset:2px}
+
+/* HUD */
+.hud{position:absolute;inset:0;pointer-events:none;display:grid;gap:12px;
+  grid-template-columns:minmax(0,350px) 1fr minmax(0,300px);grid-template-rows:auto 1fr auto;
+  padding-block:calc(12px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hud>*{pointer-events:auto;min-width:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px rgba(5,12,30,.18);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+
+.brand{grid-column:1;grid-row:1;align-self:start;overflow:hidden}
+.brand-head{background:var(--navy);color:var(--navy-fg);padding:10px 14px;display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.brand-head h1{margin:0;font:700 18px/1.2 var(--font-ui);letter-spacing:.01em;text-wrap:balance}
+.brand-head span{font:italic 500 13px/1.2 var(--font-ui);opacity:.85}
+.brand-body{padding:9px 14px 11px;display:flex;flex-direction:column;gap:7px}
+.brand-body p{margin:0;color:var(--muted);font-size:12.5px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;font-weight:600}
+.legend span{display:flex;align-items:center;gap:6px}
+.legend i{width:22px;height:0;border-top:3px dashed var(--c)}
+
+.stats{grid-column:3;grid-row:1 / span 2;align-self:start;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.stats-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font:700 11.5px/1 var(--font-ui);letter-spacing:.06em;text-transform:uppercase;
+  background:color-mix(in srgb,var(--c) 18%,transparent);color:var(--c);border:1px solid color-mix(in srgb,var(--c) 45%,transparent)}
+.chip::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--c)}
+.clock{font:600 20px/1 var(--font-data);font-variant-numeric:tabular-nums}
+.metrics{display:grid;gap:8px}
+.m{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;padding:7px 9px;border-radius:9px;background:var(--surface-2)}
+.m b{width:4px;height:28px;border-radius:2px;background:var(--c)}
+.m .lbl{font-size:12px;color:var(--muted);line-height:1.2}
+.m .lbl strong{display:block;color:var(--fg);font-size:12.5px;font-weight:600}
+.m .val{font:600 16px/1 var(--font-data);font-variant-numeric:tabular-nums;text-align:right}
+.m .val small{font-size:11px;color:var(--muted);margin-left:2px}
+.soc{height:6px;border-radius:3px;background:var(--line);overflow:hidden;grid-column:1 / -1}
+.soc div{height:100%;background:var(--offgrid);transition:width .3s}
+.today{font-size:11.5px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;font-variant-numeric:tabular-nums}
+.today b{color:var(--fg);font-family:var(--font-data);font-weight:600}
+
+.info{grid-column:1;grid-row:2;align-self:end;padding:13px 15px;display:flex;flex-direction:column;gap:8px;max-height:min(52vh,460px);overflow:auto}
+.info-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.info .kicker{font:700 11px/1 var(--font-ui);letter-spacing:.09em;text-transform:uppercase;color:var(--c,var(--muted))}
+.info h2{margin:0;font:700 17px/1.25 var(--font-ui);text-wrap:balance}
+.info p{margin:0;font-size:13px;max-width:62ch}
+.live{display:flex;flex-wrap:wrap;gap:6px}
+.live span{font:600 12px/1 var(--font-data);padding:5px 8px;border-radius:6px;background:var(--surface-2);border:1px solid var(--line)}
+.info-nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.step{font:600 12px/1 var(--font-data);color:var(--muted);margin-right:auto}
+.x{background:none;border:0;color:var(--muted);font-size:18px;line-height:1;cursor:pointer;padding:2px 4px;border-radius:6px}
+
+.bar{grid-column:1 / -1;grid-row:3;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:10px 12px}
+.grp{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.grp-label{font:700 10.5px/1 var(--font-ui);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-right:2px}
+.time{flex:1 1 260px;display:flex;align-items:center;gap:10px;min-width:0}
+.time input{flex:1;min-width:0;accent-color:var(--ongrid)}
+.time output{font:600 14px/1 var(--font-data);font-variant-numeric:tabular-nums;min-width:44px}
+button.btn{font:600 12.5px/1 var(--font-ui);color:var(--fg);background:var(--surface-2);border:1px solid var(--line);border-radius:8px;padding:8px 11px;cursor:pointer;white-space:nowrap}
+button.btn:hover{border-color:color-mix(in srgb,var(--fg) 35%,transparent)}
+button.btn:focus-visible,.x:focus-visible,.time input:focus-visible{outline:2px solid var(--offgrid);outline-offset:2px}
+button.btn.primary{background:var(--navy);color:var(--navy-fg);border-color:transparent}
+button.btn.icon{width:36px;padding:8px 0;text-align:center;font-size:13px}
+button.sw{display:inline-flex;align-items:center;gap:7px}
+button.sw i{width:26px;height:15px;border-radius:999px;background:var(--ok);position:relative;transition:background .2s}
+button.sw i::after{content:"";position:absolute;top:2px;left:13px;width:11px;height:11px;border-radius:50%;background:#fff;transition:left .2s}
+button.sw[aria-pressed="false"] i{background:var(--bad)}
+button.sw[aria-pressed="false"] i::after{left:2px}
+.sep{width:1px;align-self:stretch;background:var(--line)}
+
+.toast{position:absolute;left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);max-width:min(560px,calc(100% - 32px));
+  padding:10px 14px;border-radius:10px;background:var(--navy);color:var(--navy-fg);font-size:13px;box-shadow:0 10px 30px rgba(0,0,0,.3);
+  pointer-events:none;transition:opacity .35s,transform .35s;z-index:5;border-left:4px solid var(--c,var(--ongrid))}
+.toast[data-hide]{opacity:0;transform:translate(-50%,-8px)}
+
+.pros{position:absolute;inset:0;display:grid;place-items:center;background:rgba(4,10,24,.45);z-index:6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px}
+.pros .panel{max-width:620px;width:100%;max-height:100%;overflow:auto;padding:0;background:var(--surface-2)}
+.pros header{background:var(--navy);color:var(--navy-fg);padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.pros header h2{margin:0;font:700 17px/1.2 var(--font-ui)}
+.pros header .x{color:var(--navy-fg)}
+.pros section{margin:14px 16px;padding:12px 14px;border-radius:10px;border:1px solid var(--line)}
+.pros section.good{border-color:color-mix(in srgb,var(--offgrid) 55%,transparent);background:color-mix(in srgb,var(--offgrid) 9%,transparent)}
+.pros section.bad{background:color-mix(in srgb,var(--muted) 10%,transparent)}
+.pros h3{margin:0 0 6px;font:700 15px/1.2 var(--font-ui)}
+.pros section.good h3{color:var(--offgrid)}
+.pros ul{margin:0;padding-left:18px;display:grid;gap:4px;font-size:13.5px}
+.pros p.note{margin:0 16px 16px;font-size:12.5px;color:var(--muted)}
+
+.fallback{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:24px;color:var(--fg)}
+
+@media (max-width:760px){
+  .hud{grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto 1fr auto auto;gap:8px}
+  .brand{grid-column:1;grid-row:1}
+  .brand-body p{display:none}
+  .brand-head h1{font-size:15px}
+  .stats{grid-column:1;grid-row:2;padding:8px 10px;gap:6px}
+  .metrics{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+  .m{grid-template-columns:1fr;padding:6px;gap:3px}
+  .m b{display:none}
+  .m .lbl{font-size:10.5px}.m .lbl strong{font-size:11px}
+  .m .lbl span{display:none}
+  .m .val{font-size:13px;text-align:left}
+  .today{display:none}
+  .clock{font-size:16px}
+  .info{grid-column:1;grid-row:4;max-height:34vh;padding:10px 12px}
+  .bar{grid-row:5;gap:8px;padding:8px}
+  .sep{display:none}
+  .time{flex-basis:100%}
+  .tag3d{font-size:10.5px;padding:3px 7px 3px 5px}
+}
+@media (prefers-reduced-motion: reduce){.tag3d,.toast,.soc div{transition:none}}
+</style>
+
+<div class="app">
+  <canvas id="scene" aria-label="Escena 3D de una vivienda con sistema solar híbrido conectado en serie"></canvas>
+  <div id="labels"></div>
+
+  <div class="hud">
+    <div class="brand panel">
+      <div class="brand-head"><h1>EN SERIE (In-Line)</h1><span>Deye · Livoltek · Solis</span></div>
+      <div class="brand-body">
+        <p>Toda la energía pasa por el inversor. Arrastra para girar, rueda o pellizco para acercar, toca un equipo para ver cómo trabaja.</p>
+        <div class="legend">
+          <span style="--c:var(--ongrid)"><i></i>On-grid · lado red (AC)</span>
+          <span style="--c:var(--offgrid)"><i></i>Off-grid · FV, baterías</span>
+        </div>
+      </div>
+    </div>
+
+    <aside class="stats panel" aria-live="polite">
+      <div class="stats-top"><span class="chip" id="modeChip" style="--c:var(--ok)">On-grid</span><span class="clock" id="clock">10:00</span></div>
+      <div class="metrics">
+        <div class="m" style="--c:var(--offgrid)"><b></b><div class="lbl"><strong>Solar FV</strong><span>12,1 kWp</span></div><div class="val" id="vPv">0.0<small>kW</small></div></div>
+        <div class="m" style="--c:var(--ongrid)"><b></b><div class="lbl"><strong>Vivienda</strong><span>consumo</span></div><div class="val" id="vLoad">0.0<small>kW</small></div></div>
+        <div class="m" style="--c:var(--offgrid)"><b></b><div class="lbl"><strong>Batería</strong><span id="vBattTxt">reposo</span></div><div class="val" id="vBatt">0.0<small>kW</small></div><div class="soc"><div id="socBar" style="width:60%"></div></div></div>
+        <div class="m" style="--c:var(--ongrid)"><b></b><div class="lbl"><strong>Red</strong><span id="vGridTxt">reposo</span></div><div class="val" id="vGrid">0.0<small>kW</small></div></div>
+      </div>
+      <div class="today"><span>FV hoy <b id="eFv">0.0</b> kWh</span><span>Red <b id="eImp">0.0</b> / <b id="eExp">0.0</b> kWh</span></div>
+    </aside>
+
+    <section class="info panel" id="info" hidden>
+      <div class="info-top"><span class="kicker" id="iKick">Equipo</span><button class="x" id="iClose" aria-label="Cerrar ficha">×</button></div>
+      <h2 id="iTitle"></h2>
+      <p id="iBody"></p>
+      <div class="live" id="iLive"></div>
+      <div class="info-nav" id="tourNav" hidden>
+        <span class="step" id="tourStep">1 / 10</span>
+        <button class="btn" id="tPrev">Anterior</button>
+        <button class="btn primary" id="tNext">Siguiente</button>
+      </div>
+    </section>
+
+    <div class="bar panel">
+      <div class="time">
+        <button class="btn icon" id="play" aria-label="Pausar el ciclo de 24 horas">❚❚</button>
+        <input type="range" id="hour" min="0" max="23.99" step="0.05" value="10" aria-label="Hora del día">
+        <output id="hourOut" for="hour">10:00</output>
+      </div>
+      <div class="grp"><span class="grp-label">Escena</span>
+        <button class="btn" data-h="12">Mediodía</button>
+        <button class="btn" data-h="17.6">Atardecer</button>
+        <button class="btn" data-h="21">Noche</button>
+      </div>
+      <span class="sep"></span>
+      <div class="grp"><span class="grp-label">Simular</span>
+        <button class="btn sw" id="swGrid" aria-pressed="true"><i></i>Red</button>
+        <button class="btn sw" id="swInv" aria-pressed="true"><i></i>Inversor</button>
+      </div>
+      <span class="sep"></span>
+      <div class="grp">
+        <button class="btn primary" id="tourBtn">Recorrido guiado</button>
+        <button class="btn" id="prosBtn">Ventajas y desventajas</button>
+        <button class="btn" id="homeBtn">Vista general</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" data-hide></div>
+
+  <div class="pros" id="pros" hidden>
+    <div class="panel" role="dialog" aria-modal="true" aria-labelledby="prosTitle">
+      <header><h2 id="prosTitle">Conexión en serie (In-Line)</h2><button class="x" id="prosClose" aria-label="Cerrar">×</button></header>
+      <section class="good"><h3>✓ Ventajas</h3><ul>
+        <li>Protección adicional: el inversor regula y filtra toda la energía.</li>
+        <li>Respaldo integrado tipo UPS: conmutación a isla sin equipos externos.</li>
+        <li>Control isla y cambio On/Off grid centralizados en un solo equipo.</li>
+        <li>Control total del suministro: monitoreo, prioridad de fuentes e integración con la gestión energética.</li>
+      </ul></section>
+      <section class="bad"><h3>✕ Desventajas</h3><ul>
+        <li>Punto único de falla: si el inversor sale, se interrumpe el servicio.</li>
+        <li>Mayor desgaste: el equipo procesa el 100 % de la energía.</li>
+      </ul></section>
+      <p class="note">El ATS mitiga el punto único de falla: si el inversor se apaga, conmuta a bypass y la red alimenta la vivienda directamente. Pruébalo con el interruptor «Inversor».</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s);
+const canvas=$("#scene");
+const reduceMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+if(!window.THREE||!THREE.OrbitControls){fail("No se pudo cargar el motor 3D. Revisa tu conexión y recarga la página.");return;}
+let renderer;
+try{renderer=new THREE.WebGLRenderer({canvas,antialias:true});}catch(e){fail("Tu navegador no tiene WebGL activo, necesario para la experiencia 3D.");return;}
+function fail(msg){const d=document.createElement("div");d.className="fallback";d.textContent=msg;document.querySelector(".app").appendChild(d);}
+
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
+
+const scene=new THREE.Scene();
+scene.fog=new THREE.Fog(0x9cc8f0,70,190);
+const camera=new THREE.PerspectiveCamera(45,1,0.1,600);
+const controls=new THREE.OrbitControls(camera,canvas);
+controls.enableDamping=true;controls.dampingFactor=0.08;
+controls.maxPolarAngle=Math.PI*0.49;controls.minDistance=3;controls.maxDistance=80;
+
+const OV={pos:new THREE.Vector3(13,13,27),tgt:new THREE.Vector3(-4,2.5,3)};
+camera.position.set(40,34,60);controls.target.copy(OV.tgt);
+
+/* ---------- Colores ---------- */
+const COL={ongrid:0xf5b301,offgrid:0x12a6e6,bad:0xff4d4d};
+
+/* ---------- Texturas de lienzo ---------- */
+function canvasTex(w,h,draw,rep){const c=document.createElement("canvas");c.width=w;c.height=h;const g=c.getContext("2d");draw(g,w,h);
+  const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=4;if(rep){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep[0],rep[1]);}return t;}
+const dotTex=(function(){const c=document.createElement("canvas");c.width=c.height=64;const g=c.getContext("2d");
+  const gr=g.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,"rgba(255,255,255,1)");gr.addColorStop(.25,"rgba(255,255,255,.9)");gr.addColorStop(.6,"rgba(255,255,255,.25)");gr.addColorStop(1,"rgba(255,255,255,0)");
+  g.fillStyle=gr;g.fillRect(0,0,64,64);return new THREE.CanvasTexture(c);})();
+const cellTex=canvasTex(128,256,(g,w,h)=>{g.fillStyle="#0c1730";g.fillRect(0,0,w,h);
+  const cw=w/6,ch=h/12;for(let i=0;i<6;i++)for(let j=0;j<12;j++){g.fillStyle=(i+j)%2?"#13244a":"#112145";g.fillRect(i*cw+1.5,j*ch+1.5,cw-3,ch-3);}
+  g.strokeStyle="rgba(150,175,215,.35)";g.lineWidth=1;for(let j=1;j<12;j++){g.beginPath();g.moveTo(0,j*ch);g.lineTo(w,j*ch);g.stroke();}
+  g.strokeStyle="#cfd6e0";g.lineWidth=5;g.strokeRect(2.5,2.5,w-5,h-5);});
+const roofTex=canvasTex(64,64,(g,w,h)=>{for(let x=0;x<w;x++){const s=0.5+0.5*Math.sin(x/w*Math.PI*8);const v=Math.round(150+s*55);g.fillStyle=`rgb(${v},${v+2},${v+6})`;g.fillRect(x,0,1,h);}},[10,1]);
+const grassTex=canvasTex(256,256,(g,w,h)=>{g.fillStyle="#4f8a35";g.fillRect(0,0,w,h);for(let i=0;i<5000;i++){const s=Math.random();g.fillStyle=`rgba(${s>.5?120:40},${s>.5?170:100},${s>.5?70:30},.25)`;g.fillRect(Math.random()*w,Math.random()*h,2,2);}},[40,40]);
+const woodTex=canvasTex(128,128,(g,w,h)=>{g.fillStyle="#5b4636";g.fillRect(0,0,w,h);for(let y=0;y<h;y+=8){g.fillStyle=y%16?"#6d5642":"#4a392c";g.fillRect(0,y,w,5);}});
+
+/* ---------- Ayudas ---------- */
+const std=(color,o)=>new THREE.MeshStandardMaterial(Object.assign({color,roughness:.85,metalness:0},o||{}));
+const pickables=[];
+function box(w,h,d,m,x,y,z,parent,hs){const me=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);me.position.set(x,y,z);me.castShadow=true;me.receiveShadow=true;(parent||scene).add(me);if(hs){me.userData.hs=hs;pickables.push(me);}return me;}
+function screen(w,h,pw,ph,x,y,z,parent,rotY){const c=document.createElement("canvas");c.width=pw;c.height=ph;const g=c.getContext("2d");const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;
+  const me=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshBasicMaterial({map:t,toneMapped:false}));me.position.set(x,y,z);if(rotY)me.rotation.y=rotY;(parent||scene).add(me);return{g,t,w:pw,h:ph,mesh:me};}
+
+/* ---------- Luces y cielo ---------- */
+const hemi=new THREE.HemisphereLight(0xcfe6ff,0x4a6a3a,.6);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xfff1d6,1.6);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);
+Object.assign(sun.shadow.camera,{left:-32,right:32,top:32,bottom:-32,near:1,far:200});sun.shadow.bias=-0.0006;scene.add(sun);scene.add(sun.target);
+const moon=new THREE.DirectionalLight(0x8fa8ff,.0);moon.position.set(20,40,30);scene.add(moon);
+const sunBall=new THREE.Mesh(new THREE.SphereGeometry(4,24,16),new THREE.MeshBasicMaterial({color:0xfff2b0,fog:false,toneMapped:false}));scene.add(sunBall);
+const stars=(function(){const n=700,p=new Float32Array(n*3);for(let i=0;i<n;i++){const th=Math.random()*Math.PI*2,ph=Math.random()*Math.PI*.45;const r=260;p[i*3]=r*Math.cos(th)*Math.sin(Math.PI/2-ph);p[i*3+1]=r*Math.sin(ph)+10;p[i*3+2]=r*Math.sin(th)*Math.sin(Math.PI/2-ph);}
+  const geo=new THREE.BufferGeometry();geo.setAttribute("position",new THREE.BufferAttribute(p,3));
+  const m=new THREE.PointsMaterial({color:0xffffff,size:1.4,sizeAttenuation:false,transparent:true,opacity:0,fog:false,depthWrite:false});const s=new THREE.Points(geo,m);scene.add(s);return s;})();
+
+/* ---------- Terreno ---------- */
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(400,400),std(0xffffff,{map:grassTex}));ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
+const concrete=std(0xd8d5ce,{roughness:.95});
+box(24,.06,15.5,concrete,-2.5,.03,1.5);
+box(1.6,.07,8,concrete,-12,.035,13.5);
+const hedgeM=std(0x2f6b2a);box(1.2,1.4,14,hedgeM,9.6,.7,1);box(14,1.2,1,hedgeM,-21,.6,-7);
+
+/* ---------- Vivienda ---------- */
+const wallM=std(0xf3f3ef,{roughness:.92});
+const house=new THREE.Group();scene.add(house);
+box(14,4.5,10,wallM,0,2.25,0,house,"user");
+const PH=.6,PT=.25,TOP=4.5;
+box(14,PH,PT,wallM,0,TOP+PH/2,5-PT/2,house);box(14,PH,PT,wallM,0,TOP+PH/2,-5+PT/2,house);
+box(PT,PH,10,wallM,-7+PT/2,TOP+PH/2,0,house);box(PT,PH,10,wallM,7-PT/2,TOP+PH/2,0,house);
+const roof=new THREE.Mesh(new THREE.PlaneGeometry(13.5,9.5),std(0xffffff,{map:roofTex,metalness:.35,roughness:.55}));roof.rotation.x=-Math.PI/2;roof.position.set(0,TOP+.02,0);roof.receiveShadow=true;house.add(roof);
+// cumbrera central como en la foto
+box(.35,.12,9.5,std(0xc9ccd2,{metalness:.4,roughness:.5}),.55,TOP+.08,0,house);
+// anexo bajo
+box(5,3.2,8,wallM,-9.5,1.6,-.5,house);
+box(5,.45,PT,wallM,-9.5,3.42,3.5-PT/2,house);box(PT,.45,8,wallM,-12+PT/2,3.42,-.5,house);
+const annexRoof=new THREE.Mesh(new THREE.PlaneGeometry(4.8,7.8),std(0xffffff,{map:roofTex,metalness:.35,roughness:.55}));annexRoof.rotation.x=-Math.PI/2;annexRoof.position.set(-9.55,3.22,-.5);annexRoof.receiveShadow=true;house.add(annexRoof);
+// ventanal, puerta de madera y vano
+const glassM=std(0x223349,{metalness:.55,roughness:.18,emissive:0xffb35c,emissiveIntensity:0});
+const frameM=std(0x3b3f46,{metalness:.5,roughness:.4});
+box(3.1,2.6,.08,frameM,4.9,2.05,5.0,house);box(2.9,2.4,.06,glassM,4.9,2.05,5.05,house);
+box(.06,2.4,.08,frameM,4.9,2.05,5.08,house);
+box(2.0,3.1,.12,std(0xffffff,{map:woodTex}),2.35,1.6,5.02,house);
+box(2.6,2.2,.08,glassM,-9.5,1.5,3.55,house);
+box(.08,2.6,7,glassM,-12.03,1.5,-.5,house);
+// aires acondicionados
+const acM=std(0xe7e8ea,{roughness:.6});
+[4.15,5.55].forEach(x=>{box(1.0,.72,.42,acM,x,.48,5.24,house);const f=new THREE.Mesh(new THREE.CylinderGeometry(.24,.24,.02,24),std(0x50555c));f.rotation.x=Math.PI/2;f.position.set(x+.18,.48,5.46);house.add(f);});
+// antena
+const dish=new THREE.Mesh(new THREE.SphereGeometry(.35,16,8,0,Math.PI*2,0,Math.PI/2.6),std(0xe58cc0,{side:THREE.DoubleSide}));dish.rotation.x=-1.1;dish.position.set(.3,6.0,-2.6);house.add(dish);
+box(.05,1,.05,frameM,.3,5.0,-2.8,house);
+// ventanas en loseta del vecino (contexto)
+const nb=new THREE.Group();scene.add(nb);box(12,7,9,wallM,6,3.5,-17,nb);box(12.4,.3,9.4,std(0xbfc3c9),6,7.15,-17,nb);
+box(3,2.2,.08,glassM,3,4.5,-12.45,nb);box(1.4,4,.08,glassM,9,2.4,-12.45,nb);
+
+/* ---------- Módulos fotovoltaicos ---------- */
+const modM=std(0xffffff,{map:cellTex,metalness:.35,roughness:.28,emissive:0x0b2d66,emissiveIntensity:0});
+const rackM=std(0x9aa1ab,{metalness:.6,roughness:.4});
+function pvArray(cols,rows,cx,cz){const g=new THREE.Group();g.position.set(cx,TOP+.42,cz);g.rotation.x=.17;house.add(g);
+  const mw=1.13,md=2.24,gap=.03;const W=cols*(mw+gap),D=rows*(md+gap);
+  for(let i=0;i<cols;i++)for(let j=0;j<rows;j++){const m=box(mw,.04,md,modM,-W/2+mw/2+i*(mw+gap),0,-D/2+md/2+j*(md+gap),g,"pv");}
+  [-D/2+.4,D/2-.4,0].forEach(z=>box(W,.06,.06,rackM,0,-.06,z,g));
+  [-W/2+.3,W/2-.3].forEach(x=>{box(.06,.5,.06,rackM,x,-.32,D/2-.3,g);box(.06,.2,.06,rackM,x,-.2,-D/2+.3,g);});
+  return g;}
+pvArray(6,2,-2.95,-.5);pvArray(5,2,3.75,-.3);
+
+/* ---------- Equipos en fachada ---------- */
+const whiteM=std(0xf7f8fa,{roughness:.5});
+const greyM=std(0xb9bec6,{roughness:.55,metalness:.2});
+// Batería LFP
+box(.75,1.5,.4,whiteM,-6.1,.81,5.2,null,"batt");
+box(.04,1.2,.02,std(0x12a6e6,{emissive:0x12a6e6,emissiveIntensity:.8}),-5.78,.85,5.41);
+const scrBatt=screen(.5,.22,200,88,-6.15,1.3,5.405);
+// Inversor híbrido
+box(.62,.85,.24,whiteM,-4.6,1.75,5.12,null,"inv");
+[-4.95,-4.25].forEach(x=>box(.06,.7,.2,greyM,x,1.75,5.1));
+const scrInv=screen(.38,.2,190,100,-4.6,1.88,5.245);
+const invLed=new THREE.Mesh(new THREE.CircleGeometry(.025,12),new THREE.MeshBasicMaterial({color:0x22cc66,toneMapped:false}));invLed.position.set(-4.6,1.6,5.245);scene.add(invLed);
+// Medidor del inversor
+box(.26,.38,.14,whiteM,-3.25,1.75,5.07,null,"m2");
+const scrM2=screen(.18,.09,120,60,-3.25,1.82,5.143);
+// ATS
+box(.55,.65,.2,greyM,-2.0,1.9,5.1,null,"ats");
+const scrAts=screen(.42,.11,200,52,-2.0,2.12,5.203);
+const lever=new THREE.Group();lever.position.set(-2.0,1.82,5.22);scene.add(lever);
+const lv=box(.07,.26,.06,std(0x1f2937),0,.11,0,lever);lv.castShadow=false;
+const lvTip=box(.12,.06,.08,std(0xd93838),0,.24,0,lever);
+// Tablero de la vivienda
+box(.6,.8,.14,greyM,.3,1.7,5.07,null,"user");
+box(.5,.06,.02,std(0x2b2f36),.3,1.85,5.145);box(.5,.06,.02,std(0x2b2f36),.3,1.65,5.145);
+// Pedestal y medidor de frontera
+box(.8,2.0,.5,concrete,-12,1.0,9.0,null,"m1");
+box(.3,.42,.16,whiteM,-12,1.35,9.33,null,"m1");
+const scrM1=screen(.2,.1,120,60,-12,1.42,9.412);
+
+/* ---------- Red eléctrica ---------- */
+const poleM=std(0xb7b4ad,{roughness:.9});
+function pole(x,z){box(.3,9.6,.3,poleM,x,4.8,z);box(.16,.16,2.6,greyM,x,8.6,z);[-1.1,0,1.1].forEach(dz=>{const ins=new THREE.Mesh(new THREE.CylinderGeometry(.06,.08,.3,8),std(0x7c5a3c));ins.position.set(x,8.83,z+dz);scene.add(ins);});}
+pole(-20,11);pole(-50,11);
+const wireM=std(0x23272e,{emissive:0xff2a2a,emissiveIntensity:0});
+function sagPts(a,b,sag,n){const o=[];for(let i=0;i<=n;i++){const t=i/n;o.push([a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t-sag*4*t*(1-t),a[2]+(b[2]-a[2])*t]);}return o;}
+function wire(pts,r,m){const path=new THREE.CurvePath();for(let i=1;i<pts.length;i++)path.add(new THREE.LineCurve3(new THREE.Vector3(...pts[i-1]),new THREE.Vector3(...pts[i])));
+  const me=new THREE.Mesh(new THREE.TubeGeometry(path,pts.length*2,r,5,false),m);scene.add(me);return me;}
+[-1.1,0,1.1].forEach(dz=>{wire(sagPts([-90,8.95,11+dz],[-50,8.95,11+dz],1.2,24),.025,wireM);wire(sagPts([-50,8.95,11+dz],[-20,8.95,11+dz],1,24),.025,wireM);});
+// Torre de transmisión en celosía (fondo)
+(function tower(x,z,H){const v=[];const L=(a,b)=>v.push(...a,...b);const base=4,topw=1.1;const lv=8;
+  const legs=(y)=>{const w=base+(topw-base)*(y/H);return[[x-w/2,y,z-w/2],[x+w/2,y,z-w/2],[x+w/2,y,z+w/2],[x-w/2,y,z+w/2]];};
+  for(let i=0;i<lv;i++){const y0=H*i/lv,y1=H*(i+1)/lv;const a=legs(y0),b=legs(y1);for(let k=0;k<4;k++){L(a[k],b[k]);L(b[k],b[(k+1)%4]);L(a[k],b[(k+1)%4]);L(a[(k+1)%4],b[k]);}}
+  [H*.72,H*.88].forEach(y=>{L([x-6,y,z],[x+6,y,z]);L([x-6,y,z],[x-.5,y+1.6,z]);L([x+6,y,z],[x+.5,y+1.6,z]);});
+  L(legs(H)[0],[x,H+2,z]);L(legs(H)[2],[x,H+2,z]);
+  const geo=new THREE.BufferGeometry();geo.setAttribute("position",new THREE.Float32BufferAttribute(v,3));
+  scene.add(new THREE.LineSegments(geo,new THREE.LineBasicMaterial({color:0x8a9099})));
+  const lm=new THREE.LineBasicMaterial({color:0x5c6470});[-6,6].forEach(dx=>[H*.72,H*.88].forEach(y=>{const g=new THREE.BufferGeometry().setFromPoints(sagPts([x+dx,y,z-140],[x+dx,y,z],4,30).map(q=>new THREE.Vector3(...q)));scene.add(new THREE.Line(g,lm));const g2=new THREE.BufferGeometry().setFromPoints(sagPts([x+dx,y,z],[x+dx+60,y,z+90],4,30).map(q=>new THREE.Vector3(...q)));scene.add(new THREE.Line(g2,lm));}));
+})(-42,-40,24);
+
+/* ---------- Vegetación ---------- */
+const trunkM=std(0x8b7a62),frondM=std(0x3f7d2c,{side:THREE.DoubleSide});
+function palm(x,z,h,lean){const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);
+  const tr=new THREE.Mesh(new THREE.CylinderGeometry(.16,.24,h,8),trunkM);tr.position.y=h/2;tr.castShadow=true;g.add(tr);g.rotation.z=lean||0;
+  for(let i=0;i<9;i++){const f=new THREE.Mesh(new THREE.PlaneGeometry(.7,3.2),frondM);f.geometry.translate(0,1.6,0);const p=new THREE.Group();p.position.y=h;p.rotation.y=i/9*Math.PI*2;f.rotation.x=1.05+Math.random()*.4;f.castShadow=true;p.add(f);g.add(p);}}
+palm(-17,-2,7,.06);palm(-15,-6,8.5,-.05);palm(-22,3,6.5,.08);palm(14,-6,9,-.04);palm(17,-1,6,.05);
+const treeM=std(0x356b2b);[[-28,-12,4],[22,-14,5],[-6,-26,6],[30,8,4]].forEach(([x,z,r])=>{const s=new THREE.Mesh(new THREE.IcosahedronGeometry(r,1),treeM);s.position.set(x,r*.9,z);s.castShadow=true;scene.add(s);});
+
+/* ---------- Flujos de energía ---------- */
+const flows={};
+class Flow{
+  constructor(key,pts,color,r){this.key=key;this.base=color;
+    this.p=pts.map(q=>new THREE.Vector3(q[0],q[1],q[2]));this.cum=[0];
+    for(let i=1;i<this.p.length;i++)this.cum.push(this.cum[i-1]+this.p[i].distanceTo(this.p[i-1]));this.len=this.cum[this.cum.length-1];
+    const path=new THREE.CurvePath();for(let i=1;i<this.p.length;i++)path.add(new THREE.LineCurve3(this.p[i-1],this.p[i]));
+    this.cm=std(0x30343c,{emissive:color,emissiveIntensity:.2,roughness:.6});
+    this.cable=new THREE.Mesh(new THREE.TubeGeometry(path,Math.max(16,Math.ceil(this.len*10)),r||.035,6,false),this.cm);this.cable.castShadow=true;scene.add(this.cable);
+    this.n=Math.max(5,Math.round(this.len*2.4));this.pos=new Float32Array(this.n*3);
+    const geo=new THREE.BufferGeometry();geo.setAttribute("position",new THREE.BufferAttribute(this.pos,3));
+    this.pm=new THREE.PointsMaterial({color,size:.3,map:dotTex,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,toneMapped:false});
+    this.pts=new THREE.Points(geo,this.pm);this.pts.frustumCulled=false;scene.add(this.pts);
+    this.v=0;this.phase=Math.random();flows[key]=this;}
+  at(d,out){let i=1;while(i<this.cum.length-1&&this.cum[i]<d)i++;const a=this.cum[i-1],b=this.cum[i];const t=b>a?(d-a)/(b-a):0;return out.copy(this.p[i-1]).lerp(this.p[i],Math.min(1,Math.max(0,t)));}
+  update(dt){const a=Math.abs(this.v),on=a>.03;this.pts.visible=on;
+    this.cm.emissiveIntensity=on?.35+Math.min(a/6,1)*.9:.12;if(!on)return;
+    const spd=(1.1+Math.min(a,10)*.32)/this.len;this.phase=(((this.phase+Math.sign(this.v)*spd*dt)%1)+1)%1;
+    this.pm.size=.2+Math.min(a,8)*.035;const tmp=Flow.tmp;
+    for(let i=0;i<this.n;i++){const u=(i/this.n+this.phase)%1;this.at(u*this.len,tmp);this.pos[i*3]=tmp.x;this.pos[i*3+1]=tmp.y;this.pos[i*3+2]=tmp.z;}
+    this.pts.geometry.attributes.position.needsUpdate=true;}
+}
+Flow.tmp=new THREE.Vector3();
+const Z=5.05;
+new Flow("grid",sagPts([-20,8.75,11.9],[-12,2.05,9.3],1.1,26).concat([[-12,1.56,9.42]]),COL.ongrid,.03);
+new Flow("m1ats",[[-12,1.14,9.42],[-12,.1,9.42],[-2.1,.1,9.42],[-2.1,.1,Z],[-2.1,1.575,Z]],COL.ongrid);
+new Flow("atsm2",[[-2.15,2.225,Z],[-2.15,2.45,Z],[-3.25,2.45,Z],[-3.25,1.94,Z]],COL.ongrid);
+new Flow("m2inv",[[-3.25,1.56,Z],[-3.25,1.45,Z],[-4.29,1.45,Z]],COL.ongrid);
+new Flow("invats",[[-4.45,2.175,Z],[-4.45,2.66,Z],[-1.85,2.66,Z],[-1.85,2.225,Z]],COL.ongrid);
+new Flow("atsload",[[-1.725,1.8,Z],[0,1.8,Z]],COL.ongrid);
+new Flow("dist",[[.6,1.9,Z],[.9,1.9,Z],[.9,3.85,Z],[6.7,3.85,Z],[6.7,.98,Z],[6.7,.98,5.42],[3.7,.98,5.42]],COL.ongrid);
+new Flow("pvA",[[-2.95,4.72,1.75],[-2.95,4.6,4.4],[-4.7,4.6,4.4],[-4.7,5.25,4.4],[-4.7,5.25,Z],[-4.7,2.175,Z]],COL.offgrid);
+new Flow("pvB",[[3.75,4.72,1.95],[3.75,4.62,4.25],[-4.84,4.62,4.25],[-4.84,5.32,4.25],[-4.84,5.32,Z+.05],[-4.84,2.175,Z+.05]],COL.offgrid);
+new Flow("batt",[[-5.9,1.56,5.2],[-5.9,1.75,Z],[-4.91,1.75,Z]],COL.offgrid);
+
+/* ---------- Modelo energético ---------- */
+const PV_KWP=12.1,BAT_KWH=15,BAT_KW=5,INV_KW=10;
+const S={hour:10,playing:!reduceMotion,soc:.6,gridOK:true,invOK:true,eFv:0,eImp:0,eExp:0,r:null};
+const gauss=(x,m,s)=>Math.exp(-((x-m)**2)/(2*s*s));
+function pvAt(h){const s=Math.sin(Math.PI*(h-6)/12);if(s<=0)return 0;return Math.min(INV_KW,PV_KWP*.82*Math.pow(s,1.25)*(1-.05*Math.max(0,Math.sin(h*9.7))));}
+function loadAt(h){return .55+1.0*gauss(h,7,.8)+1.5*gauss(h,13.5,2.2)+2.3*gauss(h,19.6,1.5)+.6*gauss(h,22.3,.9);}
+function compute(h){const L=loadAt(h),P=pvAt(h);const r={pvAvail:P,load:L,pv:0,batt:0,grid:0,supplied:L,mode:"on"};
+  if(!S.invOK){if(S.gridOK){r.grid=L;r.mode="bypass";}else{r.supplied=0;r.mode="black";}return r;}
+  const socMin=S.gridOK?.2:.1;const net=P-L;r.pv=P;
+  if(net>=0){const ch=S.soc<.995?Math.min(net,BAT_KW):0;r.batt=-ch;const rest=net-ch;if(S.gridOK)r.grid=-rest;else r.pv=P-rest;}
+  else{const need=-net;const d=S.soc>socMin?Math.min(need,BAT_KW):0;r.batt=d;const rem=need-d;
+    if(S.gridOK)r.grid=rem;else if(rem>.01){if(P<.05&&d===0){r.supplied=0;r.pv=0;r.batt=0;r.mode="black";return r;}r.supplied=P+d;r.mode="shed";}}
+  if(!S.gridOK&&r.mode==="on")r.mode="island";return r;}
+
+/* ---------- Tiempo, cielo ---------- */
+const cNight=new THREE.Color(0x0a1430),cDusk=new THREE.Color(0xf09a6a),cDay=new THREE.Color(0x8fc4f2),cSky=new THREE.Color();
+function applySky(h){const s=Math.sin(Math.PI*(h-6)/12);const d=Math.max(0,Math.min(1,s*1.8+.08));
+  cSky.copy(cNight).lerp(cDusk,Math.min(1,d*2.6)).lerp(cDay,Math.max(0,(d-.38)/.62));
+  scene.background=cSky;scene.fog.color.copy(cSky);
+  const ang=Math.PI*(h-6)/12;const dir=new THREE.Vector3(Math.cos(ang),Math.max(-.3,Math.sin(ang)),.45).normalize();
+  sun.position.copy(dir).multiplyScalar(70);sun.target.position.set(0,0,0);sun.intensity=s>0?.25+1.65*Math.min(1,s*1.5):0;
+  sun.color.setHSL(.1,.9,.6+.3*Math.min(1,s*2));
+  sunBall.position.copy(dir).multiplyScalar(220);sunBall.visible=s>-.05;
+  hemi.intensity=.18+.55*d;moon.intensity=.28*(1-d);stars.material.opacity=Math.max(0,1-d*2.5);
+  renderer.toneMappingExposure=.95+.25*(1-d);return d;}
+
+/* ---------- Pantallas de equipos ---------- */
+function drawScreens(r){const fmt=v=>Math.abs(v).toFixed(1);
+  let s=scrInv,g=s.g;g.fillStyle="#08121f";g.fillRect(0,0,s.w,s.h);
+  const ok=S.invOK;g.fillStyle=ok?"#3fe08a":"#ff5c5c";g.font="600 20px IBM Plex Mono,monospace";
+  g.fillText(!ok?"FALLA":r.mode==="island"||r.mode==="shed"?"ISLA":"ON-GRID",10,26);
+  g.fillStyle="#cfe3ff";g.font="500 17px IBM Plex Mono,monospace";
+  if(ok){g.fillText("FV  "+fmt(r.pv)+" kW",10,52);g.fillText("OUT "+fmt(r.supplied)+" kW",10,74);g.fillText("BAT "+Math.round(S.soc*100)+"%",10,95);}
+  else{g.fillText("E-xxx",10,52);g.fillText("Sin salida",10,74);}
+  s.t.needsUpdate=true;
+  s=scrBatt;g=s.g;g.fillStyle="#08121f";g.fillRect(0,0,s.w,s.h);g.strokeStyle="#5aa9d6";g.lineWidth=3;g.strokeRect(10,14,150,58);g.fillRect(160,32,8,22);
+  g.fillStyle=S.soc<.2?"#ff6b6b":"#2bb6f0";g.fillRect(14,18,142*S.soc,50);g.fillStyle="#fff";g.font="600 22px IBM Plex Mono,monospace";g.fillText(Math.round(S.soc*100)+"%",56,52);s.t.needsUpdate=true;
+  [[scrM2,S.invOK?r.grid:0],[scrM1,r.grid]].forEach(([s,v])=>{const g=s.g;g.fillStyle="#b9d7a8";g.fillRect(0,0,s.w,s.h);g.fillStyle="#1b2a10";g.font="600 26px IBM Plex Mono,monospace";g.fillText((v<-.03?"-":" ")+fmt(v),8,40);g.font="600 13px IBM Plex Mono,monospace";g.fillText("kW",94,40);s.t.needsUpdate=true;});
+  s=scrAts;g=s.g;g.fillStyle="#141a24";g.fillRect(0,0,s.w,s.h);g.font="700 24px IBM Plex Sans,sans-serif";
+  g.fillStyle=S.invOK?"#3fe08a":"#5b6475";g.fillText("INV",14,36);g.fillStyle=!S.invOK?"#ffb020":"#5b6475";g.fillText("BYPASS",96,36);s.t.needsUpdate=true;}
+
+/* ---------- Puntos de interés ---------- */
+const HS={
+  pv:{name:"Módulos FV",c:"var(--offgrid)",kick:"Generación · lado DC (off-grid)",anchor:[.4,6.3,0],tgt:[.4,4.8,.2],cam:[8,13.5,15],
+    title:"Módulos fotovoltaicos",body:"22 módulos de 550 Wp (12,1 kWp) en dos arreglos sobre la cubierta metálica. Convierten la radiación solar en corriente continua que baja por la fachada hasta los MPPT del inversor. Su producción sigue la curva del sol: cero de noche y máxima cerca del mediodía.",
+    live:r=>[`Producción ${r.pv.toFixed(2)} kW`,`Disponible ${r.pvAvail.toFixed(2)} kW`,r.pvAvail-r.pv>.05?"Limitada: no hay a dónde enviar el excedente":`Hoy ${S.eFv.toFixed(1)} kWh`]},
+  inv:{name:"Inversor",c:"var(--offgrid)",kick:"Corazón del sistema",anchor:[-4.6,2.55,5.2],tgt:[-4.4,1.8,5.1],cam:[-2.3,3.0,10.6],
+    title:"Inversor híbrido 10 kW",body:"En la conexión en serie toda la energía de la casa pasa por aquí. Hace el seguimiento MPPT de los módulos, carga y descarga las baterías, se sincroniza con la red por su puerto GRID y entrega la energía regulada por su puerto LOAD. Si la red cae, abre su relé interno y forma la isla en menos de 10 ms, como una UPS.",
+    live:r=>[S.invOK?`Estado: ${modeName(r)}`:"Fuera de servicio",`Salida ${(S.invOK?r.supplied:0).toFixed(2)} kW`,`Carga ${Math.round((S.invOK?r.supplied:0)/INV_KW*100)} % de la nominal`]},
+  batt:{name:"Baterías",c:"var(--offgrid)",kick:"Almacenamiento · off-grid",anchor:[-6.1,1.95,5.3],tgt:[-5.8,1.0,5.2],cam:[-3.6,2.5,10.2],
+    title:"Banco de baterías LFP 15 kWh",body:"Litio ferrofosfato con BMS propio. Guarda el excedente solar del día y lo entrega en la noche o durante un corte. El inversor limita la descarga al 20 % de carga con red disponible y al 10 % en modo isla para proteger las celdas.",
+    live:r=>[`SOC ${Math.round(S.soc*100)} %`,r.batt>.03?`Descargando ${r.batt.toFixed(2)} kW`:r.batt<-.03?`Cargando ${(-r.batt).toFixed(2)} kW`:"En reposo",`Energía útil ≈ ${(BAT_KWH*Math.max(0,S.soc-(S.gridOK?.2:.1))).toFixed(1)} kWh`]},
+  m2:{name:"Smart Meter",c:"var(--ongrid)",kick:"Medición del inversor",anchor:[-3.25,2.25,5.2],tgt:[-3.0,1.85,5.1],cam:[-1.7,2.7,9.0],
+    title:"Smart Meter del inversor",body:"Mide la potencia que el inversor toma o entrega a la red. Con esa lectura el inversor aplica la prioridad de fuentes (sol, batería, red) y el control de exportación cero o limitada que exija el operador.",
+    live:r=>[S.invOK?gridTxt(r.grid):"Sin lectura (inversor fuera)",`Tensión ${S.gridOK?"120/240 V":"0 V"}`]},
+  ats:{name:"ATS",c:"var(--ongrid)",kick:"Transferencia automática",anchor:[-2.0,2.5,5.2],tgt:[-2.0,1.9,5.1],cam:[-.4,2.7,9.2],
+    title:"ATS · conmutador de transferencia",body:"En operación normal envía la red al puerto GRID del inversor y la salida LOAD del inversor al tablero de la casa. Si el inversor falla o se apaga para mantenimiento, conmuta a bypass y conecta la red directamente a la vivienda. Así se mitiga el punto único de falla.",
+    live:r=>[`Posición ${S.invOK?"INV (normal)":"BYPASS"}`,S.gridOK?"Red presente":"Red ausente"]},
+  m1:{name:"Smart Meter",c:"var(--ongrid)",kick:"Frontera con el operador",anchor:[-12,2.35,9.3],tgt:[-12,1.3,9.3],cam:[-9.6,2.6,13.8],
+    title:"Medidor bidireccional de frontera",body:"Medidor del operador de red. Registra la energía importada y los excedentes exportados por el autogenerador (AGPE). Es la base de la facturación neta.",
+    live:r=>[gridTxt(r.grid),`Importado hoy ${S.eImp.toFixed(1)} kWh`,`Exportado hoy ${S.eExp.toFixed(1)} kWh`]},
+  grid:{name:"Red",c:"var(--ongrid)",kick:"Operador de red · on-grid",anchor:[-20,10,11],tgt:[-17,5,10],cam:[-6,7,27],
+    title:"Red de distribución",body:"Acometida desde la red del operador. En el esquema en serie la red no llega directo a la casa: entra al inversor, que decide cuánto tomar. Si la red se cae, el inversor se desconecta (protección anti-isla) para no energizar la línea mientras trabajan los técnicos.",
+    live:r=>[S.gridOK?"Disponible":"Caída",gridTxt(r.grid)]},
+  user:{name:"Usuario",c:"var(--ongrid)",kick:"Cargas de la vivienda",anchor:[2.4,3.6,5.3],tgt:[2.5,2,5],cam:[6.5,4.5,15],
+    title:"Vivienda y tablero de cargas",body:"Iluminación, aires acondicionados y electrodomésticos. Reciben energía ya filtrada y regulada por el inversor. El consumo sube en la mañana, con los aires al mediodía y alcanza su pico en la noche.",
+    live:r=>[`Demanda ${r.load.toFixed(2)} kW`,r.supplied<r.load-.02?`Atendida ${r.supplied.toFixed(2)} kW`:"Suministro continuo",`Fuente: ${srcTxt(r)}`]}
+};
+function gridTxt(v){return !S.gridOK?"Red caída":v>.03?`Importando ${v.toFixed(2)} kW`:v<-.03?`Exportando ${(-v).toFixed(2)} kW`:"Sin intercambio";}
+function srcTxt(r){if(r.mode==="black")return"ninguna";if(r.mode==="bypass")return"red directa";const a=[];if(r.pv>.05)a.push("sol");if(r.batt>.05)a.push("batería");if(r.grid>.05)a.push("red");return a.join(" + ")||"—";}
+function modeName(r){return{on:"On-grid",island:"Modo isla",shed:"Isla · deslastre",bypass:"Bypass ATS",black:"Sin suministro"}[r.mode];}
+
+const labelsEl=$("#labels");
+const ORDER=["inv","pv","batt","ats","grid","user","m1","m2"];
+ORDER.forEach(k=>{const h=HS[k];const b=document.createElement("button");b.className="tag3d";b.style.setProperty("--c",h.c);b.innerHTML=`<i></i>${h.name}`;b.setAttribute("aria-label",h.title);
+  b.addEventListener("click",e=>{e.stopPropagation();select(k);});labelsEl.appendChild(b);h.el=b;h.v=new THREE.Vector3(...h.anchor);});
+
+/* ---------- Cámara ---------- */
+let fly=null;
+function flyTo(pos,tgt,dur){const p=new THREE.Vector3(...(pos.toArray?pos.toArray():pos)),t=new THREE.Vector3(...(tgt.toArray?tgt.toArray():tgt));
+  if(reduceMotion||dur===0){camera.position.copy(p);controls.target.copy(t);fly=null;return;}
+  fly={p0:camera.position.clone(),t0:controls.target.clone(),p1:p,t1:t,t:0,d:dur||1.5};}
+const ease=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+
+/* ---------- Ficha y recorrido ---------- */
+let sel=null,tour=-1;
+const TOUR=[{ov:true,kick:"Recorrido · inicio",title:"Así funciona un sistema en serie",body:"El sol, las baterías y la red se combinan dentro del inversor, y de ahí sale una sola alimentación hacia la casa. Las líneas amarillas son el lado de red (AC) y las azules el lado de generación y respaldo. Los puntos que viajan por los cables muestran hacia dónde fluye la energía y su tamaño indica la potencia."},
+  {hs:"pv"},{hs:"inv"},{hs:"batt"},{hs:"m2"},{hs:"ats"},{hs:"m1"},{hs:"grid"},{hs:"user"},
+  {ov:true,kick:"Recorrido · pruébalo",title:"Simula un día completo y las fallas",body:"Mueve la hora para ver cómo cambian las fuentes. Apaga la «Red» para ver el modo isla tipo UPS y apaga el «Inversor» para ver al ATS pasar a bypass. Si apagas los dos, la casa queda sin servicio: ese es el punto único de falla del esquema."}];
+function showInfo(o){$("#info").hidden=false;$("#iKick").textContent=o.kick;$("#iKick").style.setProperty("--c",o.c||"var(--muted)");$("#iTitle").textContent=o.title;$("#iBody").textContent=o.body;liveFill();}
+function select(k){sel=k;const h=HS[k];if(tour<0)$("#tourNav").hidden=true;showInfo(h);flyTo(h.cam,h.tgt);
+  ORDER.forEach(j=>HS[j].el.classList.toggle("sel",j===k));}
+function clearSel(){sel=null;ORDER.forEach(j=>HS[j].el.classList.remove("sel"));}
+function liveFill(){const el=$("#iLive");if(!sel||!S.r){el.innerHTML="";return;}el.innerHTML=HS[sel].live(S.r).map(t=>`<span>${t}</span>`).join("");}
+function goTour(i){tour=Math.max(0,Math.min(TOUR.length-1,i));const st=TOUR[tour];$("#tourNav").hidden=false;
+  $("#tourStep").textContent=`${tour+1} / ${TOUR.length}`;$("#tPrev").disabled=tour===0;$("#tNext").textContent=tour===TOUR.length-1?"Terminar":"Siguiente";
+  if(st.ov){clearSel();showInfo(st);$("#iLive").innerHTML="";flyTo(OV.pos,OV.tgt);}else select(st.hs);}
+function endTour(){tour=-1;$("#tourNav").hidden=true;$("#info").hidden=true;clearSel();flyTo(OV.pos,OV.tgt);}
+$("#tourBtn").onclick=()=>goTour(0);
+$("#tPrev").onclick=()=>goTour(tour-1);
+$("#tNext").onclick=()=>tour===TOUR.length-1?endTour():goTour(tour+1);
+$("#iClose").onclick=()=>{if(tour>=0)endTour();else{$("#info").hidden=true;clearSel();}};
+$("#homeBtn").onclick=()=>{flyTo(OV.pos,OV.tgt);};
+
+/* ---------- Controles ---------- */
+const hourIn=$("#hour"),hourOut=$("#hourOut");
+const hhmm=h=>{const m=Math.floor((h%24)*60);return String(Math.floor(m/60)).padStart(2,"0")+":"+String(m%60).padStart(2,"0");};
+hourIn.addEventListener("input",()=>{S.hour=+hourIn.value;});
+const playBtn=$("#play");
+function setPlay(p){S.playing=p;playBtn.textContent=p?"❚❚":"▶";playBtn.setAttribute("aria-label",p?"Pausar el ciclo de 24 horas":"Reproducir el ciclo de 24 horas");}
+playBtn.onclick=()=>setPlay(!S.playing);setPlay(S.playing);
+document.querySelectorAll("[data-h]").forEach(b=>b.onclick=()=>{S.hour=+b.dataset.h;if(S.hour>=20&&S.soc<.55)S.soc=.8;setPlay(false);toastMsg(`Escena: ${b.textContent.toLowerCase()} (${hhmm(S.hour)}). Pulsa ▶ para que avance el reloj.`,"var(--ongrid)");});
+const swGrid=$("#swGrid"),swInv=$("#swInv");
+function failMsg(){if(!S.gridOK&&!S.invOK)return["Sin red y con el inversor fuera de servicio la vivienda queda sin energía. Este es el punto único de falla del esquema en serie.","var(--bad)"];return null;}
+swGrid.onclick=()=>{S.gridOK=!S.gridOK;swGrid.setAttribute("aria-pressed",S.gridOK);const f=failMsg();
+  if(f)toastMsg(...f);else if(!S.gridOK)toastMsg("Corte de red: el inversor abre su relé de red y forma la isla en menos de 10 ms. La casa sigue alimentada por el sol y las baterías.","var(--offgrid)");
+  else toastMsg("Red restablecida: el inversor verifica tensión y frecuencia, se resincroniza y vuelve a modo on-grid.","var(--ok)");};
+swInv.onclick=()=>{S.invOK=!S.invOK;swInv.setAttribute("aria-pressed",S.invOK);const f=failMsg();
+  if(f)toastMsg(...f);else if(!S.invOK)toastMsg("Falla del inversor: el ATS conmuta a bypass y la red alimenta la casa directamente. Los módulos y las baterías quedan fuera de servicio.","var(--warn)");
+  else toastMsg("Inversor de nuevo en línea: el ATS vuelve a la posición INV y toda la energía pasa otra vez por el inversor.","var(--ok)");};
+let toastT;function toastMsg(t,c){const el=$("#toast");el.textContent=t;el.style.setProperty("--c",c);el.removeAttribute("data-hide");clearTimeout(toastT);toastT=setTimeout(()=>el.setAttribute("data-hide",""),5200);}
+$("#prosBtn").onclick=()=>{$("#pros").hidden=false;$("#prosClose").focus();};
+$("#prosClose").onclick=()=>{$("#pros").hidden=true;};
+$("#pros").addEventListener("click",e=>{if(e.target.id==="pros")$("#pros").hidden=true;});
+addEventListener("keydown",e=>{if(e.key==="Escape"){$("#pros").hidden=true;}});
+
+// Selección por clic en la escena
+const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();let down=null;
+canvas.addEventListener("pointerdown",e=>{down=[e.clientX,e.clientY];});
+canvas.addEventListener("pointerup",e=>{if(!down)return;const dx=e.clientX-down[0],dy=e.clientY-down[1];down=null;if(dx*dx+dy*dy>25)return;
+  const r=canvas.getBoundingClientRect();ndc.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ndc,camera);
+  const hit=ray.intersectObjects(pickables,false)[0];if(hit){if(tour>=0){tour=-1;$("#tourNav").hidden=true;}select(hit.object.userData.hs);}});
+controls.addEventListener("start",()=>{fly=null;});
+
+/* ---------- UI de lecturas ---------- */
+const kw=v=>`${Math.abs(v).toFixed(1)}<small>kW</small>`;
+const MODE_COL={on:"var(--ok)",island:"var(--offgrid)",shed:"var(--warn)",bypass:"var(--warn)",black:"var(--bad)"};
+function updateHud(r){$("#vPv").innerHTML=kw(r.pv);$("#vLoad").innerHTML=kw(r.supplied);$("#vBatt").innerHTML=kw(r.batt);$("#vGrid").innerHTML=kw(r.grid);
+  $("#vBattTxt").textContent=r.batt>.03?"descarga":r.batt<-.03?"carga":"reposo";
+  $("#vGridTxt").textContent=!S.gridOK?"caída":r.grid>.03?"importa":r.grid<-.03?"exporta":"reposo";
+  $("#socBar").style.width=(S.soc*100).toFixed(0)+"%";$("#socBar").style.background=S.soc<.2?"var(--bad)":"var(--offgrid)";
+  const ch=$("#modeChip");ch.textContent=modeName(r);ch.style.setProperty("--c",MODE_COL[r.mode]);
+  $("#clock").textContent=hhmm(S.hour);hourOut.textContent=hhmm(S.hour);if(document.activeElement!==hourIn)hourIn.value=S.hour.toFixed(2);
+  $("#eFv").textContent=S.eFv.toFixed(1);$("#eImp").textContent=S.eImp.toFixed(1);$("#eExp").textContent=S.eExp.toFixed(1);liveFill();}
+
+/* ---------- Bucle ---------- */
+const HOURS_PER_SEC=1/3;let last=performance.now(),acc=0,tick=0;const pv3=new THREE.Vector3();
+function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(canvas.width!==Math.floor(w*renderer.getPixelRatio())||canvas.height!==Math.floor(h*renderer.getPixelRatio())){renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();}}
+function frame(now){const dt=Math.min(.05,(now-last)/1000);last=now;resize();
+  if(S.playing){S.hour+=dt*HOURS_PER_SEC;if(S.hour>=24){S.hour-=24;S.eFv=S.eImp=S.eExp=0;}}
+  const r=compute(S.hour);S.r=r;
+  const dtH=S.playing?dt*HOURS_PER_SEC:0;
+  S.soc=Math.min(1,Math.max(.05,S.soc-r.batt*dtH/BAT_KWH));S.eFv+=r.pv*dtH;if(r.grid>0)S.eImp+=r.grid*dtH;else S.eExp+=-r.grid*dtH;
+  // flujos
+  const inv=S.invOK;
+  flows.grid.v=r.grid;flows.m1ats.v=r.grid;
+  flows.atsm2.v=inv?r.grid:0;flows.m2inv.v=inv?r.grid:0;flows.invats.v=inv?r.supplied:0;
+  flows.atsload.v=r.supplied;flows.dist.v=r.supplied;
+  flows.pvA.v=r.pv*12/22;flows.pvB.v=r.pv*10/22;flows.batt.v=r.batt;
+  const isl=r.mode==="island"||r.mode==="shed";
+  ["invats","atsload","dist"].forEach(k=>flows[k].pm.color.setHex(isl?COL.offgrid:COL.ongrid));
+  Object.values(flows).forEach(f=>f.update(dt));
+  // cielo y detalles
+  const d=applySky(S.hour);
+  const glow=r.supplied>.05?Math.min(1.4,(1-d)*1.6*Math.min(1,r.supplied/1.5)):0;glassM.emissiveIntensity=glow;
+  modM.emissiveIntensity=Math.min(.5,r.pv/18);
+  wireM.emissiveIntensity=S.gridOK?0:.5+.4*Math.sin(now/120);
+  lever.rotation.z+=((S.invOK?.55:-.55)-lever.rotation.z)*Math.min(1,dt*10);
+  invLed.material.color.setHex(!S.invOK?0xff3b3b:isl?0x22a8ff:0x22cc66);
+  // cámara
+  if(fly){fly.t+=dt/fly.d;const k=ease(Math.min(1,fly.t));camera.position.lerpVectors(fly.p0,fly.p1,k);controls.target.lerpVectors(fly.t0,fly.t1,k);if(fly.t>=1)fly=null;}
+  controls.update();
+  acc+=dt;if(acc>.2){acc=0;updateHud(r);drawScreens(r);}
+  // etiquetas con anticolisión
+  const W=canvas.clientWidth,H=canvas.clientHeight,boxes=[];const pri=sel?[sel,...ORDER.filter(k=>k!==sel)]:ORDER;
+  pri.forEach(k=>{const h=HS[k];pv3.copy(h.v).project(camera);let vis=pv3.z<1&&Math.abs(pv3.x)<1.1&&Math.abs(pv3.y)<1.1;
+    const x=(pv3.x*.5+.5)*W,y=(-pv3.y*.5+.5)*H;const w=h.el.offsetWidth||80,hh=h.el.offsetHeight||22;const rb=[x-w/2,y-hh,x+w/2,y];
+    if(vis)for(const b of boxes){if(rb[0]<b[2]+4&&rb[2]>b[0]-4&&rb[1]<b[3]+3&&rb[3]>b[1]-3){vis=false;break;}}
+    if(vis)boxes.push(rb);h.el.classList.toggle("off",!vis);h.el.style.transform=`translate(${(x-w/2).toFixed(1)}px,${(y-hh).toFixed(1)}px)`;});
+  renderer.render(scene,camera);requestAnimationFrame(frame);}
+updateHud(compute(S.hour));S.r=compute(S.hour);drawScreens(S.r);
+flyTo(OV.pos,OV.tgt,2.6);
+requestAnimationFrame(frame);
+})();
+</script>
